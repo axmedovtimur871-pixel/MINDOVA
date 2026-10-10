@@ -1,1 +1,103 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MINDOVA — Admin Panel</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #0F0E26; color: #fff; margin: 0; padding: 20px; }
+    h1, h2 { color: #6366F1; }
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+    .tab-btn { background: #1B1A3A; color: #fff; border: 1px solid #333; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+    .tab-btn.active { background: #6366F1; }
+    .section { display: none; background: #181735; padding: 20px; border-radius: 12px; }
+    .section.active { display: block; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { border: 1px solid rgba(255,255,255,0.1); padding: 10px; text-align: left; }
+    th { background: #25234A; }
+    input, textarea, button { width: 100%; padding: 10px; margin: 8px 0; border-radius: 6px; border: 1px solid #444; background: #0F0E26; color: #fff; box-sizing: border-box; }
+    button.submit-btn { background: #6366F1; cursor: pointer; font-weight: bold; }
+  </style>
+</head>
+<body>
 
+  <h1>MINDOVA Admin Panel</h1>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('users')">Ro'yxatdan o'tganlar</button>
+    <button class="tab-btn" onclick="showTab('events')">Tadbirlar</button>
+    <button class="tab-btn" onclick="showTab('team')">Jamoa</button>
+  </div>
+
+  <!-- 1. Ro'yxatdan o'tganlar -->
+  <div id="users" class="section active">
+    <h2>Ro'yxatdan o'tgan foydalanuvchilar</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Ism Familiya</th>
+          <th>Telefon</th>
+          <th>Telegram Username</th>
+          <th>Sana</th>
+        </tr>
+      </thead>
+      <tbody id="userList">
+        <!-- Backend'dan ma'lumot keladi -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 2. Tadbirlar boshqaruvi -->
+  <div id="events" class="section">
+    <h2>Yangi tadbir qo'shish</h2>
+    <form id="addEventForm">
+      <input type="text" id="evTitle" placeholder="Tadbir nomi" required>
+      <input type="date" id="evDate" required>
+      <input type="text" id="evTime" placeholder="Vaqti (masalan: 15:00)" required>
+      <input type="text" id="evPlace" placeholder="O'tkazilish joyi" required>
+      <textarea id="evDesc" placeholder="Tadbir haqida batafsil" rows="3"></textarea>
+      <button type="submit" class="submit-btn">Tadbirni saqlash</button>
+    </form>
+  </div>
+
+  <!-- 3. Jamoa boshqaruvi -->
+  <div id="team" class="section">
+    <h2>Jamoa a'zosini qo'shish / tahrirlash</h2>
+    <form id="addTeamForm">
+      <input type="text" id="mName" placeholder="Ism Familiya" required>
+      <input type="text" id="mRole" placeholder="Lavozimi (masalan: Asoschi)" required>
+      <input type="text" id="mPhoto" placeholder="Rasm havolasi (URL)">
+      <textarea id="mBio" placeholder="Qisqacha bio" rows="3"></textarea>
+      <button type="submit" class="submit-btn">A'zoni saqlash</button>
+    </form>
+  </div>
+
+  <script>
+    function showTab(id) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    // Ro'yxatdan o'tganlarni yuklash
+    async function loadUsers() {
+      try {
+        const res = await fetch('/api/admin/users');
+        if (res.ok) {
+          const users = await res.json();
+          document.getElementById('userList').innerHTML = users.map(u => `
+            <tr>
+              <td>${u.fullName}</td>
+              <td>${u.phone}</td>
+              <td>${u.tgUsername}</td>
+              <td>${new Date(u.createdAt).toLocaleDateString()}</td>
+            </tr>
+          `).join('');
+        }
+      } catch(e) {}
+    }
+    loadUsers();
+  </script>
+</body>
+</html>
