@@ -37,21 +37,46 @@ a { color: inherit; }
 :focus-visible { outline: 3px solid var(--sun); outline-offset: 3px; }
 .wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
 
-/* Navigatsiya */
+/* Navigatsiya (To'g'rilangan variant) */
 nav {
   position: sticky; top: 0; z-index: 10;
   background: rgba(15, 14, 38, 0.85);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--line);
+  padding: 0 16px;
 }
-nav .wrap { display: flex; justify-space-between; align-items: center; height: 62px; }
-.logo { font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 1.3rem; text-decoration: none; color: var(--brand); }
-nav ul { display: flex; gap: 26px; list-style: none; padding: 0; }
-nav ul a { text-decoration: none; font-weight: 500; color: #C5C4E8; }
+nav .wrap { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  height: 62px; 
+  gap: 20px;
+}
+.logo { 
+  font-family: "Bricolage Grotesque", sans-serif; 
+  font-weight: 800; 
+  font-size: 1.3rem; 
+  text-decoration: none; 
+  color: var(--brand); 
+  white-space: nowrap;
+}
+nav ul { 
+  display: flex; 
+  gap: 20px; 
+  list-style: none; 
+  padding: 0; 
+  margin: 0;
+}
+nav ul a { text-decoration: none; font-weight: 500; color: #C5C4E8; font-size: 0.95rem; }
 nav ul a:hover { color: var(--brand); }
-@media(max-width: 520px) { nav ul { gap: 16px; } }
 
-/* Hero section */
+@media(max-width: 520px) { 
+  nav .wrap { gap: 12px; }
+  nav ul { gap: 12px; }
+  .logo { font-size: 1.1rem; }
+  nav ul a { font-size: 0.85rem; }
+}
+
 .hero { text-align: center; padding: 60px 0 40px; }
 .hero h1 { margin: 0 auto; font-weight: 800; font-size: clamp(3.4rem, 12vw, 8rem); letter-spacing: -.04em; color: var(--brand); }
 .hero .lead { margin: 20px auto 0; max-width: 680px; text-align: center; color: var(--muted); font-size: 1.15rem; }
