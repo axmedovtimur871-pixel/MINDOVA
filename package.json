@@ -1,0 +1,13 @@
+{
+  "name": "mindova",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "express": "^4.21.0",
+    "grammy": "^1.30.0",
+    "mongodb": "^6.10.0"
+  }
+}
