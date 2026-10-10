@@ -285,7 +285,10 @@ app.get("/photo/:id", async (req, res) => {
   }
 });
 
-app.use(express.static(path.join(__dirname, "public")));
+// Landing page lives in the repo root (index.html). Only this file and /assets are public,
+// so server.js and package.json are never exposed.
+app.get("/", (_req, res) => res.sendFile(path.join(__dirname, "index.html")));
+app.use("/assets", express.static(path.join(__dirname, "assets")));
 
 /* ---------------- Start ---------------- */
 await bot.init();
