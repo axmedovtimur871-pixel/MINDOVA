@@ -13,7 +13,13 @@
 @media(prefers-color-scheme:dark){:root{--bg:#14132B;--card:#1F1E3F;--ink:#F1F0FA;--muted:#A9A7CF;--brand:#8C8BFF;--line:#34325F}}
 *{box-sizing:border-box;margin:0}
 html{scroll-behavior:smooth;scroll-padding-top:70px}
-body{background:var(--bg);color:var(--ink);font-family:"DM Sans",system-ui,sans-serif;line-height:1.6}
+body{
+  background: linear-gradient(135deg, #1B1A3A 0%, #2A285A 50%, #14132B 100%);
+  color: #F1F0FA;
+  font-family: "DM Sans", system-ui, sans-serif;
+  line-height: 1.6;
+  min-height: 100vh;
+}
 h1,h2,h3{font-family:"Bricolage Grotesque","DM Sans",sans-serif;line-height:1.05}
 a{color:inherit}
 :focus-visible{outline:3px solid var(--sun);outline-offset:3px}
