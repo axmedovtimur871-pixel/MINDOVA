@@ -8,402 +8,258 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+
 <style>
-  /* Farqimiz nimada bo'limi stili */
-.compare-section {
-  padding: 60px 20px;
-  text-align: center;
+/* Asosiy o'zgaruvchilar va umumiy stillar */
+:root {
+  --bg: #0F0E26;
+  --card: #181735;
+  --ink: #F1F0FA;
+  --muted: #B8B6E0;
+  --brand: #6366F1;
+  --sun: #FFB84D;
+  --line: rgba(255, 255, 255, 0.1);
 }
-.compare-tag {
-  color: #10B981;
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  margin-bottom: 12px;
-}
-.compare-title {
-  font-size: 32px;
-  font-weight: 800;
-  margin-bottom: 12px;
-  color: #FFFFFF;
-}
-.compare-sub {
-  color: #9CA3AF;
-  max-width: 600px;
-  margin: 0 auto 40px;
-  font-size: 16px;
-  line-height: 1.5;
-}
-.compare-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 24px;
-  max-width: 900px;
-  margin: 0 auto;
-  text-align: left;
-}
-.compare-card {
-  background: #13122B;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  padding: 30px;
-  position: relative;
-  overflow: hidden;
-}
-.compare-card.highlight {
-  border-color: #10B981;
-  background: #111827;
-}
-.recommend-badge {
-  position: absolute;
-  top: 0;
-  right: 0;
-  background: #10B981;
-  color: #000;
-  font-size: 11px;
-  font-weight: 800;
-  padding: 6px 14px;
-  border-bottom-left-radius: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-.card-header-title {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 24px;
-}
-.dot-red {
-  width: 12px;
-  height: 12px;
-  background: #EF4444;
-  border-radius: 50%;
-  display: inline-block;
-}
-.dot-green {
-  width: 12px;
-  height: 12px;
-  background: #10B981;
-  border-radius: 50%;
-  display: inline-block;
-}
-.compare-list {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 30px 0;
-}
-.compare-list li {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 16px;
-  color: #D1D5DB;
-  font-size: 15px;
-  line-height: 1.4;
-}
-.icon-cross {
-  width: 22px;
-  height: 22px;
-  background: rgba(239, 68, 68, 0.15);
-  color: #EF4444;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  flex-shrink: 0;
-}
-.icon-check {
-  width: 22px;
-  height: 22px;
-  background: rgba(16, 185, 129, 0.15);
-  color: #10B981;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  flex-shrink: 0;
-}
-.card-footer-text {
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-top: 16px;
-  text-align: center;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
-.text-red { color: #EF4444; }
-.text-green { color: #10B981; }
-:root{--bg:#F1F0FA;--card:#fff;--ink:#1B1A3A;--muted:#5E5C80;--brand:#3D3BF3;--sun:#FFB84D;--line:#D9D7F0}
-@media(prefers-color-scheme:dark){:root{--bg:#14132B;--card:#1F1E3F;--ink:#F1F0FA;--muted:#A9A7CF;--brand:#8C8BFF;--line:#34325F}}
-*{box-sizing:border-box;margin:0}
-html{scroll-behavior:smooth;scroll-padding-top:70px}
 
-<!-- Ro'yxatdan o'tish modal oynasi -->
-<div id="regModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:999;">
-  <div style="background:#181735; padding:30px; border-radius:12px; max-width:400px; margin:100px auto; color:#fff;">
-    <h3 style="margin-top:0;">MINDOVA — Platformada ro'yxatdan o'tish</h3>
-    <form id="siteRegForm">
-      <input type="text" id="regName" placeholder="Ism va Familiya" style="width:100%; padding:10px; margin:8px 0; border-radius:6px; border:1px solid #444; background:#0F0E26; color:#fff; box-sizing:border-box;" required>
-      <input type="tel" id="regPhone" placeholder="+998901234567" style="width:100%; padding:10px; margin:8px 0; border-radius:6px; border:1px solid #444; background:#0F0E26; color:#fff; box-sizing:border-box;" required>
-      <input type="text" id="regTg" placeholder="@username" style="width:100%; padding:10px; margin:8px 0; border-radius:6px; border:1px solid #444; background:#0F0E26; color:#fff; box-sizing:border-box;" required>
-      
-      <button type="submit" style="width:100%; padding:10px; background:#6366F1; color:#fff; border:none; border-radius:6px; cursor:pointer; margin-top:10px; font-weight:bold;">Yuborish</button>
-      <button type="button" onclick="document.getElementById('regModal').style.display='none'" style="width:100%; padding:8px; background:transparent; color:#ccc; border:none; cursor:pointer; margin-top:5px;">Yopish</button>
-    </form>
-  </div>
-</div>
+* { box-sizing: border-box; margin: 0; }
+html { scroll-behavior: smooth; scroll-padding-top: 70px; }
 
-<script>
-  document.getElementById('siteRegForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const data = {
-      fullName: document.getElementById('regName').value,
-      phone: document.getElementById('regPhone').value,
-      tgUsername: document.getElementById('regTg').value
-    };
-
-    try {
-      const res = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-
-      if (res.ok) {
-        alert("Muvaffaqiyatli ro'yxatdan o'tdingiz!");
-        document.getElementById('regModal').style.display = 'none';
-        document.getElementById('siteRegForm').reset();
-      } else {
-        alert("Xatolik yuz berdi. Qayta urinib ko'ring.");
-      }
-    } catch (err) {
-      alert("Server bilan bog'lanishda xatolik!");
-    }
-  });
-</script>
-  <div class="compare-grid">
-  <!-- Oddiy tadbir -->
-  <div class="compare-card">
-    <div class="card-header-title">
-      <span class="dot-red"></span>
-      <span>Oddiy tadbir</span>
-    </div>
-    <ul class="compare-list">
-      <li><span class="icon-cross">✕</span> Kelish va zalda shunchaki o'tirish</li>
-      <li><span class="icon-cross">✕</span> Faqat spikerni passiv tinglash</li>
-      <li><span class="icon-cross">✕</span> Mavzuga chuqur kirmasdan tarqilish</li>
-      <li><span class="icon-cross">✕</span> Tanishuvlar deyarli bo'lmasligi</li>
-      <li><span class="icon-cross">✕</span> Bilimlarni amalda qo'llamaslik</li>
-    </ul>
-    <div class="card-footer-text text-red">PASSIV ISHTIROK</div>
-  </div>
-
-  <!-- MINDOVA Muhiti -->
-  <div class="compare-card highlight">
-    <div class="recommend-badge">TAVSIYA ETILADI</div>
-    <div class="card-header-title">
-      <span class="dot-green"></span>
-      <span>MINDOVA Muhiti</span>
-    </div>
-    <ul class="compare-list">
-      <li><span class="icon-check">✓</span> Fikr bildirish va o'z pozitsiyangizni erkin aytish</li>
-      <li><span class="icon-check">✓</span> Ochiq va sog'lom bahslashish</li>
-      <li><span class="icon-check">✓</span> Spiker va tengdoshlarga to'g'ridan-to'g'ri savol berish</li>
-      <li><span class="icon-check">✓</span> Yangi maqsadli odamlar bilan mustahkam tanishish</li>
-      <li><span class="icon-check">✓</span> O'rganilgan bilimlarni shu yerning o'zida amalda sinash</li>
-      <li><span class="icon-check">✓</span> Faol va qo'llab-quvvatlovchi hamjamiyatning qismiga aylanish</li>
-    </ul>
-    <div class="card-footer-text text-green">AKTIV INTERAKTIV RIVOJLANISH</div>
-  </div>
-</div>
-
-body{
-  background: linear-gradient(135deg, #1B1A3A 0%, #2A285A 50%, #14132B 100%);
+body {
+  background: linear-gradient(135deg, #0F0E26 0%, #1B1A3A 50%, #0D0C1D 100%);
   color: #F1F0FA;
   font-family: "DM Sans", system-ui, sans-serif;
   line-height: 1.6;
   min-height: 100vh;
 }
-h1,h2,h3{font-family:"Bricolage Grotesque","DM Sans",sans-serif;line-height:1.05}
-a{color:inherit}
-:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
-.wrap{max-width:1100px;margin:0 auto;padding:0 24px}
 
-nav{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
-nav .wrap{display:flex;justify-content:space-between;align-items:center;height:62px}
-.logo{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:1.3rem;text-decoration:none;color:var(--brand)}
-nav ul{display:flex;gap:26px;list-style:none;padding:0}
-nav ul a{text-decoration:none;font-weight:500;color:var(--muted)}
-nav ul a:hover{color:var(--brand)}
-@media(max-width:520px){nav ul{gap:16px}}
+h1, h2, h3 { font-family: "Bricolage Grotesque", "DM Sans", sans-serif; line-height: 1.1; color: #FFFFFF; }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--sun); outline-offset: 3px; }
+.wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
 
-.hero{padding:80px 0 48px}
-.hero h1{font-weight:800;font-size:clamp(3.4rem,14vw,10rem);letter-spacing:-.04em;color:var(--brand)}
-.lead{max-width:36ch;font-size:1.3rem;color:var(--muted);margin-top:18px}
-.stats{display:flex;gap:36px;margin-top:32px;flex-wrap:wrap}
-.stats b{font-family:"Bricolage Grotesque",sans-serif;font-size:2.4rem;display:block;line-height:1}
-.stats span{color:var(--muted);font-size:.95rem}
-.next{margin-top:36px;display:flex;gap:18px;align-items:center;flex-wrap:wrap;background:var(--ink);color:var(--bg);border-radius:20px;padding:20px 24px;max-width:660px}
-.tag{background:var(--sun);color:#1B1A3A;font-weight:700;padding:4px 12px;border-radius:99px;font-size:.9rem}
-.next strong{font-family:"Bricolage Grotesque",sans-serif;font-size:1.45rem;display:block}
-.next .meta{opacity:.8;font-size:.95rem}
-
-section{padding:60px 0}
-h2{font-size:clamp(2rem,5vw,3.1rem);font-weight:800;margin-bottom:8px}
-.sub{color:var(--muted);margin-bottom:32px}
-
-.events{display:grid;gap:16px}
-.event{display:grid;grid-template-columns:84px 1fr auto;gap:20px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 22px}
-.date{text-align:center;background:var(--brand);color:#fff;border-radius:12px;padding:10px 0}
-.date b{display:block;font-family:"Bricolage Grotesque",sans-serif;font-size:1.9rem;line-height:1}
-.date small{font-size:.85rem}
-.event h3{font-size:1.35rem;margin-bottom:4px}
-.event p{color:var(--muted);font-size:.95rem}
-.btn{display:inline-block;text-decoration:none;font-weight:700;background:var(--sun);color:#1B1A3A;padding:10px 22px;border-radius:99px;white-space:nowrap}
-.btn:hover{filter:brightness(1.06)}
-.past{opacity:.55}.past .date{background:var(--muted)}
-.empty{background:var(--card);border:1px dashed var(--line);border-radius:16px;padding:28px;color:var(--muted);text-align:center}
-@media(max-width:640px){.event{grid-template-columns:72px 1fr}.event .btn{grid-column:1/-1;text-align:center}}
-
-.team-head{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap}
-.team-head .sub{margin-bottom:0}
-.arrows{display:flex;gap:10px}
-.arrows button{width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:1.2rem;cursor:pointer}
-.arrows button:hover{border-color:var(--brand);color:var(--brand)}
-.scroller{display:flex;gap:20px;overflow-x:auto;scroll-snap-type:x mandatory;padding:24px max(24px,calc((100vw - 1100px)/2 + 24px)) 28px;scroll-padding-left:max(24px,calc((100vw - 1100px)/2 + 24px));scrollbar-width:thin}
-.member{flex:0 0 260px;scroll-snap-align:start;background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden}
-.photo{aspect-ratio:1/1;display:grid;place-items:center;font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:4rem;color:#fff}
-.photo img{width:100%;height:100%;object-fit:cover;display:block}
-.info{padding:16px 18px 22px}
-.member h3{font-size:1.2rem}
-.role{color:var(--brand);font-weight:700;font-size:.95rem;margin-bottom:6px}
-.member p{color:var(--muted);font-size:.92rem}
-
-footer{border-top:1px solid var(--line);padding:36px 0;color:var(--muted)}
-footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
-footer a{text-decoration:none;font-weight:500}footer a:hover{color:var(--brand)}
-  .tg-buttons{display:flex;gap:12px;flex-wrap:wrap}
-.tg-btn{display:inline-block;text-decoration:none;font-weight:700;background:var(--sun);color:#1B1A3A;padding:10px 22px;border-radius:99px;white-space:nowrap}
-.tg-btn:hover{filter:brightness(1.06)}
-  .hero {
-  text-align: center;
-  padding: 60px 0 40px;
+/* Navigatsiya */
+nav {
+  position: sticky; top: 0; z-index: 10;
+  background: rgba(15, 14, 38, 0.85);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
 }
+nav .wrap { display: flex; justify-space-between; align-items: center; height: 62px; }
+.logo { font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 1.3rem; text-decoration: none; color: var(--brand); }
+nav ul { display: flex; gap: 26px; list-style: none; padding: 0; }
+nav ul a { text-decoration: none; font-weight: 500; color: #C5C4E8; }
+nav ul a:hover { color: var(--brand); }
+@media(max-width: 520px) { nav ul { gap: 16px; } }
 
-.hero h1 {
-  margin: 0 auto;
-}
+/* Hero section */
+.hero { text-align: center; padding: 60px 0 40px; }
+.hero h1 { margin: 0 auto; font-weight: 800; font-size: clamp(3.4rem, 12vw, 8rem); letter-spacing: -.04em; color: var(--brand); }
+.hero .lead { margin: 20px auto 0; max-width: 680px; text-align: center; color: var(--muted); font-size: 1.15rem; }
+.hero .stats { display: flex; gap: 36px; justify-content: center; margin-top: 36px; flex-wrap: wrap; }
+.hero .stats b { font-family: "Bricolage Grotesque", sans-serif; font-size: 2.4rem; display: block; line-height: 1; color: #FFF; }
+.hero .stats span { color: var(--muted); font-size: .95rem; }
+.hero .next { margin: 36px auto 0; text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 20px 24px; max-width: 660px; display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+.tag { background: var(--sun); color: #1B1A3A; font-weight: 700; padding: 4px 12px; border-radius: 99px; font-size: .9rem; }
+.next strong { font-family: "Bricolage Grotesque", sans-serif; font-size: 1.45rem; display: block; }
+.next .meta { opacity: .8; font-size: .95rem; color: var(--muted); }
 
-.hero .lead {
-  margin: 20px auto 0;
-  max-width: 680px;
-  text-align: center;
-}
+/* Farqimiz nimada (Solishtirish bo'limi) stili */
+.compare-section { padding: 60px 0; text-align: center; }
+.compare-tag { color: #10B981; font-size: 14px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px; }
+.compare-title { font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 800; margin-bottom: 12px; }
+.compare-sub { color: var(--muted); max-width: 600px; margin: 0 auto 40px; font-size: 16px; }
+.compare-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; max-width: 900px; margin: 0 auto; text-align: left; }
+.compare-card { background: #13122B; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 30px; position: relative; overflow: hidden; }
+.compare-card.highlight { border-color: #10B981; background: #111827; }
+.recommend-badge { position: absolute; top: 0; right: 0; background: #10B981; color: #000; font-size: 11px; font-weight: 800; padding: 6px 14px; border-bottom-left-radius: 12px; text-transform: uppercase; }
+.card-header-title { display: flex; align-items: center; gap: 12px; font-size: 20px; font-weight: 700; margin-bottom: 24px; }
+.dot-red { width: 12px; height: 12px; background: #EF4444; border-radius: 50%; display: inline-block; }
+.dot-green { width: 12px; height: 12px; background: #10B981; border-radius: 50%; display: inline-block; }
+.compare-list { list-style: none; padding: 0; margin: 0 0 30px 0; }
+.compare-list li { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; color: #D1D5DB; font-size: 15px; }
+.icon-cross { width: 22px; height: 22px; background: rgba(239, 68, 68, 0.15); color: #EF4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+.icon-check { width: 22px; height: 22px; background: rgba(16, 185, 129, 0.15); color: #10B981; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+.card-footer-text { border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 16px; text-align: center; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+.text-red { color: #EF4444; }
+.text-green { color: #10B981; }
 
-.hero .stats {
-  justify-content: center;
-  margin-top: 36px;
-}
+/* Bo'limlar stili */
+section { padding: 60px 0; }
+h2 { font-size: clamp(2rem, 5vw, 3.1rem); font-weight: 800; margin-bottom: 8px; }
+.sub { color: var(--muted); margin-bottom: 32px; }
 
-.hero .next {
-  margin: 36px auto 0;
-  text-align: left;
-}
+/* Tadbirlar */
+.events { display: grid; gap: 16px; }
+.event { display: grid; grid-template-columns: 84px 1fr auto; gap: 20px; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px 22px; }
+.date { text-align: center; background: var(--brand); color: #fff; border-radius: 12px; padding: 10px 0; }
+.date b { display: block; font-family: "Bricolage Grotesque", sans-serif; font-size: 1.9rem; line-height: 1; }
+.date small { font-size: .85rem; }
+.event h3 { font-size: 1.35rem; margin-bottom: 4px; }
+.event p { color: var(--muted); font-size: .95rem; }
+.btn { display: inline-block; text-decoration: none; font-weight: 700; background: var(--sun); color: #1B1A3A; padding: 12px 28px; border-radius: 99px; white-space: nowrap; border: none; cursor: pointer; font-size: 1rem; }
+.btn:hover { filter: brightness(1.06); }
+.past { opacity: .55; } .past .date { background: var(--muted); }
+.empty { background: var(--card); border: 1px dashed var(--line); border-radius: 16px; padding: 28px; color: var(--muted); text-align: center; }
+@media(max-width: 640px) { .event { grid-template-columns: 72px 1fr; } .event .btn { grid-column: 1/-1; text-align: center; } }
 
+/* Jamoa */
+.team-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+.team-head .sub { margin-bottom: 0; }
+.arrows { display: flex; gap: 10px; }
+.arrows button { width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: #FFF; font-size: 1.2rem; cursor: pointer; }
+.arrows button:hover { border-color: var(--brand); color: var(--brand); }
+.scroller { display: flex; gap: 20px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 24px 0; scrollbar-width: none; }
+.scroller::-webkit-scrollbar { display: none; }
+.member { flex: 0 0 260px; scroll-snap-align: start; background: var(--card); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
+.photo { aspect-ratio: 1/1; display: grid; place-items: center; font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 4rem; color: #fff; }
+.photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.info { padding: 16px 18px 22px; }
+.member h3 { font-size: 1.2rem; }
+.role { color: var(--brand); font-weight: 700; font-size: .95rem; margin-bottom: 6px; }
+.member p { color: var(--muted); font-size: .92rem; }
+
+/* Footer */footer { border-top: 1px solid var(--line); padding: 36px 0; color: #C5C4E8; background: rgba(15, 14, 38, 0.85); }
+footer .wrap { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+footer a { text-decoration: none; font-weight: 500; } footer a:hover { color: var(--brand); }
+.tg-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+.tg-btn { display: inline-block; text-decoration: none; font-weight: 700; background: var(--sun); color: #1B1A3A; padding: 10px 22px; border-radius: 99px; white-space: nowrap; }
+.tg-btn:hover { filter: brightness(1.06); }
 </style>
 </head>
 <body>
 
-<nav><div class="wrap">
-  <a class="logo" href="#top">MINDOVA</a>
-  <ul><li><a href="#events">Tadbirlar</a></li><li><a href="#team">Jamoa</a></li><li><a href="#contact">Aloqa</a></li></ul>
-</div></nav>
-
-<header class="hero" id="top"><div class="wrap">
-  <h1>MINDOVA</h1>
-  <p class="lead">
-  <strong>Fikrlar uchrashadi. G‘oyalar harakatga keladi.</strong><br><br>
-  MINDOVA — yoshlarning fikrlashi, rivojlanishi va yangi imkoniyatlar kashf etishi uchun yaratilgan intellektual rivojlanish maydoni. U debatlar, mentorlik darslari, networking va tajriba almashish orqali yoshlarni bilim, aloqalar va amaliy ko‘nikmalar bilan boyitadi.
-</p>
-  <div class="stats">
-    <div><b id="statEvents">0</b><span>kelayotgan tadbirlar</span></div>
-    <div><b id="statTeam">0</b><span>jamoa a'zolari</span></div>
+<!-- NAVIGATSIYA -->
+<nav>
+  <div class="wrap">
+    <a class="logo" href="#top">MINDOVA</a>
+    <ul>
+      <li><a href="#events">Tadbirlar</a></li>
+      <li><a href="#team">Jamoa</a></li>
+      <li><a href="#contact">Aloqa</a></li>
+    </ul>
   </div>
-  <div class="next" id="next"></div>
-</div></header>
+</nav>
 
-  <section id="events"><div class="wrap">
+<!-- HERO SECTION -->
+<header class="hero" id="top">
+  <div class="wrap">
+    <h1>MINDOVA</h1>
+    <p class="lead">
+      <strong>Fikrlar uchrashadi. G‘oyalar harakatga keladi.</strong><br><br>
+      MINDOVA — yoshlarning fikrlashi, rivojlanishi va yangi imkoniyatlar kashf etishi uchun yaratilgan intellektual rivojlanish maydoni. U debatlar, mentorlik darslari, networking va tajriba almashish orqali yoshlarni bilim, aloqalar va amaliy ko‘nikmalar bilan boyitadi.
+    </p>
+
+    <div style="margin-top: 30px;">
+      <button class="btn" onclick="document.getElementById('regModal').style.display='block'">Platformada ro'yxatdan o'tish</button>
+    </div>
+
+    <div class="stats">
+      <div><b id="statEvents">0</b><span>kelayotgan tadbirlar</span></div>
+      <div><b id="statTeam">0</b><span>jamoa a'zolari</span></div>
+    </div>
+    <div class="next" id="next"></div>
+  </div>
+</header>
+
+<!-- FARQIMIZ NIMADA BO'LIMI -->
+<section class="compare-section">
+  <div class="wrap">
+    <div class="compare-tag">FARQIMIZ NIMADA?</div>
+    <h2 class="compare-title">Bu shunchaki tadbir emas.</h2>
+    <p class="compare-sub">An'anaviy formatlar va MINDOVA'dagi tajriba o'rtasidagi farqni his eting.</p>
+
+    <div class="compare-grid">
+      <!-- Oddiy tadbir -->
+      <div class="compare-card">
+        <div class="card-header-title">
+          <span class="dot-red"></span>
+          <span>Oddiy tadbir</span>
+        </div>
+        <ul class="compare-list">
+          <li><span class="icon-cross">✕</span> Kelish va zalda shunchaki o'tirish</li>
+          <li><span class="icon-cross">✕</span> Faqat spikerni passiv tinglash</li>
+          <li><span class="icon-cross">✕</span> Mavzuga chuqur kirmasdan tarqilish</li>
+          <li><span class="icon-cross">✕</span> Tanishuvlar deyarli bo'lmasligi</li>
+          <li><span class="icon-cross">✕</span> Bilimlarni amalda qo'llamaslik</li>
+        </ul>
+        <div class="card-footer-text text-red">PASSIV ISHTIROK</div>
+      </div>
+
+      <!-- MINDOVA Muhiti -->
+      <div class="compare-card highlight">
+        <div class="recommend-badge">TAVSIYA ETILADI</div>
+        <div class="card-header-title">
+          <span class="dot-green"></span>
+          <span>MINDOVA Muhiti</span>
+        </div>
+        <ul class="compare-list">
+          <li><span class="icon-check">✓</span> Fikr bildirish va o'z pozitsiyangizni erkin aytish</li>
+          <li><span class="icon-check">✓</span> Ochiq va sog'lom bahslashish</li>
+          <li><span class="icon-check">✓</span> Spiker va tengdoshlarga to'g'ridan-to'g'ri savol berish</li>
+          <li><span class="icon-check">✓</span> Yangi maqsadli odamlar bilan mustahkam tanishish</li>
+          <li><span class="icon-check">✓</span> O'rganilgan bilimlarni shu yerning o'zida amalda sinash</li>
+          <li><span class="icon-check">✓</span> Faol va qo'llab-quvvatlovchi hamjamiyatning qismiga aylanish</li>
+        </ul>
+        <div class="card-footer-text text-green">AKTIV INTERAKTIV RIVOJLANISH</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TADBIRLAR BO'LIMI -->
+<section id="events">
+  <div class="wrap">
     <h2>Tadbirlar</h2>
-    <p class="sub">Yaqinlashayotgan tadbirlar birinchi o'rinda. Joylar soni cheklangan, oldindan ro'yxatdan o'ting.</p>
+    <p class="sub">Yaqinlashayotgan tadbirlar birinchi o'rinda.
+      Joylar soni cheklangan, oldindan ro'yxatdan o'ting.</p>
     <div class="events" id="eventList"></div>
-  </div></section>
+  </div>
+</section>
 
-  <section id="team">
-    <div class="wrap team-head">
-      <div><h2>Jamoa</h2><p class="sub">Barchasi bilan tanishish uchun suring yoki strelkalardan foydalaning.</p></div>
+<!-- JAMOA BO'LIMI -->
+<section id="team">
+  <div class="wrap">
+    <div class="team-head">
+      <div>
+        <h2>Jamoa</h2>
+        <p class="sub">Barchasi bilan tanishish uchun suring yoki strelkalardan foydalaning.</p>
+      </div>
       <div class="arrows">
         <button id="prev" aria-label="Oldingi a'zolar">←</button>
         <button id="nextBtn" aria-label="Keyingi a'zolar">→</button>
       </div>
     </div>
-</div>
-  </section>
-</main>
-
-<footer id="contact"><div class="wrap">
-  <span>© <span id="yr"></span> MINDOVA</span>
-  <div class="tg-buttons">
-    <a class="tg-btn" href="https://t.me/Mindova_uz" target="_blank" rel="noopener">Telegram kanal</a>
-    <a class="tg-btn" href="https://t.me/@Mindova_admin" target="_blank" rel="noopener">Admin bilan aloqa</a>
+    <div class="scroller" id="scroller"></div>
   </div>
-</div></footer>
+</section>
 
-<style>
-/* To'q fon va umumiy ranglar */
-body {
-  background: linear-gradient(135deg, #0F0E26 0%, #1B1A3A 50%, #0D0C1D 100%) !important;
-  color: #F1F0FA !important;
-}
+<!-- FOOTER / ALOQA -->
+<footer id="contact">
+  <div class="wrap">
+    <span>© <span id="yr"></span> MINDOVA</span>
+    <div class="tg-buttons">
+      <a class="tg-btn" href="https://t.me/Mindova_uz" target="_blank" rel="noopener">Telegram kanal</a>
+      <a class="tg-btn" href="https://t.me/Mindova_admin" target="_blank" rel="noopener">Admin bilan aloqa</a>
+    </div>
+  </div>
+</footer>
 
-/* Yuqori va pastki menyu foni hamda matnlari */
-nav, footer {
-  background: rgba(15, 14, 38, 0.85) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
-}
+<!-- RO'YXATDAN O'TISH MODAL OYNASI -->
+<div id="regModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:999;">
+  <div style="background:#181735; padding:30px; border-radius:16px; max-width:400px; margin:100px auto; color:#fff; border: 1px solid rgba(255,255,255,0.1);">
+    <h3 style="margin-top:0; font-size: 1.4rem; color: #6366F1;">MINDOVA — Platformada ro'yxatdan o'tish</h3>
+    <form id="siteRegForm" style="margin-top: 15px;">
+      <input type="text" id="regName" placeholder="Ism va Familiya" style="width:100%; padding:12px; margin:8px 0; border-radius:8px; border:1px solid #444; background:#0F0E26; color:#fff; box-sizing:border-box;" required>
+      <input type="tel" id="regPhone" placeholder="+998901234567" style="width:100%; padding:12px; margin:8px 0; border-radius:8px; border:1px solid #444; background:#0F0E26; color:#fff; box-sizing:border-box;" required>
+      <input type="text" id="regTg" placeholder="@username" style="width:100%; padding:12px; margin:8px 0; border-radius:8px; border:1px solid #444; background:#0F0E26; color:#fff; box-sizing:border-box;" required>
+      
+      <button type="submit" style="width:100%; padding:12px; background:#6366F1; color:#fff; border:none; border-radius:8px; cursor:pointer; margin-top:12px; font-weight:bold; font-size:1rem;">Yuborish</button>
+      <button type="button" onclick="document.getElementById('regModal').style.display='none'" style="width:100%; padding:10px; background:transparent; color:#ccc; border:none; cursor:pointer; margin-top:5px;">Yopish</button>
+    </form>
+  </div>
+</div>
 
-nav ul a, footer span, footer a {
-  color: #C5C4E8 !important;
-}
-
-/* LOGO va asosiy sarlavha */
-.logo, h1 {
-  color: #6366F1 !important;
-}
-
-/* Xira bo'lib qolgan yozuvlarni yorqin qilish */
-.lead, .sub, .stats span, .next .meta {
-  color: #B8B6E0 !important;
-}
-
-/* Katta raqamlar va sarlavhalar */
-.stats b, h2, h3 {
-  color: #FFFFFF !important;
-}
-
-/* Bloklar va kartochkalar */
-.next {
-  background: #181735 !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: #FFFFFF !important;
-}
-</style>
-
+<!-- JAVASCRIPT LOGIKASI -->
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -422,8 +278,7 @@ async function main() {
     if (!r.ok) throw new Error(r.status);
     ({ events, team } = await r.json());
   } catch (e) {
-    $("eventList").innerHTML = `<div class="empty">Ma'lumotlarni yuklab bo'lmadi. Birozdan so'ng sahifani yangilang.</div>`;
-    return;
+    $("eventList").innerHTML =.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=DM+Sans
   }
 
   const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -432,84 +287,89 @@ async function main() {
   const past = sorted.filter(e => parse(e.date) < today).reverse();
 
   $("statEvents").textContent = upcoming.length;
-  $("statTeam").textContent = team.length;
+  $("statTeam").textContent = team.
+    length;
 
   const nx = upcoming[0];
   $("next").innerHTML = nx
-    ? `<span class="tag">Keyingi tadbir</span><div><strong>${esc(nx.title)}</strong><span class="meta">${fmt(nx.date,{day:"numeric",month:"long"})} · ${esc(nx.time)} · ${esc(nx.place)}</span></div>`
-    : `<span class="tag">Tez kunda</span><div><strong>Yangi tadbirlar tez orada e'lon qilinadi</strong></div>`;
+    ?tps://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+/* Asosiy o'zgaruvchilar va um    :CTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-wid
 
   const card = (e, isPast) => `
     <article class="event ${isPast ? "past" : ""}">
       <div class="date"><b>${fmt(e.date,{day:"numeric"})}</b><small>${fmt(e.date,{month:"short"})}</small></div>
       <div><h3>${esc(e.title)}</h3><p>${esc(e.time)} · ${esc(e.place)}</p><p>${esc(e.desc)}</p></div>
-      ${!isPast && e.link ? `<a class="btn" href="${esc(e.link)}" target="_blank" rel="noopener">Ro'yxatdan o'tish</a>` : ""}
+      ${!isPast && e.link ?is.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="htt: ""}
     </article>`;
-  $("eventList").innerHTML = (upcoming.length + past.length)
-    ? upcoming.map(e => card(e, false)).join("") + past.map(e => card(e, true)).join("")
-    : `<div class="empty">Hozircha tadbirlar yo'q. Tez orada qaytib keling!</div>`;
+  
+  if ($("eventList")) {
+    $("eventList").innerHTML = (upcoming.length + past.length)
+      ? upcoming.map(e => card(e, false)).join("") + past.map(e => card(e, true)).join("")
+      :MINDOVA: tadbirlar e'lonlari va ularni tashkil qiladigan jamoa.">
+<link rel="p
+  }
 
-  $("scroller").innerHTML = team.map((m, i) => {
-    const initials = String(m.name).split(/\s+/).map(w => w[0]).slice(0, 2).join("").toUpperCase();
-    const pic = m.photo
-      ? `<div class="photo"><img src="${esc(m.photo)}" alt="${esc(m.name)}" loading="lazy"></div>`
-      : `<div class="photo" style="background:${colors[i % colors.length]}" aria-hidden="true">${esc(initials)}</div>`;
-    return `<article class="member">${pic}<div class="info"><h3>${esc(m.name)}</h3><div class="role">${esc(m.role)}</div><p>${esc(m.bio)}</p></div></article>`;
-  }).join("");
+  if ($("scroller")) {
+    $("scroller").innerHTML = team.map((m, i) => {
+      const initials = String(m.name).split(/\s+/).map(w => w[0]).slice(0, 2).join("").toUpperCase();
+      const pic = m.photo
+        ?A: tadbirlar e'lonlari va ularni tashkil qiladigan jamoa.">
+<link rel="preconnect" href="htt        :E html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initia
+      returnml>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MINDOVA – Tadbirlar va
+    }).join("");
 
-  const sc = $("scroller");
-  $("prev").onclick = () => sc.scrollBy({ left: -280, behavior: "smooth" });
-  $("nextBtn").onclick = () => sc.scrollBy({ left: 280, behavior: "smooth" });
+    const sc = $("scroller");
+    $("prev").onclick = () => sc.scrollBy({ left: -280, behavior: "smooth" });
+    $("nextBtn").onclick = () => sc.scrollBy({ left: 280, behavior: "smooth" });
+  }
 }
-main();
-</script>
-  <!-- Ro'yxatdan o'tish tugmasi (zarur joyga joylashtirishingiz mumkin) -->
-<div style="text-align: center; margin: 20px 0;">
-  <button class="btn" onclick="document.getElementById('regModal').style.display='block'">Tadbirga ro'yxatdan o'tish</button>
-</div>
 
-<!-- Ro'yxatdan o'tish modal oynasi -->
-<div id="regModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:999;">
-  <div style="background:#181735; padding:30px; border-radius:12px; max-width:400px; margin:100px auto; color:#fff;">
-    <h3 style="margin-top:0;">MINDOVA — Ro'yxatdan o'tish</h3>
-    <form id="siteRegForm">
-      <input type="text" id="regName" placeholder="Ism va Familiya" style="width:100%; padding:10px; margin:8px 0; border-radius:6px; border:1px solid #444; background:#0F0E26; color:#fff; box-sizing:border-box;" required>
-      <input type="tel" id="regPhone" placeholder="+998901234567" style="width:100%; padding:10px; margin:8px 0; border-radius:6px; border:1px solid #444; background:#0F0E26; color:#fff; box-sizing:border-box;" required>
-      <input type="text" id="regTg" placeholder="@username" style="width:100%; padding:10px; margin:8px 0; border-radius:6px; border:1px solid #444; background:#0F0E26; color:#fff; box-sizing:border-box;" required>
-      
-      <button type="submit" style="width:100%; padding:10px; background:#6366F1; color:#fff; border:none; border-radius:6px; cursor:pointer; margin-top:10px; font-weight:bold;">Yuborish</button>
-      <button type="button" onclick="document.getElementById('regModal').style.display='none'" style="width:100%; padding:8px; background:transparent; color:#ccc; border:none; cursor:pointer; margin-top:5px;">Yopish</button>
-    </form>
-  </div>
-</div>
+// Ro'yxatdan o'tish formasining ishlashi
+document.getElementById('siteRegForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const data = {
+    fullName: document.getElementById('regName').value,
+    phone: document.getElementById('regPhone').value,
+    tgUsername: document.getElementById('regTg').value
+  };
 
-<script>
-  document.getElementById('siteRegForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const data = {
-      fullName: document.getElementById('regName').value,
-      phone: document.getElementById('regPhone').value,
-      tgUsername: document.getElementById('regTg').value
-    };
+  try {
+    const res = await fetch('/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
 
-    try {
-      const res = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-
-      if (res.ok) {
-        alert("Muvaffaqiyatli ro'yxatdan o'tdingiz!");
-        document.getElementById('regModal').style.display = 'none';
-        document.getElementById('siteRegForm').reset();
-      } else {
-        alert("Xatolik yuz berdi. Qayta urinib ko'ring.");
-      }
-    } catch (err) {
-      alert("Server bilan bog'lanishda xatolik!");
+    if (res.ok) {
+      alert("Muvaffaqiyatli ro'yxatdan o'tdingiz!");
+      document.getElementById('regModal').style.display = 'none';
+      document.getElementById('siteRegForm').reset();
+    } else {
+      alert("Xatolik yuz berdi. Qayta urinib ko'ring.");
     }
-  });
+  } catch (err) {
+    alert("Server bilan bog'lanishda xatolik!");
+  }
+});
+
+main();
 </script>
 
 </body>
