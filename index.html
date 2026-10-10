@@ -13,6 +13,55 @@
 @media(prefers-color-scheme:dark){:root{--bg:#14132B;--card:#1F1E3F;--ink:#F1F0FA;--muted:#A9A7CF;--brand:#8C8BFF;--line:#34325F}}
 *{box-sizing:border-box;margin:0}
 html{scroll-behavior:smooth;scroll-padding-top:70px}
+  <!-- Platformada ro'yxatdan o'tish tugmasi -->
+<div style="text-align: center; margin: 20px 0;">
+  <button class="btn" onclick="document.getElementById('regModal').style.display='block'">Platformada ro'yxatdan o'tish</button>
+</div>
+
+<!-- Ro'yxatdan o'tish modal oynasi -->
+<div id="regModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:999;">
+  <div style="background:#181735; padding:30px; border-radius:12px; max-width:400px; margin:100px auto; color:#fff;">
+    <h3 style="margin-top:0;">MINDOVA — Platformada ro'yxatdan o'tish</h3>
+    <form id="siteRegForm">
+      <input type="text" id="regName" placeholder="Ism va Familiya" style="width:100%; padding:10px; margin:8px 0; border-radius:6px; border:1px solid #444; background:#0F0E26; color:#fff; box-sizing:border-box;" required>
+      <input type="tel" id="regPhone" placeholder="+998901234567" style="width:100%; padding:10px; margin:8px 0; border-radius:6px; border:1px solid #444; background:#0F0E26; color:#fff; box-sizing:border-box;" required>
+      <input type="text" id="regTg" placeholder="@username" style="width:100%; padding:10px; margin:8px 0; border-radius:6px; border:1px solid #444; background:#0F0E26; color:#fff; box-sizing:border-box;" required>
+      
+      <button type="submit" style="width:100%; padding:10px; background:#6366F1; color:#fff; border:none; border-radius:6px; cursor:pointer; margin-top:10px; font-weight:bold;">Yuborish</button>
+      <button type="button" onclick="document.getElementById('regModal').style.display='none'" style="width:100%; padding:8px; background:transparent; color:#ccc; border:none; cursor:pointer; margin-top:5px;">Yopish</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.getElementById('siteRegForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = {
+      fullName: document.getElementById('regName').value,
+      phone: document.getElementById('regPhone').value,
+      tgUsername: document.getElementById('regTg').value
+    };
+
+    try {
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (res.ok) {
+        alert("Muvaffaqiyatli ro'yxatdan o'tdingiz!");
+        document.getElementById('regModal').style.display = 'none';
+        document.getElementById('siteRegForm').reset();
+      } else {
+        alert("Xatolik yuz berdi. Qayta urinib ko'ring.");
+      }
+    } catch (err) {
+      alert("Server bilan bog'lanishda xatolik!");
+    }
+  });
+</script>
+
 body{
   background: linear-gradient(135deg, #1B1A3A 0%, #2A285A 50%, #14132B 100%);
   color: #F1F0FA;
