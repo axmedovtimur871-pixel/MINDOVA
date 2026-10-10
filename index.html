@@ -9,14 +9,140 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
+  /* Farqimiz nimada bo'limi stili */
+.compare-section {
+  padding: 60px 20px;
+  text-align: center;
+}
+.compare-tag {
+  color: #10B981;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.compare-title {
+  font-size: 32px;
+  font-weight: 800;
+  margin-bottom: 12px;
+  color: #FFFFFF;
+}
+.compare-sub {
+  color: #9CA3AF;
+  max-width: 600px;
+  margin: 0 auto 40px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: left;
+}
+.compare-card {
+  background: #13122B;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 30px;
+  position: relative;
+  overflow: hidden;
+}
+.compare-card.highlight {
+  border-color: #10B981;
+  background: #111827;
+}
+.recommend-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: #10B981;
+  color: #000;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-bottom-left-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.card-header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+.dot-red {
+  width: 12px;
+  height: 12px;
+  background: #EF4444;
+  border-radius: 50%;
+  display: inline-block;
+}
+.dot-green {
+  width: 12px;
+  height: 12px;
+  background: #10B981;
+  border-radius: 50%;
+  display: inline-block;
+}
+.compare-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 30px 0;
+}
+.compare-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+  color: #D1D5DB;
+  font-size: 15px;
+  line-height: 1.4;
+}
+.icon-cross {
+  width: 22px;
+  height: 22px;
+  background: rgba(239, 68, 68, 0.15);
+  color: #EF4444;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.icon-check {
+  width: 22px;
+  height: 22px;
+  background: rgba(16, 185, 129, 0.15);
+  color: #10B981;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.card-footer-text {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 16px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.text-red { color: #EF4444; }
+.text-green { color: #10B981; }
 :root{--bg:#F1F0FA;--card:#fff;--ink:#1B1A3A;--muted:#5E5C80;--brand:#3D3BF3;--sun:#FFB84D;--line:#D9D7F0}
 @media(prefers-color-scheme:dark){:root{--bg:#14132B;--card:#1F1E3F;--ink:#F1F0FA;--muted:#A9A7CF;--brand:#8C8BFF;--line:#34325F}}
 *{box-sizing:border-box;margin:0}
 html{scroll-behavior:smooth;scroll-padding-top:70px}
-  <!-- Platformada ro'yxatdan o'tish tugmasi -->
-<div style="text-align: center; margin: 20px 0;">
-  <button class="btn" onclick="document.getElementById('regModal').style.display='block'">Platformada ro'yxatdan o'tish</button>
-</div>
 
 <!-- Ro'yxatdan o'tish modal oynasi -->
 <div id="regModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:999;">
@@ -61,6 +187,41 @@ html{scroll-behavior:smooth;scroll-padding-top:70px}
     }
   });
 </script>
+  <div class="compare-grid">
+  <!-- Oddiy tadbir -->
+  <div class="compare-card">
+    <div class="card-header-title">
+      <span class="dot-red"></span>
+      <span>Oddiy tadbir</span>
+    </div>
+    <ul class="compare-list">
+      <li><span class="icon-cross">✕</span> Kelish va zalda shunchaki o'tirish</li>
+      <li><span class="icon-cross">✕</span> Faqat spikerni passiv tinglash</li>
+      <li><span class="icon-cross">✕</span> Mavzuga chuqur kirmasdan tarqilish</li>
+      <li><span class="icon-cross">✕</span> Tanishuvlar deyarli bo'lmasligi</li>
+      <li><span class="icon-cross">✕</span> Bilimlarni amalda qo'llamaslik</li>
+    </ul>
+    <div class="card-footer-text text-red">PASSIV ISHTIROK</div>
+  </div>
+
+  <!-- MINDOVA Muhiti -->
+  <div class="compare-card highlight">
+    <div class="recommend-badge">TAVSIYA ETILADI</div>
+    <div class="card-header-title">
+      <span class="dot-green"></span>
+      <span>MINDOVA Muhiti</span>
+    </div>
+    <ul class="compare-list">
+      <li><span class="icon-check">✓</span> Fikr bildirish va o'z pozitsiyangizni erkin aytish</li>
+      <li><span class="icon-check">✓</span> Ochiq va sog'lom bahslashish</li>
+      <li><span class="icon-check">✓</span> Spiker va tengdoshlarga to'g'ridan-to'g'ri savol berish</li>
+      <li><span class="icon-check">✓</span> Yangi maqsadli odamlar bilan mustahkam tanishish</li>
+      <li><span class="icon-check">✓</span> O'rganilgan bilimlarni shu yerning o'zida amalda sinash</li>
+      <li><span class="icon-check">✓</span> Faol va qo'llab-quvvatlovchi hamjamiyatning qismiga aylanish</li>
+    </ul>
+    <div class="card-footer-text text-green">AKTIV INTERAKTIV RIVOJLANISH</div>
+  </div>
+</div>
 
 body{
   background: linear-gradient(135deg, #1B1A3A 0%, #2A285A 50%, #14132B 100%);
