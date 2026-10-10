@@ -269,6 +269,30 @@ app.get("/api/data", (_req, res) => {
     team: db.team.map((m) => ({ ...m, photo: m.photo ? `/photo/${m.photo}` : "" })),
   });
 });
+// Saytdan ro'yxatdan o'tganlarni qabul qilish va Telegram Botga xabar yuborish
+app.post("/api/register", express.json(), async (req, res) => {
+  const { fullName, phone, tgUsername } = req.body;
+
+  if (!fullName || !phone) {
+    return res.status(400).json({ error: "Ism va telefon raqami kiritilishi shart" });
+  }
+
+  // Telegram bot orqali Adminga (OWNER_ID) xabar yuborish
+  if (OWNER_ID) {
+    const text = `📥 <b>Yangi ro'yxatdan o'tish!</b>\n\n` +
+                 `👤 <b>Ism:</b> ${fullName}\n` +
+                 `📞 <b>Tel:</b> ${phone}\n` +
+                 `💬 <b>TG:</b> ${tgUsername || "Ko'rsatilmadi"}`;
+    try {
+      await bot.api.sendMessage(OWNER_ID, text, { parse_mode: "HTML" });
+    } catch (err) {
+      console.error("Telegram xabar yuborishda xatolik:", err);
+    }
+  }
+
+  res.json({ success: true, message: "Muvaffaqiyatli ro'yxatdan o'tdingiz!" });
+});
+
 
 // Photos stay on Telegram's servers; we stream them through only for photos used on the site.
 app.get("/photo/:id", async (req, res) => {
