@@ -29,9 +29,11 @@ nav .wrap{display:flex;align-items:center;gap:22px;height:64px}
 .btn:hover{filter:brightness(1.12)}.btn:disabled{opacity:.6;cursor:wait}
 .btn.acc{background:var(--acc)}.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.35)}
 .btn.sm{padding:8px 16px;font-size:.85rem}
-@media(max-width:860px){.burger{display:block}.links,.nr{display:none}
- nav.open .wrap{flex-wrap:wrap;height:auto;padding-top:14px;padding-bottom:16px}
- nav.open .links,nav.open .nr{display:flex;flex-direction:column;width:100%;gap:12px}}
+@media(max-width:860px){
+  .burger{display:block}.links,.nr{display:none}
+  nav.open .wrap{flex-wrap:wrap;height:auto;padding-top:14px;padding-bottom:16px}
+  nav.open .links,nav.open .nr{display:flex;flex-direction:column;width:100%;gap:12px}
+}
 .hero{background:var(--deep);color:#fff;padding:90px 0 110px}
 .hero h1{font-size:clamp(3.2rem,12vw,7rem);font-weight:800;margin:10px 0 6px}
 .hero h2{font-size:clamp(1.4rem,4.5vw,2.4rem);font-weight:700;margin-bottom:16px}
@@ -53,24 +55,39 @@ textarea{min-height:110px;resize:vertical}
 .ok{text-align:center;padding:10px 0}
 footer{background:var(--navy);color:#C9D3DF;padding:30px 0}
 footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+
+/* Modal / Admin Login */
+.modal-backdrop{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:100;align-items:center;justify-content:center}
+.modal-backdrop.open{display:flex}
+.modal{background:#fff;padding:30px;border-radius:16px;max-width:400px;width:90%;box-shadow:0 10px 25px rgba(0,0,0,0.2);position:relative}
+.modal-close{position:absolute;top:15px;right:15px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--mut)}
 </style>
 </head>
 <body>
+
 <nav id="nav"><div class="wrap">
   <a class="logo" href="#top"><i>M</i> MINDOVA</a>
   <button class="burger" id="burger" aria-label="Menyu">☰</button>
   <div class="links">
-    <a href="#tadbirlar">Tadbirlar</a><a href="#imkoniyatlar">Imkoniyatlar</a><a href="#haqimizda">Biz haqimizda</a>
+    <a href="#tadbirlar">Tadbirlar</a>
+    <a href="#imkoniyatlar">Imkoniyatlar</a>
+    <a href="#haqimizda">Biz haqimizda</a>
     <a id="tg1" target="_blank" rel="noopener">Telegram kanalimiz</a>
   </div>
-  <div class="nr"><a class="btn acc sm" href="#royxat">Ro‘yxatdan o‘tish</a> <a class="btn ghost sm" href="/login">Kirish</a></div>
+  <div class="nr">
+    <a class="btn acc sm" href="#royxat">Ro‘yxatdan o‘tish</a> 
+    <button class="btn ghost sm" id="openLogin">Kirish</button>
+  </div>
 </div></nav>
 
 <header class="hero" id="top"><div class="wrap">
   <h1>MINDOVA</h1>
   <h2>Fikrla. Muloqot qil. Yarat.</h2>
   <p>Fikr almashish, yangi insonlar bilan tanishish, foydali ko‘nikmalarni rivojlantirish va yangi imkoniyatlarni kashf etish maydoni.</p>
-  <div class="cta-row"><a class="btn acc" href="#royxat">Ro‘yxatdan o‘tish</a><a class="btn ghost" href="#haqimizda">Biz haqimizda</a></div>
+  <div class="cta-row">
+    <a class="btn acc" href="#royxat">Ro‘yxatdan o‘tish</a>
+    <a class="btn ghost" href="#haqimizda">Biz haqimizda</a>
+  </div>
 </div></header>
 
 <section class="s" id="tadbirlar"><div class="wrap"><h2>Tadbirlar</h2><div class="grid" id="evg"><div class="empty">Yuklanmoqda…</div></div></div></section>
@@ -83,17 +100,31 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
   <h2 style="text-align:center">Ro‘yxatdan o‘tish</h2>
   <div class="form" id="rf">
     <form id="f" novalidate>
-      <label>Ism va familiya<input name="fullName" autocomplete="name" maxlength="80"><div class="err" data-e="fullName"></div></label>
-      <label>Yosh<input name="age" type="number" inputmode="numeric" min="10" max="99"><div class="err" data-e="age"></div></label>
-      <label>Telegram username<input name="telegram" placeholder="@username" maxlength="33"><div class="err" data-e="telegram"></div></label>
+      <label>Ism va familiya<input name="fullName" autocomplete="name" maxlength="80" required><div class="err" data-e="fullName"></div></label>
+      <label>Yosh<input name="age" type="number" inputmode="numeric" min="10" max="99" required><div class="err" data-e="age"></div></label>
+      <label>Telegram username<input name="telegram" placeholder="@username" maxlength="33" required><div class="err" data-e="telegram"></div></label>
       <label>Tadbir<select name="eventId" id="evsel"><option value="">Umumiy ariza</option></select></label>
-      <label>Nima uchun MINDOVAni tanladingiz va undan nimalarni kutyapsiz?<textarea name="letter" maxlength="300"></textarea><div class="cnt" id="cnt">0 / 300</div><div class="err" data-e="letter"></div></label>
+      <label>Nima uchun MINDOVAni tanladingiz va undan nimalarni kutyapsiz?<textarea name="letter" maxlength="300" required></textarea><div class="cnt" id="cnt">0 / 300</div><div class="err" data-e="letter"></div></label>
       <input name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
-      <button class="btn acc" style="width:100%" id="sbm">Yuborish</button>
+      <button class="btn acc" style="width:100%" id="sbm" type="submit">Yuborish</button>
       <div class="err" id="ge" style="text-align:center;margin-top:10px"></div>
     </form>
   </div>
 </div></section>
+
+<!-- Admin Login Modal -->
+<div class="modal-backdrop" id="loginModal">
+  <div class="modal">
+    <button class="modal-close" id="closeLogin">✕</button>
+    <h3 style="margin-bottom:16px">Admin Panelga kirish</h3>
+    <form id="loginForm">
+      <label>Email<input type="email" name="email" required></label>
+      <label style="margin-top:10px">Parol<input type="password" name="password" required></label>
+      <button class="btn acc" style="width:100%;margin-top:20px" type="submit">Kirish</button>
+      <div class="err" id="loginErr" style="margin-top:10px;text-align:center"></div>
+    </form>
+  </div>
+</div>
 
 <footer><div class="wrap"><span>© <span id="yr"></span> MINDOVA. Fikrla. Muloqot qil. Yarat.</span><a id="tg2" class="btn acc sm" target="_blank" rel="noopener">Telegram kanalimiz</a></div></footer>
 
@@ -113,8 +144,26 @@ $("#tg1").href=$("#tg2").href=CFG.TG;
 $("#burger").onclick=()=>$("#nav").classList.toggle("open");
 document.querySelectorAll(".links a,.nr a").forEach(a=>a.addEventListener("click",()=>$("#nav").classList.remove("open")));
 
+/* Modal Logic */
+$("#openLogin").onclick=()=>$("#loginModal").classList.add("open");
+$("#closeLogin").onclick=()=>$("#loginModal").classList.remove("open");
+
+/* Admin Login Handler */
+$("#loginForm").onsubmit=async ev=>{
+  ev.preventDefault();
+  $("#loginErr").textContent="";
+  const form=ev.target;
+  const {data,error}=await sb.auth.signInWithPassword({email:form.email.value,password:form.password.value});
+  if(error){
+    $("#loginErr").textContent="Email yoki parol xato!";
+  } else {
+    alert("Muvaffaqiyatli kirdingiz!");
+    $("#loginModal").classList.remove("open");
+  }
+};
+
 const evCard=e=>`<article class="card"><h3>${esc(e.title)}</h3><p>${esc((e.description||"").slice(0,140))}</p>
- <div class="meta">${e.starts_at?`<span>🗓 ${fd(e.starts_at)}, ${ft(e.starts_at)}</span>`:""}${e.location?`<span>📍 ${esc(e.location)}</span>`:""}${e.format?`<span>🏷 ${esc(e.format)}</span>`:""}</div></article>`;
+ <div class="meta">${e.starts_at?`<span>🗓 ${fd(e.starts_at)},${ft(e.starts_at)}</span>`:""}${e.location?`<span>📍 ${esc(e.location)}</span>`:""}${e.format?`<span>🏷 ${esc(e.format)}</span>`:""}</div></article>`;
 const opCard=o=>{const u=safe(o.source_url);return `<article class="card"><span class="pill">${esc(o.category)}</span><h3>${esc(o.title)}</h3><p>${esc(o.description)}</p>
  ${o.eligibility?`<p><b>Talablar:</b> ${esc(o.eligibility)}</p>`:""}${o.deadline?`<p><b>Muddat:</b> ${fd(o.deadline)}</p>`:""}
  ${u?`<a class="btn acc sm" href="${esc(u)}" target="_blank" rel="noopener">Rasmiy manba ↗</a>`:""}</article>`};
@@ -136,25 +185,40 @@ load();
 
 const f=$("#f");
 f.letter.oninput=()=>$("#cnt").textContent=f.letter.value.length+" / 300";
+
+/* Form Registration to Supabase directly */
 f.onsubmit=async ev=>{
   ev.preventDefault();
   document.querySelectorAll(".err").forEach(x=>x.textContent="");
-  const b=$("#sbm");b.disabled=true;b.textContent="Yuborilmoqda…";
+
+  if(!f.fullName.value.trim()){ $('[data-e="fullName"]').textContent="Ismingizni kiriting"; return; }
+  if(!f.age.value){ $('[data-e="age"]').textContent="Yoshingizni kiriting"; return; }
+  if(!f.telegram.value.trim()){ $('[data-e="telegram"]').textContent="Telegram username kiriting"; return; }
+  if(!f.letter.value.trim()){ $('[data-e="letter"]').textContent="Izohingizni yozing"; return; }
+
+  const b=$("#sbm");
+  b.disabled=true;
+  b.textContent="Yuborilmoqda…";
+
   try{
-    const{data:{session}}=await sb.auth.getSession();
-    const r=await fetch("/api/register",{method:"POST",
-      headers:{"Content-Type":"application/json",...(session?{Authorization:"Bearer "+session.access_token}:{})},
-      body:JSON.stringify({fullName:f.fullName.value,age:f.age.value,telegram:f.telegram.value,letter:f.letter.value,eventId:f.eventId.value||null,website:f.website.value})});
-    const j=await r.json().catch(()=>({}));
-    if(r.ok&&j.ok){
-      $("#rf").innerHTML=`<div class="ok"><h2 style="font-size:1.5rem">Ro‘yxatdan o‘tish muvaffaqiyatli yakunlandi!</h2><p class="muted" style="margin:12px 0 22px">Arizangiz qabul qilindi. Jamoa siz bilan Telegram orqali bog‘lanadi.</p><a class="btn acc" href="${esc(CFG.TG)}" target="_blank" rel="noopener">Telegram kanalimizga qo‘shiling</a></div>`;
-      return;
-    }
-    if(j.fields)Object.entries(j.fields).forEach(([k,m])=>{const el=$(`[data-e="${k}"]`);if(el)el.textContent=m});
-    else $("#ge").textContent=j.message||"Xatolik yuz berdi. Qayta urinib ko‘ring.";
-  }catch{$("#ge").textContent="Server bilan bog‘lanib bo‘lmadi. Internetni tekshiring."}
-  b.disabled=false;b.textContent="Yuborish";
+    const { error } = await sb.from("registrations").insert([{
+      full_name: f.fullName.value.trim(),
+      age: parseInt(f.age.value) || null,
+      telegram: f.telegram.value.trim(),
+      event_id: f.eventId.value || null,
+      letter: f.letter.value.trim()
+    }]);
+
+    if(error) throw error;
+
+    $("#rf").innerHTML=`<div class="ok"><h2 style="font-size:1.5rem">Ro‘yxatdan o‘tish muvaffaqiyatli yakunlandi!</h2><p class="muted" style="margin:12px 0 22px">Arizangiz qabul qilindi. Jamoa siz bilan Telegram orqali bog‘lanadi.</p><a class="btn acc" href="${esc(CFG.TG)}" target="_blank" rel="noopener">Telegram kanalimizga qo‘shiling</a></div>`;
+  }catch(err){
+    console.error(err);
+    $("#ge").textContent="Xatolik yuz berdi. Qayta urinib ko‘ring.";
+    b.disabled=false;
+    b.textContent="Yuborish";
+  }
 };
 </script>
 </body>
-</html>                                                                                                    
+</html>
