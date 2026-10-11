@@ -1,347 +1,60 @@
-import express from "express";
-import { Bot, InlineKeyboard, webhookCallback } from "grammy";
-import crypto from "node:crypto";
-import fs from "node:fs/promises";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const TOKEN = process.env.BOT_TOKEN;
-const OWNER_ID = Number(process.env.OWNER_ID);
-const PORT = process.env.PORT || 3000;
-
-if (!TOKEN) {
-  console.error("BOT_TOKEN is missing. See .env.example");
-  process.exit(1);
-}
-
-/* ---------------- Storage ----------------
-   MONGODB_URI set  -> MongoDB (free Atlas tier, survives Render restarts)
-   otherwise        -> JSON file in DATA_DIR (needs a Render persistent disk) */
-async function makeStore() {
-  if (process.env.MONGODB_URI) {
-    const { MongoClient } = await import("mongodb");
-    const client = new MongoClient(process.env.MONGODB_URI);
-    await client.connect();
-    const col = client.db("mindova").collection("site");
-    return {
-      load: () => col.findOne({ _id: "site" }),
-      save: (d) => col.replaceOne({ _id: "site" }, { _id: "site", ...d }, { upsert: true }),
-    };
-  }
-  const dir = process.env.DATA_DIR || path.join(__dirname, "data");
-  await fs.mkdir(dir, { recursive: true });
-  const file = path.join(dir, "data.json");
-  return {
-    async load() {
-      try { return JSON.parse(await fs.readFile(file, "utf8")); } catch { return null; }
-    },
-    async save(d) {
-      const tmp = file + ".tmp";
-      await fs.writeFile(tmp, JSON.stringify(d, null, 2));
-      await fs.rename(tmp, file);
-    },
-  };
-}
-
-const store = await makeStore();
-let db = (await store.load()) ?? {
-  nextId: 2,
-  events: [],
-  team: [{ id: 1, name: "Temurbek Ahmedov", role: "Founder", bio: "Leads MINDOVA and builds the community.", photo: "" }],
-};
-delete db._id;
-const save = () => store.save(db);
-
-/* ---------------- Helpers ---------------- */
-const EVENT_FIELDS = ["title", "date", "time", "place", "desc", "link"];
-const MEMBER_FIELDS = ["name", "role", "bio"];
-const validDate = (v) => /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v));
-const validLink = (v) => v === "-" || /^https?:\/\//i.test(v);
-const evLine = (e) => `#${e.id} · ${e.date} ${e.time} · ${e.title}`;
-const mLine = (m, i) => `${i + 1}. #${m.id} · ${m.name} (${m.role})${m.photo ? " 📷" : ""}`;
-
-/* ---------------- Bot ---------------- */
-const bot = new Bot(TOKEN);
-
-// Owner only. Everyone else gets a polite refusal (and their ID, handy for first setup).
-bot.use(async (ctx, next) => {
-  if (ctx.from?.id === OWNER_ID) return next();
-  if (ctx.chat?.type === "private") await ctx.reply(`This bot is private.\nYour Telegram ID: ${ctx.from?.id}`);
-});
-
+import express from "express"; import { Bot, InlineKeyboard, webhookCallback } from "grammy"; import { createClient } from "@supabase/supabase-js"; import crypto from "node:crypto"; import fs from "node:fs/promises"; import path from "node:path"; import { fileURLToPath } from "node:url";
+const __dirname = path.dirname(fileURLToPath(import.meta.url)); const TOKEN = process.env.BOT_TOKEN; const OWNER_ID = Number(process.env.OWNER_ID); const PORT = process.env.PORT  3000; // Bir nechta admin: ADMIN_IDS="111,222" (OWNER_ID har doim admin) const ADMINS = new Set([OWNER_ID, ...(process.env.ADMIN_IDS  "").split(",").map(Number)].filter(Boolean));
+if (!TOKEN) { console.error("BOT_TOKEN is missing. See .env.example"); process.exit(1); }
+/* ---------------- Supabase (arizalar + tadbirlar) ---------------- */ const sb = process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } }) : null; if (!sb) console.warn("SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY yo'q: arizalar va tadbirlar ishlamaydi.");
+/* ---------------- Storage (jamoa — avvalgidek) ---------------- */ async function makeStore() { if (process.env.MONGODB_URI) { const { MongoClient } = await import("mongodb"); const client = new MongoClient(process.env.MONGODB_URI); await client.connect(); const col = client.db("mindova").collection("site"); return { load: () => col.findOne({ _id: "site" }), save: (d) => col.replaceOne({ _id: "site" }, { _id: "site", ...d }, { upsert: true }), }; } const dir = process.env.DATA_DIR || path.join(__dirname, "data"); await fs.mkdir(dir, { recursive: true }); const file = path.join(dir, "data.json"); return { async load() { try { return JSON.parse(await fs.readFile(file, "utf8")); } catch { return null; } }, async save(d) { const tmp = file + ".tmp"; await fs.writeFile(tmp, JSON.stringify(d, null, 2)); await fs.rename(tmp, file); }, }; }
+const store = await makeStore(); let db = (await store.load()) ?? { nextId: 2, events: [], // eski tadbirlar (endi Supabase'da); saqlab qo'yildi team: [{ id: 1, name: "Temurbek Ahmedov", role: "Founder", bio: "Leads MINDOVA and builds the community.", photo: "" }], }; delete db._id; const save = () => store.save(db);
+/* ---------------- Helpers ---------------- / const MEMBER_FIELDS = ["name", "role", "bio"]; const EVENT_FIELDS = { title: "title", place: "location", format: "format", desc: "description", date: "date", time: "time" }; const validDate = (v) => /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v)); const validTime = (v) => /^([01]\d|2[0-3]):[0-5]\d$/.test(v); const mLine = (m, i) => ${i + 1}. #${m.id} · ${m.name} (${m.role})${m.photo ? " 📷" : ""}; const h = (s) => String(s ?? "").replace(/[&<>]/g, (c) => ({ "&": "&", "<": "<", ">": ">" }[c])); // HTML-escape const UZ = (iso) => new Date(new Date(iso).getTime() + 5 * 36e5).toISOString().slice(0, 16).replace("T", " "); // UTC+5 const toIso = (d, t) => new Date(${d}T${t}:00+05:00).toISOString(); const STL = { pending: "Kutilmoqda", approved: "Tasdiqlandi", rejected: "Rad etildi", waitlist: "Kutish ro‘yxati" }; const evLine = (e) => ${e.id.slice(0, 8)} · ${e.starts_at ? UZ(e.starts_at) : "sanasiz"} · ${e.title} [${e.status}${e.registration_open ? ", ro‘yxat ochiq" : ""}]; const noDb = (ctx) => ctx.reply("Supabase ulanmagan (SUPABASE_URL va SUPABASE_SERVICE_ROLE_KEY ni kiriting)."); const findEvent = async (short) => { const { data } = await sb.from("events").select("").order("created_at", { ascending: false }); return (data || []).find((e) => e.id.startsWith(String(short).toLowerCase().trim())); };
+/* ---------------- Bot ---------------- */ const bot = new Bot(TOKEN);
+// Faqat adminlar. Boshqalarga o'z ID si ko'rsatiladi (birinchi sozlash uchun qulay). bot.use(async (ctx, next) => { if (ctx.from && ADMINS.has(ctx.from.id)) return next(); if (ctx.chat?.type === "private") await ctx.reply(This bot is private.\nYour Telegram ID: ${ctx.from?.id}); });
 const HELP = `MINDOVA admin
-
-Events
-/events – list events
-/addevent – add an event (step by step)
-/editevent <id> <field> <value>
-   fields: ${EVENT_FIELDS.join(", ")}
-/delevent <id>
-
-Team
-/team – list members
-/addmember – add a member (with photo)
-/editmember <id> <field> <value>
-   fields: ${MEMBER_FIELDS.join(", ")}
-/photo <id> – change a member's photo
-/move <id> <position> – change order
-/delmember <id>
-
+Arizalar /pending – kutilayotgan arizalar (tugmalar bilan)
+Events /events – list events /addevent – add an event (step by step) /editevent <id> <field> <value> fields: ${Object.keys(EVENT_FIELDS).join(", ")} /openreg <id> · /closereg <id> – ro'yxatni ochish/yopish /delevent <id> – arxivlash
+Team /team – list members /addmember – add a member (with photo) /editmember <id> <field> <value> fields: ${MEMBER_FIELDS.join(", ")} /photo <id> – change a member's photo /move <id> <position> – change order /delmember <id>
 /cancel – stop what you are doing`;
-
 bot.command(["start", "help"], (ctx) => ctx.reply(HELP));
-
-/* ----- Step-by-step flows ----- */
-const sessions = new Map();
-
-const FLOWS = {
-  event: {
-    steps: [
-      { key: "title", ask: "Event title?" },
-      { key: "date", ask: "Date? Use YYYY-MM-DD, for example 2026-11-14", check: validDate, error: "That date doesn't look right. Use YYYY-MM-DD, for example 2026-11-14." },
-      { key: "time", ask: "Time? For example 15:00" },
-      { key: "place", ask: "Place?" },
-      { key: "desc", ask: "Short description?" },
-      { key: "link", ask: "Registration link? Send - if there is none.", check: validLink, error: "Send a link starting with http:// or https://, or - for none." },
-    ],
-    async done(d) {
-      const e = { id: db.nextId++, ...d, link: d.link === "-" ? "" : d.link };
-      db.events.push(e);
-      await save();
-      return `Event added ✅\n${evLine(e)}`;
-    },
-  },
-  member: {
-    steps: [
-      { key: "name", ask: "Member's full name?" },
-      { key: "role", ask: "Role? For example Designer" },
-      { key: "bio", ask: "One-line bio?" },
-      { key: "photo", ask: "Send a photo, or - to skip.", photo: true, optional: true },
-    ],
-    async done(d) {
-      const m = { id: db.nextId++, name: d.name, role: d.role, bio: d.bio, photo: d.photo || "" };
-      db.team.push(m);
-      await save();
-      return `Member added ✅\n${m.name} (${m.role})`;
-    },
-  },
-  photo: {
-    steps: [{ key: "photo", ask: "Send the new photo.", photo: true }],
-    async done(d) {
-      const m = db.team.find((x) => x.id === d.id);
-      if (!m) return "Member not found.";
-      m.photo = d.photo;
-      await save();
-      return `Photo updated for ${m.name} ✅`;
-    },
-  },
-};
-
-function startFlow(ctx, name, data = {}) {
-  sessions.set(ctx.from.id, { name, i: 0, data });
-  return ctx.reply(`${FLOWS[name].steps[0].ask}\n\n(/cancel to stop)`);
-}
-
-bot.command("cancel", (ctx) => {
-  sessions.delete(ctx.from.id);
-  return ctx.reply("Cancelled.");
-});
-
-bot.command("addevent", (ctx) => startFlow(ctx, "event"));
-bot.command("addmember", (ctx) => startFlow(ctx, "member"));
-bot.command("photo", (ctx) => {
-  const id = Number(ctx.match);
-  if (!db.team.some((m) => m.id === id)) return ctx.reply("Usage: /photo <id>. Use the # number from /team.");
-  return startFlow(ctx, "photo", { id });
-});
-
-/* ----- Lists ----- */
-bot.command("events", (ctx) => {
-  if (!db.events.length) return ctx.reply("No events yet. Use /addevent.");
-  const sorted = [...db.events].sort((a, b) => a.date.localeCompare(b.date));
-  return ctx.reply(sorted.map(evLine).join("\n"));
-});
-bot.command("team", (ctx) => {
-  if (!db.team.length) return ctx.reply("No members yet. Use /addmember.");
-  return ctx.reply(db.team.map(mLine).join("\n"));
-});
-
-/* ----- Edit ----- */
-const editor = (kind) => async (ctx) => {
-  const fields = kind === "event" ? EVENT_FIELDS : MEMBER_FIELDS;
-  const m = ctx.match.match(/^(\d+)\s+(\w+)\s+([\s\S]+)$/);
-  if (!m) return ctx.reply(`Usage: /edit${kind} <id> <field> <new value>\nFields: ${fields.join(", ")}`);
-  const [, idStr, field, raw] = m;
-  const list = kind === "event" ? db.events : db.team;
-  const item = list.find((x) => x.id === Number(idStr));
-  if (!item) return ctx.reply("Not found. Use the # number from the list.");
-  if (!fields.includes(field)) return ctx.reply(`Unknown field. Choose from: ${fields.join(", ")}`);
-  let value = raw.trim();
-  if (field === "date" && !validDate(value)) return ctx.reply("Date must look like 2026-11-14.");
-  if (field === "link") {
-    if (!validLink(value)) return ctx.reply("Send a link starting with http:// or https://, or - to remove it.");
-    if (value === "-") value = "";
-  }
-  item[field] = value;
-  await save();
-  return ctx.reply(`Updated ${field} ✅`);
-};
-bot.command("editevent", editor("event"));
-bot.command("editmember", editor("member"));
-
-/* ----- Reorder team ----- */
-bot.command("move", async (ctx) => {
-  const m = ctx.match.match(/^(\d+)\s+(\d+)$/);
-  if (!m) return ctx.reply("Usage: /move <id> <position>. Example: /move 3 1 puts member #3 first.");
-  const from = db.team.findIndex((x) => x.id === Number(m[1]));
-  if (from < 0) return ctx.reply("Member not found.");
-  const to = Math.min(Math.max(Number(m[2]), 1), db.team.length) - 1;
-  const [item] = db.team.splice(from, 1);
-  db.team.splice(to, 0, item);
-  await save();
-  return ctx.reply("Moved ✅\n\n" + db.team.map(mLine).join("\n"));
-});
-
-/* ----- Delete (with confirmation) ----- */
-const askDelete = (kind) => (ctx) => {
-  const list = kind === "event" ? db.events : db.team;
-  const item = list.find((x) => x.id === Number(ctx.match));
-  if (!item) return ctx.reply(`Usage: /del${kind} <id>. Use the # number from the list.`);
-  const kb = new InlineKeyboard().text("Yes, delete", `del:${kind}:${item.id}`).text("Cancel", "noop");
-  return ctx.reply(`Delete "${item.title ?? item.name}"?`, { reply_markup: kb });
-};
-bot.command("delevent", askDelete("event"));
-bot.command("delmember", askDelete("member"));
-
-bot.callbackQuery(/^del:(event|member):(\d+)$/, async (ctx) => {
-  const [, kind, id] = ctx.match;
-  const key = kind === "event" ? "events" : "team";
-  db[key] = db[key].filter((x) => x.id !== Number(id));
-  await save();
-  await ctx.editMessageText("Deleted ✅");
-  await ctx.answerCallbackQuery();
-});
-bot.callbackQuery("noop", async (ctx) => {
-  await ctx.editMessageText("Cancelled.");
-  await ctx.answerCallbackQuery();
-});
-
-/* ----- Answers inside a flow ----- */
-bot.on("message", async (ctx) => {
-  const s = sessions.get(ctx.from.id);
-  if (!s) return ctx.reply("Send /help to see what I can do.");
-  if (ctx.message.text?.startsWith("/")) return ctx.reply("Unknown command. Send /cancel to stop the current step.");
-
-  const flow = FLOWS[s.name];
-  const step = flow.steps[s.i];
-  let value;
-
-  if (step.photo) {
-    if (ctx.message.photo) value = ctx.message.photo.at(-1).file_id;
-    else if (step.optional && ctx.message.text?.trim() === "-") value = "";
-    else return ctx.reply("Please send a photo" + (step.optional ? " (or - to skip)." : "."));
-  } else {
-    value = ctx.message.text?.trim();
-    if (!value) return ctx.reply("Please send text.");
-    if (step.check && !step.check(value)) return ctx.reply(step.error);
-  }
-
-  s.data[step.key] = value;
-  s.i++;
-  if (s.i < flow.steps.length) return ctx.reply(flow.steps[s.i].ask);
-
-  sessions.delete(ctx.from.id);
-  return ctx.reply(await flow.done(s.data));
-});
-
+/* ----- Step-by-step flows ----- */ const sessions = new Map();
+const FLOWS = { event: { steps: [ { key: "title", ask: "Event title?" }, { key: "date", ask: "Date? Use YYYY-MM-DD, for example 2026-11-14", check: validDate, error: "That date doesn't look right. Use YYYY-MM-DD." }, { key: "time", ask: "Time? For example 15:00", check: validTime, error: "Use HH:MM, for example 15:00." }, { key: "place", ask: "Place?" }, { key: "format", ask: "Format? For example Offline / Online" }, { key: "desc", ask: "Short description?" }, ], async done(d) { const slug = d.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + Date.now().toString(36); const { data, error } = await sb.from("events").insert({ slug, title: d.title, starts_at: toIso(d.date, d.time), location: d.place, format: d.format, description: d.desc, status: "published", registration_open: true, }).select().single(); if (error) return Xatolik: ${error.message}; return Event added ✅ (saytda ko'rinadi, ro'yxat ochiq)\n${evLine(data)}; }, }, member: { steps: [ { key: "name", ask: "Member's full name?" }, { key: "role", ask: "Role? For example Designer" }, { key: "bio", ask: "One-line bio?" }, { key: "photo", ask: "Send a photo, or - to skip.", photo: true, optional: true }, ], async done(d) { const m = { id: db.nextId++, name: d.name, role: d.role, bio: d.bio, photo: d.photo || "" }; db.team.push(m); await save(); return Member added ✅\n${m.name} (${m.role}); }, }, photo: { steps: [{ key: "photo", ask: "Send the new photo.", photo: true }], async done(d) { const m = db.team.find((x) => x.id === d.id); if (!m) return "Member not found."; m.photo = d.photo; await save(); return Photo updated for ${m.name} ✅; }, }, };
+function startFlow(ctx, name, data = {}) { if (name === "event" && !sb) return noDb(ctx); sessions.set(ctx.from.id, { name, i: 0, data }); return ctx.reply(${FLOWS[name].steps[0].ask}\n\n(/cancel to stop)); }
+bot.command("cancel", (ctx) => { sessions.delete(ctx.from.id); return ctx.reply("Cancelled."); });
+bot.command("addevent", (ctx) => startFlow(ctx, "event")); bot.command("addmember", (ctx) => startFlow(ctx, "member")); bot.command("photo", (ctx) => { const id = Number(ctx.match); if (!db.team.some((m) => m.id === id)) return ctx.reply("Usage: /photo <id>. Use the # number from /team."); return startFlow(ctx, "photo", { id }); });
+/* ----- Lists ----- / bot.command("events", async (ctx) => { if (!sb) return noDb(ctx); const { data, error } = await sb.from("events").select("").neq("status", "archived").order("starts_at"); if (error) return ctx.reply(Xatolik: ${error.message}); if (!data.length) return ctx.reply("No events yet. Use /addevent."); return ctx.reply(data.map(evLine).join("\n")); }); bot.command("team", (ctx) => { if (!db.team.length) return ctx.reply("No members yet. Use /addmember."); return ctx.reply(db.team.map(mLine).join("\n")); });
+/* ----- Edit: event (Supabase) ----- */ bot.command("editevent", async (ctx) => { if (!sb) return noDb(ctx); const m = ctx.match.match(/^(\w+)\s+(\w+)\s+([\s\S]+)$/); const usage = Usage: /editevent <id> <field> <new value>\nFields: ${Object.keys(EVENT_FIELDS).join(", ")}; if (!m) return ctx.reply(usage); const [, short, field, raw] = m; const ev = await findEvent(short); if (!ev) return ctx.reply("Not found. Use the id from /events."); if (!EVENT_FIELDS[field]) return ctx.reply(usage); const value = raw.trim(); const patch = {}; if (field === "date"  field === "time") { const cur = UZ(ev.
+starts_at  new Date().toISOString()); let d = cur.slice(0, 10), t = cur.slice(11, 16); if (field === "date") { if (!validDate(value)) return ctx.reply("Date must look like 2026-11-14."); d = value; } else { if (!validTime(value)) return ctx.reply("Time must look like 15:00."); t = value; } patch.starts_at = toIso(d, t); } else patch[EVENT_FIELDS[field]] = value; const { error } = await sb.from("events").update({ ...patch, updated_at: new Date().toISOString() }).eq("id", ev.id); return ctx.reply(error ? Xatolik: ${error.message} : Updated ${field} ✅); });
+const regToggle = (open) => async (ctx) => { if (!sb) return noDb(ctx); const ev = await findEvent(ctx.match); if (!ev) return ctx.reply(Usage: /${open ? "openreg" : "closereg"} <id>); const { error } = await sb.from("events").update({ registration_open: open }).eq("id", ev.id); return ctx.reply(error ? Xatolik: ${error.message} : Ro'yxat ${open ? "ochildi" : "yopildi"} ✅ (${ev.title})); }; bot.command("openreg", regToggle(true)); bot.command("closereg", regToggle(false));
+/* ----- Edit: member (avvalgidek) ----- */ bot.command("editmember", async (ctx) => { const m = ctx.match.match(/^(\d+)\s+(\w+)\s+([\s\S]+)$/); if (!m) return ctx.reply(Usage: /editmember <id> <field> <new value>\nFields: ${MEMBER_FIELDS.join(", ")}); const [, idStr, field, raw] = m; const item = db.team.find((x) => x.id === Number(idStr)); if (!item) return ctx.reply("Not found. Use the # number from the list."); if (!MEMBER_FIELDS.includes(field)) return ctx.reply(Unknown field. Choose from: ${MEMBER_FIELDS.join(", ")}); item[field] = raw.trim(); await save(); return ctx.reply(Updated ${field} ✅); });
+/* ----- Reorder team ----- */ bot.command("move", async (ctx) => { const m = ctx.match.match(/^(\d+)\s+(\d+)$/); if (!m) return ctx.reply("Usage: /move <id> <position>. Example: /move 3 1 puts member #3 first."); const from = db.team.findIndex((x) => x.id === Number(m[1])); if (from < 0) return ctx.reply("Member not found."); const to = Math.min(Math.max(Number(m[2]), 1), db.team.length) - 1; const [item] = db.team.splice(from, 1); db.team.splice(to, 0, item); await save(); return ctx.reply("Moved ✅\n\n" + db.team.map(mLine).join("\n")); });
+/* ----- Delete (tasdiqlash bilan): tadbir = arxivlash, a'zo = o'chirish ----- */ bot.command("delevent", async (ctx) => { if (!sb) return noDb(ctx); const ev = await findEvent(ctx.match); if (!ev) return ctx.reply("Usage: /delevent <id>. Use the id from /events."); const kb = new InlineKeyboard().text("Yes, archive", del:event:${ev.id.slice(0, 8)}).text("Cancel", "noop"); return ctx.reply(Archive "${ev.title}"?, { reply_markup: kb }); }); bot.command("delmember", (ctx) => { const item = db.team.find((x) => x.id === Number(ctx.match)); if (!item) return ctx.reply("Usage: /delmember <id>. Use the # number from the list."); const kb = new InlineKeyboard().text("Yes, delete", del:member:${item.id}).text("Cancel", "noop"); return ctx.reply(Delete "${item.name}"?, { reply_markup: kb }); });
+bot.callbackQuery(/^del:(event|member):([0-9a-f]+)$/, async (ctx) => { const [, kind, id] = ctx.match; if (kind === "event") { const ev = sb && (await findEvent(id)); if (ev) await sb.from("events").update({ status: "archived", registration_open: false }).eq("id", ev.id); await ctx.editMessageText("Archived ✅"); } else { db.team = db.team.filter((x) => x.id !== Number(id)); await save(); await ctx.editMessageText("Deleted ✅"); } await ctx.answerCallbackQuery(); }); bot.callbackQuery("noop", async (ctx) => { await ctx.editMessageText("Cancelled."); await ctx.answerCallbackQuery(); });
+/* ---------------- Arizalar: Telegram <-> sayt (bir xil baza) ---------------- / const getReg = async (id) => { const { data } = await sb.from("registrations").select(", events(title)").eq("id", id).maybeSingle(); return data; }; const regCard = (r) => 📥 <b>Ariza</b>\n\n👤 ${h(r.full_name)}, ${r.age} yosh\n💬 @${h(r.telegram_username)}\n🎯 ${h(r.events?.title || "Umumiy ariza")}\n📝 ${h(r.letter)}\n\nHolati: <b>${STL[r.
+status]}</b>; // callback_data ichida versiya bor: eskirgan tugma yangi qarorni bosib ketmaydi const regKb = (r) => new InlineKeyboard() .text("✅ Tasdiqlash", rs:a:${r.id}:${r.version}) .text("⏳ Kutish", rs:w:${r.id}:${r.version}) .text("❌ Rad etish", rs:r:${r.id}:${r.version});
+bot.callbackQuery(/^rs:([awr]):([0-9a-f-]{36}):(\d+)$/, async (ctx) => { if (!sb) return ctx.answerCallbackQuery({ text: "Baza ulanmagan" }); const [, k, id, ver] = ctx.match; const status = { a: "approved", w: "waitlist", r: "rejected" }[k]; const { data: adm } = await sb.from("admins").select("id").eq("telegram_id", ctx.from.id).maybeSingle(); const { error } = await sb.rpc("set_registration_status", { p_id: id, p_status: status, p_source: "telegram", p_admin_id: adm?.id ?? null, p_admin_tg: ctx.from.id, p_expected_version: Number(ver), }); const conflict = error && /version_conflict/.test(error.message); await ctx.answerCallbackQuery({ text: !error ? "Saqlandi ✅" : conflict ? "Boshqa admin allaqachon o‘zgartirgan. Karta yangilandi." : "Xatolik yuz berdi", }); if (error && !conflict) console.error("status rpc:", error.message); const r = await getReg(id); if (r) await ctx.editMessageText(regCard(r), { parse_mode: "HTML", reply_markup: regKb(r) }).catch(() => {}); });
+bot.command("pending", async (ctx) => { if (!sb) return noDb(ctx); const { data, error } = await sb.from("registrations").select("*, events(title)") .eq("status", "pending").order("created_at").limit(5); if (error) return ctx.reply(Xatolik: ${error.message}); if (!data.length) return ctx.reply("Kutilayotgan arizalar yo'q ✅"); for (const r of data) await ctx.reply(regCard(r), { parse_mode: "HTML", reply_markup: regKb(r) }); });
+/* ----- Bildirishnoma navbati (outbox): yagona yuboruvchi => takrorlanmaydi ----- */ async function sendAll(text, { reply_markup, exclude } = {}) { const targets = [...ADMINS].filter((id) => id !== exclude); if (!targets.length) return; let ok = 0; for (const id of targets) { try { await bot.api.sendMessage(id, text, { parse_mode: "HTML", reply_markup }); ok++; } catch (e) { console.error("notify", id, e.description }, }, photo: { steps: [{ key: "photo", ask: "Send the new photo.", photo: true }], async done(d) { const m = db.team.find((x) => x.id === d.id); if (!m) return "Member not found."; m.photo = d.photo; await save(); return Photo updated for ${m.name} ✅; }, }, };
+function startFlow(ctx, name, data = {}) { if (name === "event" && !sb) return noDb(ctx); sessions.set(ctx.from.id, { name, i: 0, data }); return ctx.reply(${FLOWS[name].steps[0].ask}\n\n(/cancel to stop)); }
+bot.command("cancel", (ctx) => { sessions.delete(ctx.from.id); return ctx.reply("Cancelled."); });
+bot.command("addevent", (ctpumping) return; pumping = true; try { const { data, error } = await sb.rpc("claim_notifications", { p_limit: 10 }); if (error) throw error; for (const n of data  []) { try { await deliver(n); await sb.rpc("mark_notification", { p_id: n.id, p_ok: true }); } catch (e) { await sb.rpc("mark_notification", { p_id: n.id, p_ok: false, p_error: String(e.message  e).slice(0, 300) }); } } } catch (e) { console.error("outbox:", e.message); } finally { pumping = false; } }
+/* ----- Answers inside a flow ----- */ bot.on("message", async (ctx) => { const s = sessions.get(ctx.from.id); if (!s) return ctx.reply("Send /help to see what I can do."); if (ctx.message.text?.startsWith("/")) return ctx.reply("Unknown command. Send /cancel to stop the current step.");
+const flow = FLOWS[s.name]; const step = flow.steps[s.i]; let value;
+if (step.photo) { if (ctx.message.photo) value = ctx.message.photo.at(-1).file_id; else if (step.optional && ctx.message.text?.trim() === "-") value = ""; else return ctx.reply("Please send a photo" + (step.optional ? " (or - to skip)." : ".")); } else { value = ctx.message.text?.trim(); if (!value) return ctx.reply("Please send text."); if (step.check && !step.check(value)) return ctx.reply(step.error); }
+s.data[step.key] = value; s.i++; if (s.i < flow.steps.length) return ctx.reply(flow.steps[s.i].ask);
+sessions.delete(ctx.from.id); return ctx.
+  reply(await flow.done(s.data)); });
 bot.catch((err) => console.error("Bot error:", err.error ?? err));
-
-/* ---------------- Website + API ---------------- */
-const app = express();
-
-app.get("/healthz", (_req, res) => res.send("ok"));
-
-app.get("/api/data", (_req, res) => {
-  res.set("Cache-Control", "no-store");
-  res.json({
-    events: db.events,
-    team: db.team.map((m) => ({ ...m, photo: m.photo ? `/photo/${m.photo}` : "" })),
-  });
-});
-// Saytdan ro'yxatdan o'tganlarni qabul qilish va Telegram Botga xabar yuborish
-app.post("/api/register", express.json(), async (req, res) => {
-  const { fullName, phone, tgUsername } = req.body;
-
-  if (!fullName || !phone) {
-    return res.status(400).json({ error: "Ism va telefon raqami kiritilishi shart" });
-  }
-
-  // Telegram bot orqali Adminga (OWNER_ID) xabar yuborish
-  if (OWNER_ID) {
-    const text = `📥 <b>Yangi ro'yxatdan o'tish!</b>\n\n` +
-                 `👤 <b>Ism:</b> ${fullName}\n` +
-                 `📞 <b>Tel:</b> ${phone}\n` +
-                 `💬 <b>TG:</b> ${tgUsername || "Ko'rsatilmadi"}`;
-    try {
-      await bot.api.sendMessage(OWNER_ID, text, { parse_mode: "HTML" });
-    } catch (err) {
-      console.error("Telegram xabar yuborishda xatolik:", err);
-    }
-  }
-
-  res.json({ success: true, message: "Muvaffaqiyatli ro'yxatdan o'tdingiz!" });
-});
-
-
-// Photos stay on Telegram's servers; we stream them through only for photos used on the site.
-app.get("/photo/:id", async (req, res) => {
-  try {
-    if (!db.team.some((m) => m.photo === req.params.id)) return res.status(404).end();
-    const f = await bot.api.getFile(req.params.id);
-    const r = await fetch(`https://api.telegram.org/file/bot${TOKEN}/${f.file_path}`);
-    if (!r.ok) throw new Error("telegram file fetch failed");
-    res.set("Content-Type", r.headers.get("content-type") || "image/jpeg");
-    res.set("Cache-Control", "public, max-age=86400");
-    res.send(Buffer.from(await r.arrayBuffer()));
-  } catch {
-    res.status(404).end();
-  }
-});
-
-// Landing page lives in the repo root (index.html). Only this file and /assets are public,
-// so server.js and package.json are never exposed.
-app.get("/", (_req, res) => res.sendFile(path.join(__dirname, "index.html")));
-app.use("/assets", express.static(path.join(__dirname, "assets")));
-
-/* ---------------- Start ---------------- */
-await bot.init();
-await bot.api.setMyCommands([
-  { command: "help", description: "Show all commands" },
-  { command: "events", description: "List events" },
-  { command: "addevent", description: "Add an event" },
-  { command: "team", description: "List team members" },
-  { command: "addmember", description: "Add a team member" },
-  { command: "cancel", description: "Cancel current action" },
-]);
-
-const baseUrl = process.env.RENDER_EXTERNAL_URL; // set automatically by Render
-const secret = crypto.createHash("sha256").update(TOKEN).digest("hex").slice(0, 32);
-const hookPath = `/webhook/${secret}`;
-
-if (baseUrl) {
-  app.use(hookPath, express.json(), webhookCallback(bot, "express", { secretToken: secret }));
-}
-
-app.listen(PORT, async () => {
-  console.log(`MINDOVA running on port ${PORT}`);
-  if (!OWNER_ID) console.warn("OWNER_ID is not set: nobody can use the bot yet.");
-  if (baseUrl) {
-    await bot.api.setWebhook(`${baseUrl}${hookPath}`, { secret_token: secret });
-    console.log("Telegram webhook set");
-  } else {
-    await bot.api.deleteWebhook();
-    bot.start(); // local development uses long polling
-    console.log("Bot polling (local mode)");
-  }
-});
+/* ---------------- Website + API ---------------- */ const app = express(); app.set("trust proxy", 1);
+app.get("/healthz", (_req, res) => res.send("ok")); // UptimeRobot shu manzilni 5 daqiqada bir ping qilsin
+app.get("/api/data", (_req, res) => { res.set("Cache-Control", "no-store"); res.json({ events: [], // tadbirlar endi Supabase'dan o'qiladi team: db.team.map((m) => ({ ...m, photo: m.photo ? /photo/${m.photo} : "" })), }); });
+// Oddiy IP bo'yicha limit: daqiqada 5 ta ariza const hits = new Map(); const limited = (ip) => { const now = Date.now(); const arr = (hits.get(ip)  []).filter((t) => now - t < 60000); arr.push(now); hits.set(ip, arr); return arr.length > 5; }; const normTg = (v) => String(v  "").trim().replace(/^(https?://)?((t|telegram).me/)?@?/i, "").toLowerCase(); const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+app.post("/api/register", express.json({ limit: "10kb" }), async (req, res) => { if (!sb) return res.status(503).json({ ok: false, message: "Ma’lumotlar bazasi ulanmagan." }); if (limited(req.ip)) return res.status(429).json({ ok: false, message: "Juda ko‘p urinish. Birozdan so‘ng qayta urinib ko‘ring." }); const b = req.body || {}; if (b.website) return res.json({ ok: true }); // honeypot
+const fields = {}; const fullName = String(b.fullName  "").trim(); const age = Number(b.age); const telegram = normTg(b.telegram); const letter = String(b.letter  "").trim(); if (fullName.length < 3  fullName.length > 100) fields.fullName = "Ism va familiyani to‘liq kiriting."; if (!Number.isInteger(age)  age < 10 || age > 99) fields.age = "Yoshni to‘g‘ri kiriting (10–99)."; if (!/^[a-z0-9_]{5,32}$/.test(telegram)) fields.telegram = "Telegram username noto‘g‘ri (5–32 belgi: harf, raqam, _)."; if (!letter) fields.letter = "MINDOVAga xatni yozing."; else if (letter.length > 300) fields.letter = "Xat 300 belgidan oshmasligi kerak."; const eventId = b.eventId && UUID.test(b.eventId) ? b.eventId : null; if (Object.keys(fields).length) return res.status(400).json({ ok: false, fields });
+if (eventId) { const { data: ev } = await sb.from("events").select("status,registration_open,registration_deadline").eq("id", eventId).maybeSingle(); const closed = !ev  ev.status !== "published"  !ev.registration_open || (ev.registration_deadline && new Date(ev.registration_deadline) < new Date()); if (closed) return res.status(409).json({ ok: false, message: "Bu tadbirga ro‘yxatdan o‘tish yopilgan." }); }
+const token = req.headers.authorization?.replace("Bearer ", ""); const userId = token ? (await sb.auth.getUser(token)).data.user?.id ?? null : null;
+const { error } = await sb.from("registrations").insert({ user_id: userId, event_id: eventId, full_name: fullName, age, telegram_username: telegram, letter, status_source: "web", }); if (error) { if (error.code === "23505") return res.status(409).json({ ok: false, message: "Siz bu tadbirga allaqachon ro‘yxatdan o‘tgansiz." }); console.error("register:", error.message); return res.status(500).json({ ok: false, message: "Xatolik yuz berdi. Qayta urinib ko‘ring." }); } pump(); // trigger navbatga yozdi; adminlarga darhol yetkazamiz (bu yerda to'g'ridan-to'g'ri xabar yuborilmaydi) res.json({ ok: true }); });
+// Supabase Database Webhook (notification_outbox INSERT) shu yerga uradi: bot uxlab qolgan bo'lsa ham uyg'onadi app.post("/api/outbox-hook", express.json(), (req, res) => { const want = process.env.HOOK_SECRET; if (!want || req.headers["x-hook-secret"] !== want) return res.status(401).end(); pump(); res.json({ ok: true }); });
+// Photos stay on Telegram's servers; we stream them through only for photos used on the site. app.get("/photo/:id", async (req, res) => { try { if (!db.team.some((m) => m.photo === req.params.id)) return res.status(404).end(); const f = await bot.api.getFile(req.params.id); const r = await fetch(https://api.telegram.org/file/bot${TOKEN}/${f.file_path}); if (!r.ok) throw new Error("telegram file fetch failed"); res.
+         set("Content-Type", r.headers.get("content-type") || "image/jpeg"); res.set("Cache-Control", "public, max-age=86400"); res.send(Buffer.from(await r.arrayBuffer())); } catch { res.status(404).end(); } });
+app.get("/", (_req, res) => res.sendFile(path.join(__dirname, "index.html"))); app.use("/assets", express.static(path.join(__dirname, "assets")));
+/* ---------------- Start ---------------- */ await bot.init(); await bot.api.setMyCommands([ { command: "help", description: "Show all commands" }, { command: "pending", description: "Kutilayotgan arizalar" }, { command: "events", description: "List events" }, { command: "addevent", description: "Add an event" }, { command: "team", description: "List team members" }, { command: "addmember", description: "Add a team member" }, { command: "cancel", description: "Cancel current action" }, ]);
+const baseUrl = process.env.RENDER_EXTERNAL_URL; // set automatically by Render const secret = crypto.createHash("sha256").update(TOKEN).digest("hex").slice(0, 32); const hookPath = /webhook/${secret};
+if (baseUrl) { app.use(hookPath, express.json(), webhookCallback(bot, "express", { secretToken: secret })); }
+app.listen(PORT, async () => { console.log(MINDOVA running on port ${PORT}); if (!OWNER_ID) console.warn("OWNER_ID is not set: nobody can use the bot yet."); if (baseUrl) { await bot.api.setWebhook(${baseUrl}${hookPath}, { secret_token: secret }); console.log("Telegram webhook set"); } else { await bot.api.deleteWebhook(); bot.start(); // local development uses long polling console.log("Bot polling (local mode)"); } setInterval(pump, 5000); // zaxira: navbatni har 5 soniyada tekshiradi pump(); });
