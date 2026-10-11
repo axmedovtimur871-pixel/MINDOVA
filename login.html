@@ -1,0 +1,32 @@
+nav { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 5%; background: rgba(11, 15, 25, 0.9); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
+.logo { font-size: 1.8rem; font-weight: 800; letter-spacing: 1px; color: #fff; text-decoration: none; }
+.nav-links { display: flex; gap: 1.5rem; align-items: center; }
+.nav-links a { color: var(--text-muted); text-decoration: none; font-weight: 500; transition: 0.3s; }
+.nav-links a:hover { color: #fff; }
+
+.btn { padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; transition: 0.3s; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.btn-outline:hover { background: var(--card-bg); }
+
+.hero { text-align: center; padding: 5rem 1rem; max-width: 800px; margin: 0 auto; }
+.hero h1 { font-size: 3rem; font-weight: 800; margin-bottom: 1rem; background: linear-gradient(to right, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 2rem; }
+
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 1000; justify-content: center; align-items: center; padding: 1rem; }
+.modal-overlay.active { display: flex; }
+.modal { background: var(--card-bg); border: 1px solid var(--border); padding: 2rem; border-radius: 16px; width: 100%; max-width: 420px; position: relative; }
+.modal h2 { margin-bottom: 1.5rem; font-size: 1.5rem; }
+.close-btn { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
+
+.form-group { margin-bottom: 1.2rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted); }
+.form-group input, .form-group textarea { width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: #fff; font-size: 1rem; }
+.form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--accent); }
+
+#admin-panel { display: none; padding: 3rem 5%; }
+.admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+table { width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 12px; overflow: hidden; }
+th, td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+th { background: rgba(0,0,0,0.2); color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
