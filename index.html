@@ -170,7 +170,7 @@ $("#loginForm").onsubmit=async ev=>{
 /* Kartochkalar */
 const evCard=e=>`<article class="card">${safe(e.image_url)?`<img class="evimg" src="${esc(safe(e.image_url))}" alt="${esc(e.title)}" loading="lazy">`:""}<h3>${esc(e.title)}</h3><p>${esc((e.description||"").slice(0,140))}</p>
 <div class="meta">${e.starts_at?`<span>📅 ${fd(e.starts_at)}, ${ft(e.starts_at)}</span>`:""}${e.location?`<span>📍 ${esc(e.location)}</span>`:""}${e.format?`<span>🏷 ${esc(e.format)}</span>`:""}</div></article>`;
-const opCard=o=>{const u=safe(o.source_url);return `<article class="card"><span class="pill">${esc(o.category)}</span><h3>${esc(o.title)}</h3><p>${esc(o.description)}</p>${o.eligibility?`<p><b>Talablar:</b> ${esc(o.eligibility)}</p>`:""}${o.deadline?`<p><b>Muddat:</b> ${fd(o.deadline)}</p>`:""}${u?`<a class="btn acc sm" href="${esc(u)}" target="_blank" rel="noopener">Rasmiy manba ↗</a>`:""}</article>`};
+const opCard=o=>{const u=safe(o.source_url);return `<article class="card">${safe(o.image_url)?`<img class="evimg" src="${esc(safe(o.image_url))}" alt="${esc(o.title)}" loading="lazy">`:""}<span class="pill">${esc(o.category)}</span><h3>${esc(o.title)}</h3><p>${esc(o.description)}</p>${o.eligibility?`<p><b>Talablar:</b> ${esc(o.eligibility)}</p>`:""}${o.deadline?`<p><b>Muddat:</b> ${fd(o.deadline)}</p>`:""}${u?`<a class="btn acc sm" href="${esc(u)}" target="_blank" rel="noopener">Rasmiy manba ↗</a>`:""}</article>`};
 const tmCard=m=>{const p=safe(m.photo);return `<article class="card"><div class="photo"${p?` style="background-image:url('${esc(p)}')"`:""}></div><h3>${esc(m.name)}</h3><b style="color:var(--acc);font-size:.85rem">${esc(m.role)}</b><p>${esc(m.bio)}</p></article>`};
 
 /* Ma'lumotlarni yuklash */
