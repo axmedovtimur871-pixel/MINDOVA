@@ -1,103 +1,130 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MINDOVA — Admin Panel</title>
-  <style>
-    body { font-family: system-ui, sans-serif; background: #0F0E26; color: #fff; margin: 0; padding: 20px; }
-    h1, h2 { color: #6366F1; }
-    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-    .tab-btn { background: #1B1A3A; color: #fff; border: 1px solid #333; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
-    .tab-btn.active { background: #6366F1; }
-    .section { display: none; background: #181735; padding: 20px; border-radius: 12px; }
-    .section.active { display: block; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    th, td { border: 1px solid rgba(255,255,255,0.1); padding: 10px; text-align: left; }
-    th { background: #25234A; }
-    input, textarea, button { width: 100%; padding: 10px; margin: 8px 0; border-radius: 6px; border: 1px solid #444; background: #0F0E26; color: #fff; box-sizing: border-box; }
-    button.submit-btn { background: #6366F1; cursor: pointer; font-weight: bold; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MINDOVA — Admin Panel</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
+body{font-family:system-ui,sans-serif;background:#0F0E26;color:#fff;margin:0;padding:20px}
+h1,h2{color:#6366F1}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.tabs{display:flex;gap:10px;margin:16px 0;flex-wrap:wrap}
+.tab-btn{background:#1B1A3A;color:#fff;border:1px solid #333;padding:10px 20px;border-radius:8px;cursor:pointer;width:auto}
+.tab-btn.active{background:#6366F1}
+.section{display:none;background:#181735;padding:20px;border-radius:12px}
+.section.active{display:block}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;margin-top:15px;min-width:560px}
+th,td{border:1px solid rgba(255,255,255,.1);padding:10px;text-align:left;font-size:.9rem}
+th{background:#25234A}
+input,textarea,button{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:1px solid #444;background:#0F0E26;color:#fff;box-sizing:border-box;font:inherit}
+button.submit-btn{background:#6366F1;cursor:pointer;font-weight:bold}
+#out{width:auto;margin:0;cursor:pointer}
+.msg{min-height:1.2em;font-size:.9rem;color:#9FB0FF}
+</style>
 </head>
 <body>
+<div class="top"><h1>MINDOVA Admin Panel</h1><button id="out" class="tab-btn" type="button">Chiqish</button></div>
+<div class="tabs">
+ <button class="tab-btn active" data-tab="users">Ro'yxatdan o'tganlar</button>
+ <button class="tab-btn" data-tab="events">Tadbirlar</button>
+ <button class="tab-btn" data-tab="team">Jamoa</button>
+</div>
 
-  <h1>MINDOVA Admin Panel</h1>
+<div id="users" class="section active">
+ <h2>Ro'yxatdan o'tgan foydalanuvchilar</h2>
+ <div class="scroll"><table>
+  <thead><tr><th>Ism Familiya</th><th>Yosh</th><th>Telegram</th><th>Izoh</th><th>Sana</th></tr></thead>
+  <tbody id="userList"></tbody>
+ </table></div>
+ <div class="msg" id="uMsg"></div>
+</div>
 
-  <div class="tabs">
-    <button class="tab-btn active" onclick="showTab('users')">Ro'yxatdan o'tganlar</button>
-    <button class="tab-btn" onclick="showTab('events')">Tadbirlar</button>
-    <button class="tab-btn" onclick="showTab('team')">Jamoa</button>
-  </div>
+<div id="events" class="section">
+ <h2>Yangi tadbir qo'shish</h2>
+ <form id="addEventForm">
+  <input type="text" id="evTitle" placeholder="Tadbir nomi" required>
+  <input type="date" id="evDate" required>
+  <input type="time" id="evTime" required>
+  <input type="text" id="evPlace" placeholder="O'tkazilish joyi" required>
+  <textarea id="evDesc" placeholder="Tadbir haqida batafsil" rows="3"></textarea>
+  <button type="submit" class="submit-btn">Tadbirni saqlash</button>
+  <div class="msg" id="eMsg"></div>
+ </form>
+</div>
 
-  <!-- 1. Ro'yxatdan o'tganlar -->
-  <div id="users" class="section active">
-    <h2>Ro'yxatdan o'tgan foydalanuvchilar</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Ism Familiya</th>
-          <th>Telefon</th>
-          <th>Telegram Username</th>
-          <th>Sana</th>
-        </tr>
-      </thead>
-      <tbody id="userList">
-        <!-- Backend'dan ma'lumot keladi -->
-      </tbody>
-    </table>
-  </div>
+<div id="team" class="section">
+ <h2>Jamoa a'zosini qo'shish</h2>
+ <form id="addTeamForm">
+  <input type="text" id="mName" placeholder="Ism Familiya" required>
+  <input type="text" id="mRole" placeholder="Lavozimi (masalan: Asoschi)" required>
+  <input type="text" id="mPhoto" placeholder="Rasm havolasi (URL)">
+  <textarea id="mBio" placeholder="Qisqacha bio" rows="3"></textarea>
+  <button type="submit" class="submit-btn">A'zoni saqlash</button>
+  <div class="msg" id="tMsg"></div>
+ </form>
+</div>
 
-  <!-- 2. Tadbirlar boshqaruvi -->
-  <div id="events" class="section">
-    <h2>Yangi tadbir qo'shish</h2>
-    <form id="addEventForm">
-      <input type="text" id="evTitle" placeholder="Tadbir nomi" required>
-      <input type="date" id="evDate" required>
-      <input type="text" id="evTime" placeholder="Vaqti (masalan: 15:00)" required>
-      <input type="text" id="evPlace" placeholder="O'tkazilish joyi" required>
-      <textarea id="evDesc" placeholder="Tadbir haqida batafsil" rows="3"></textarea>
-      <button type="submit" class="submit-btn">Tadbirni saqlash</button>
-    </form>
-  </div>
+<script>
+const sb=supabase.createClient("https://zrebikqvjbvuwbzcunkw.supabase.co","sb_publishable_DszdaPjNPM3i0UbGX3lLjQ_DTjdfLcW");
+const $=id=>document.getElementById(id);
 
-  <!-- 3. Jamoa boshqaruvi -->
-  <div id="team" class="section">
-    <h2>Jamoa a'zosini qo'shish / tahrirlash</h2>
-    <form id="addTeamForm">
-      <input type="text" id="mName" placeholder="Ism Familiya" required>
-      <input type="text" id="mRole" placeholder="Lavozimi (masalan: Asoschi)" required>
-      <input type="text" id="mPhoto" placeholder="Rasm havolasi (URL)">
-      <textarea id="mBio" placeholder="Qisqacha bio" rows="3"></textarea>
-      <button type="submit" class="submit-btn">A'zoni saqlash</button>
-    </form>
-  </div>
+document.querySelectorAll(".tab-btn[data-tab]").forEach(b=>b.onclick=()=>{
+ document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+ document.querySelectorAll(".tab-btn[data-tab]").forEach(x=>x.classList.remove("active"));
+ $(b.dataset.tab).classList.add("active");
+ b.classList.add("active");
+});
 
-  <script>
-    function showTab(id) {
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-      event.target.classList.add('active');
-    }
+$("out").onclick=async()=>{await sb.auth.signOut();location.href="/"};
 
-    // Ro'yxatdan o'tganlarni yuklash
-    async function loadUsers() {
-      try {
-        const res = await fetch('/api/admin/users');
-        if (res.ok) {
-          const users = await res.json();
-          document.getElementById('userList').innerHTML = users.map(u => `
-            <tr>
-              <td>${u.fullName}</td>
-              <td>${u.phone}</td>
-              <td>${u.tgUsername}</td>
-              <td>${new Date(u.createdAt).toLocaleDateString()}</td>
-            </tr>
-          `).join('');
-        }
-      } catch(e) {}
-    }
-    loadUsers();
-  </script>
+async function loadUsers(){
+ const {data,error}=await sb.from("registrations").select("*").order("created_at",{ascending:false});
+ const tb=$("userList");
+ tb.innerHTML="";
+ if(error){$("uMsg").textContent="Yuklab bo'lmadi: "+error.message;return}
+ if(!data.length){$("uMsg").textContent="Hozircha arizalar yo'q.";return}
+ $("uMsg").textContent="";
+ data.forEach(u=>{
+  const tr=document.createElement("tr");
+  [u.full_name,u.age,u.telegram,u.letter,u.created_at?new Date(u.created_at).toLocaleDateString():""].forEach(v=>{
+   const td=document.createElement("td");
+   td.textContent=v??"";
+   tr.appendChild(td);
+  });
+  tb.appendChild(tr);
+ });
+}
+
+$("addEventForm").onsubmit=async e=>{
+ e.preventDefault();
+ const row={
+  title:$("evTitle").value.trim(),
+  description:$("evDesc").value.trim(),
+  starts_at:new Date($("evDate").value+"T"+$("evTime").value).toISOString(),
+  location:$("evPlace").value.trim(),
+  status:"published",
+  registration_open:true
+ };
+ const {error}=await sb.from("events").insert([row]);
+ $("eMsg").textContent=error?"Xato: "+error.message:"Tadbir saqlandi ✓";
+ if(!error)e.target.reset();
+};
+
+$("addTeamForm").onsubmit=async e=>{
+ e.preventDefault();
+ const row={name:$("mName").value.trim(),role:$("mRole").value.trim(),photo:$("mPhoto").value.trim()||null,bio:$("mBio").value.trim()};
+ const {error}=await sb.from("team").insert([row]);
+ $("tMsg").textContent=error?"Xato: "+error.message:"A'zo saqlandi ✓";
+ if(!error)e.target.reset();
+};
+
+(async()=>{
+ const {data}=await sb.auth.getSession();
+ if(!data.session){location.href="/";return}
+ loadUsers();
+})();
+</script>
 </body>
 </html>
