@@ -21,18 +21,24 @@ h1,h2,h3{line-height:1.15;letter-spacing:-.02em}
 h2{font-size:clamp(1.6rem,4vw,2.3rem);font-weight:800}
 nav{position:sticky;top:0;z-index:30;background:var(--navy);color:#fff}
 nav .wrap{display:flex;align-items:center;gap:22px;height:64px}
-.logo{font-weight:800;font-size:1.25rem}.logo i{color:var(--acc);font-style:normal}
+.logo{font-weight:800;font-size:1.25rem}
+.logo i{color:var(--acc);font-style:normal}
 .links{display:flex;gap:20px;font-size:.9rem;font-weight:500;flex:1}
-.links a{color:#C9D3DF;padding:6px 0}.links a:hover{color:#fff}
+.links a{color:#C9D3DF;padding:6px 0}
+.links a:hover{color:#fff}
+.nr{display:flex;gap:10px;align-items:center}
 .burger{display:none;background:none;border:0;color:#fff;font-size:1.6rem;cursor:pointer;margin-left:auto}
 .btn{display:inline-flex;align-items:center;justify-content:center;border:0;cursor:pointer;font-weight:700;border-radius:99px;padding:12px 22px;background:var(--navy);color:#fff;font-size:.95rem}
-.btn:hover{filter:brightness(1.12)}.btn:disabled{opacity:.6;cursor:wait}
-.btn.acc{background:var(--acc)}.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.35)}
+.btn:hover{filter:brightness(1.12)}
+.btn:disabled{opacity:.6;cursor:wait}
+.btn.acc{background:var(--acc)}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.35)}
 .btn.sm{padding:8px 16px;font-size:.85rem}
 @media(max-width:860px){
-  .burger{display:block}.links,.nr{display:none}
-  nav.open .wrap{flex-wrap:wrap;height:auto;padding-top:14px;padding-bottom:16px}
-  nav.open .links,nav.open .nr{display:flex;flex-direction:column;width:100%;gap:12px}
+ .burger{display:block}
+ .links,.nr{display:none}
+ nav.open .wrap{flex-wrap:wrap;height:auto;padding-top:14px;padding-bottom:16px}
+ nav.open .links,nav.open .nr{display:flex;flex-direction:column;align-items:stretch;width:100%;gap:12px}
 }
 .hero{background:var(--deep);color:#fff;padding:90px 0 110px}
 .hero h1{font-size:clamp(3.2rem,12vw,7rem);font-weight:800;margin:10px 0 6px}
@@ -42,7 +48,8 @@ nav .wrap{display:flex;align-items:center;gap:22px;height:64px}
 section.s{padding:60px 0}
 .grid{display:grid;gap:20px;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));margin-top:24px}
 .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:8px}
-.card p{color:var(--mut);font-size:.92rem}.meta{display:flex;flex-wrap:wrap;gap:4px 14px;color:var(--mut);font-size:.82rem}
+.card p{color:var(--mut);font-size:.92rem}
+.meta{display:flex;flex-wrap:wrap;gap:4px 14px;color:var(--mut);font-size:.82rem}
 .card .btn{margin-top:auto}
 .pill{display:inline-block;align-self:flex-start;padding:3px 10px;border-radius:99px;font-size:.76rem;font-weight:700;background:#EEF2FF;color:#3D3BF3}
 .photo{width:72px;height:72px;border-radius:50%;background:#EEF2FF center/cover}
@@ -51,86 +58,85 @@ section.s{padding:60px 0}
 label{display:block;font-weight:600;font-size:.88rem;margin-bottom:14px}
 input,select,textarea{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;margin-top:6px;font-weight:400}
 textarea{min-height:110px;resize:vertical}
-.err{color:#B42318;font-size:.8rem;min-height:1em;margin-top:4px;font-weight:400}.cnt{text-align:right;font-size:.8rem;color:var(--mut)}
+.err{color:#B42318;font-size:.8rem;min-height:1em;margin-top:4px;font-weight:400}
+.cnt{text-align:right;font-size:.8rem;color:var(--mut)}
 .ok{text-align:center;padding:10px 0}
 footer{background:var(--navy);color:#C9D3DF;padding:30px 0}
 footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
-
-/* Modal / Admin Login */
-.modal-backdrop{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:100;align-items:center;justify-content:center}
+.modal-backdrop{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:100;align-items:center;justify-content:center}
 .modal-backdrop.open{display:flex}
-.modal{background:#fff;padding:30px;border-radius:16px;max-width:400px;width:90%;box-shadow:0 10px 25px rgba(0,0,0,0.2);position:relative}
-.modal-close{position:absolute;top:15px;right:15px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--mut)}
+.modal{background:#fff;padding:30px;border-radius:16px;max-width:400px;width:90%;box-shadow:0 10px 25px rgba(0,0,0,.2);position:relative}
+.modal-close{position:absolute;top:15px;right:15px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--mut);width:auto;margin:0;padding:4px}
 </style>
 </head>
 <body>
-
 <nav id="nav"><div class="wrap">
-  <a class="logo" href="#top"><i>M</i> MINDOVA</a>
-  <button class="burger" id="burger" aria-label="Menyu">☰</button>
-  <div class="links">
-    <a href="#tadbirlar">Tadbirlar</a>
-    <a href="#imkoniyatlar">Imkoniyatlar</a>
-    <a href="#haqimizda">Biz haqimizda</a>
-    <a id="tg1" target="_blank" rel="noopener">Telegram kanalimiz</a>
-  </div>
-  <div class="nr">
-    <a class="btn acc sm" href="#royxat">Ro‘yxatdan o‘tish</a> 
-    <button class="btn ghost sm" id="openLogin">Kirish</button>
-  </div>
+ <a class="logo" href="#top"><i>M</i> MINDOVA</a>
+ <button class="burger" id="burger" aria-label="Menyu" type="button">☰</button>
+ <div class="links">
+  <a href="#tadbirlar">Tadbirlar</a>
+  <a href="#imkoniyatlar">Imkoniyatlar</a>
+  <a href="#haqimizda">Biz haqimizda</a>
+  <a id="tg1" target="_blank" rel="noopener">Telegram kanalimiz</a>
+ </div>
+ <div class="nr">
+  <a class="btn acc sm" href="#royxat">Ro‘yxatdan o‘tish</a>
+  <button class="btn ghost sm" id="openLogin" type="button">Kirish</button>
+ </div>
 </div></nav>
 
 <header class="hero" id="top"><div class="wrap">
-  <h1>MINDOVA</h1>
-  <h2>Fikrla. Muloqot qil. Yarat.</h2>
-  <p>Fikr almashish, yangi insonlar bilan tanishish, foydali ko‘nikmalarni rivojlantirish va yangi imkoniyatlarni kashf etish maydoni.</p>
-  <div class="cta-row">
-    <a class="btn acc" href="#royxat">Ro‘yxatdan o‘tish</a>
-    <a class="btn ghost" href="#haqimizda">Biz haqimizda</a>
-  </div>
+ <h1>MINDOVA</h1>
+ <h2>Fikrla. Muloqot qil. Yarat.</h2>
+ <p>Fikr almashish, yangi insonlar bilan tanishish, foydali ko‘nikmalarni rivojlantirish va yangi imkoniyatlarni kashf etish maydoni.</p>
+ <div class="cta-row">
+  <a class="btn acc" href="#royxat">Ro‘yxatdan o‘tish</a>
+  <a class="btn ghost" href="#haqimizda">Biz haqimizda</a>
+ </div>
 </div></header>
 
 <section class="s" id="tadbirlar"><div class="wrap"><h2>Tadbirlar</h2><div class="grid" id="evg"><div class="empty">Yuklanmoqda…</div></div></div></section>
 <section class="s" id="imkoniyatlar" style="padding-top:0"><div class="wrap"><h2>Dolzarb imkoniyatlar</h2><div class="grid" id="opg"><div class="empty">Yuklanmoqda…</div></div></div></section>
 <section class="s" id="haqimizda" style="padding-top:0"><div class="wrap"><h2>Biz haqimizda</h2>
-  <p class="muted" style="max-width:720px;margin-top:12px">MINDOVA — yoshlar uchun fikr almashish, rivojlanish va kelajak sari birgalikda harakat qilish maydoni.</p>
-  <div class="grid" id="teamg"></div></div></section>
+ <p class="muted" style="max-width:720px;margin-top:12px">MINDOVA — yoshlar uchun fikr almashish, rivojlanish va kelajak sari birgalikda harakat qilish maydoni.</p>
+ <div class="grid" id="teamg"></div></div></section>
 
 <section class="s" id="royxat" style="padding-top:0"><div class="wrap">
-  <h2 style="text-align:center">Ro‘yxatdan o‘tish</h2>
-  <div class="form" id="rf">
-    <form id="f" novalidate>
-      <label>Ism va familiya<input name="fullName" autocomplete="name" maxlength="80" required><div class="err" data-e="fullName"></div></label>
-      <label>Yosh<input name="age" type="number" inputmode="numeric" min="10" max="99" required><div class="err" data-e="age"></div></label>
-      <label>Telegram username<input name="telegram" placeholder="@username" maxlength="33" required><div class="err" data-e="telegram"></div></label>
-      <label>Tadbir<select name="eventId" id="evsel"><option value="">Umumiy ariza</option></select></label>
-      <label>Nima uchun MINDOVAni tanladingiz va undan nimalarni kutyapsiz?<textarea name="letter" maxlength="300" required></textarea><div class="cnt" id="cnt">0 / 300</div><div class="err" data-e="letter"></div></label>
-      <input name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
-      <button class="btn acc" style="width:100%" id="sbm" type="submit">Yuborish</button>
-      <div class="err" id="ge" style="text-align:center;margin-top:10px"></div>
-    </form>
-  </div>
+ <h2 style="text-align:center">Ro‘yxatdan o‘tish</h2>
+ <div class="form" id="rf">
+  <form id="f" novalidate>
+   <label>Ism va familiya<input name="fullName" autocomplete="name" maxlength="80" required><div class="err" data-e="fullName"></div></label>
+   <label>Yosh<input name="age" type="number" inputmode="numeric" min="10" max="99" required><div class="err" data-e="age"></div></label>
+   <label>Telegram username<input name="telegram" placeholder="@username" maxlength="33" required><div class="err" data-e="telegram"></div></label>
+   <label>Tadbir<select name="eventId" id="evsel"><option value="">Umumiy ariza</option></select></label>
+   <label>Nima uchun MINDOVAni tanladingiz va undan nimalarni kutyapsiz?<textarea name="letter" maxlength="300" required></textarea><div class="cnt" id="cnt">0 / 300</div><div class="err" data-e="letter"></div></label>
+   <input name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+   <button class="btn acc" style="width:100%" id="sbm" type="submit">Yuborish</button>
+   <div class="err" id="ge" style="text-align:center;margin-top:10px"></div>
+  </form>
+ </div>
 </div></section>
 
-<!-- Admin Login Modal -->
 <div class="modal-backdrop" id="loginModal">
-  <div class="modal">
-    <button class="modal-close" id="closeLogin">✕</button>
-    <h3 style="margin-bottom:16px">Admin Panelga kirish</h3>
-    <form id="loginForm">
-      <label>Email<input type="email" name="email" required></label>
-      <label style="margin-top:10px">Parol<input type="password" name="password" required></label>
-      <button class="btn acc" style="width:100%;margin-top:20px" type="submit">Kirish</button>
-      <div class="err" id="loginErr" style="margin-top:10px;text-align:center"></div>
-    </form>
-  </div>
+ <div class="modal">
+  <button class="modal-close" id="closeLogin" type="button" aria-label="Yopish">✕</button>
+  <h3 style="margin-bottom:16px">Admin Panelga kirish</h3>
+  <form id="loginForm">
+   <label>Email<input type="email" name="email" required></label>
+   <label style="margin-top:10px">Parol<input type="password" name="password" required></label>
+   <button class="btn acc" style="width:100%;margin-top:20px" type="submit">Kirish</button>
+   <div class="err" id="loginErr" style="margin-top:10px;text-align:center"></div>
+  </form>
+ </div>
 </div>
 
-<footer><div class="wrap"><span>© <span id="yr"></span> MINDOVA. Fikrla. Muloqot qil. Yarat.</span><a id="tg2" class="btn acc sm" target="_blank" rel="noopener">Telegram kanalimiz</a></div></footer>
+<footer><div class="wrap">
+ <span>© <span id="yr"></span> MINDOVA. Fikrla. Muloqot qil. Yarat.</span>
+ <a id="tg2" class="btn acc sm" target="_blank" rel="noopener">Telegram kanalimiz</a>
+</div></footer>
 
 <script>
 const CFG={URL:"https://zrebikqvjbvuwbzcunkw.supabase.co",KEY:"sb_publishable_DszdaPjNPM3i0UbGX3lLjQ_DTjdfLcW",TG:"https://t.me/Mindova_uz"};
-const sb=supabase.createClient(CFG.URL,CFG.KEY);
 const $=q=>document.querySelector(q);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const safe=u=>{try{const x=new URL(u);return /^https?:$/.test(x.protocol)?x.href:""}catch{return""}};
@@ -139,85 +145,79 @@ const fd=d=>{if(!d)return"";const x=new Date(d);return isNaN(x)?"":`${x.getDate(
 const ft=d=>{const x=new Date(d);return `${String(x.getHours()).padStart(2,"0")}:${String(x.getMinutes()).padStart(2,"0")}`};
 const empty=t=>`<div class="empty">${t}</div>`;
 
+/* Interfeys: bu qism Supabase yuklanmasa ham ishlaydi */
 $("#yr").textContent=new Date().getFullYear();
 $("#tg1").href=$("#tg2").href=CFG.TG;
 $("#burger").onclick=()=>$("#nav").classList.toggle("open");
 document.querySelectorAll(".links a,.nr a").forEach(a=>a.addEventListener("click",()=>$("#nav").classList.remove("open")));
-
-/* Modal Logic */
-$("#openLogin").onclick=()=>$("#loginModal").classList.add("open");
+$("#openLogin").onclick=()=>{$("#nav").classList.remove("open");$("#loginModal").classList.add("open")};
 $("#closeLogin").onclick=()=>$("#loginModal").classList.remove("open");
 
-/* Admin Login Handler */
+const sb=window.supabase?supabase.createClient(CFG.URL,CFG.KEY):null;
+
+/* Admin kirish */
 $("#loginForm").onsubmit=async ev=>{
-  ev.preventDefault();
-  $("#loginErr").textContent="";
-  const form=ev.target;
-  const {data,error}=await sb.auth.signInWithPassword({email:form.email.value,password:form.password.value});
-  if(error){
-    $("#loginErr").textContent="Email yoki parol xato!";
-  } else {
-    alert("Muvaffaqiyatli kirdingiz!");
-    $("#loginModal").classList.remove("open");
-  }
+ ev.preventDefault();
+ $("#loginErr").textContent="";
+ if(!sb){$("#loginErr").textContent="Ulanish xatosi. Sahifani yangilang.";return}
+ const form=ev.target;
+ const {error}=await sb.auth.signInWithPassword({email:form.email.value,password:form.password.value});
+ if(error){$("#loginErr").textContent="Email yoki parol xato!";return}
+ location.href="/admin";
 };
 
+/* Kartochkalar */
 const evCard=e=>`<article class="card"><h3>${esc(e.title)}</h3><p>${esc((e.description||"").slice(0,140))}</p>
- <div class="meta">${e.starts_at?`<span>🗓 ${fd(e.starts_at)},${ft(e.starts_at)}</span>`:""}${e.location?`<span>📍 ${esc(e.location)}</span>`:""}${e.format?`<span>🏷 ${esc(e.format)}</span>`:""}</div></article>`;
-const opCard=o=>{const u=safe(o.source_url);return `<article class="card"><span class="pill">${esc(o.category)}</span><h3>${esc(o.title)}</h3><p>${esc(o.description)}</p>
- ${o.eligibility?`<p><b>Talablar:</b> ${esc(o.eligibility)}</p>`:""}${o.deadline?`<p><b>Muddat:</b> ${fd(o.deadline)}</p>`:""}
- ${u?`<a class="btn acc sm" href="${esc(u)}" target="_blank" rel="noopener">Rasmiy manba ↗</a>`:""}</article>`};
-const tmCard=m=>{const p=safe(m.photo);return `<article class="card"><div class="photo" ${p?`style="background-image:url('${esc(p)}')"`:""}></div><h3>${esc(m.name)}</h3><b style="color:var(--acc);font-size:.85rem">${esc(m.role)}</b><p>${esc(m.bio)}</p></article>`};
+<div class="meta">${e.starts_at?`<span>📅 ${fd(e.starts_at)}, ${ft(e.starts_at)}</span>`:""}${e.location?`<span>📍 ${esc(e.location)}</span>`:""}${e.format?`<span>🏷 ${esc(e.format)}</span>`:""}</div></article>`;
+const opCard=o=>{const u=safe(o.source_url);return `<article class="card"><span class="pill">${esc(o.category)}</span><h3>${esc(o.title)}</h3><p>${esc(o.description)}</p>${o.eligibility?`<p><b>Talablar:</b> ${esc(o.eligibility)}</p>`:""}${o.deadline?`<p><b>Muddat:</b> ${fd(o.deadline)}</p>`:""}${u?`<a class="btn acc sm" href="${esc(u)}" target="_blank" rel="noopener">Rasmiy manba ↗</a>`:""}</article>`};
+const tmCard=m=>{const p=safe(m.photo);return `<article class="card"><div class="photo"${p?` style="background-image:url('${esc(p)}')"`:""}></div><h3>${esc(m.name)}</h3><b style="color:var(--acc);font-size:.85rem">${esc(m.role)}</b><p>${esc(m.bio)}</p></article>`};
 
+/* Ma'lumotlarni yuklash */
 async function load(){
-  const [ev,op,tm]=await Promise.all([
-    sb.from("events").select("*").eq("status","published").order("starts_at",{ascending:true}),
-    sb.from("opportunities").select("*").eq("status","published").order("created_at",{ascending:false}),
-    sb.from("team").select("*").order("created_at",{ascending:true})]);
-  $("#evg").innerHTML=ev.error?empty("Tadbirlarni yuklab bo‘lmadi."):ev.data.length?ev.data.map(evCard).join(""):empty("Hozircha tadbirlar yo‘q.");
-  $("#opg").innerHTML=op.error?empty("Imkoniyatlarni yuklab bo‘lmadi."):op.data.length?op.data.map(opCard).join(""):empty("Hozircha e’lon qilingan imkoniyatlar yo‘q.");
-  $("#teamg").innerHTML=tm.error||!tm.data.length?"":tm.data.map(tmCard).join("");
-  if(!ev.error){const now=new Date();
-    $("#evsel").insertAdjacentHTML("beforeend",ev.data.filter(e=>e.registration_open&&(!e.starts_at||new Date(e.starts_at)>=now)&&(!e.registration_deadline||new Date(e.registration_deadline)>=now))
-      .map(e=>`<option value="${esc(e.id)}">${esc(e.title)}</option>`).join(""));}
+ if(!sb){["#evg","#opg"].forEach(i=>$(i).innerHTML=empty("Yuklab bo‘lmadi."));return}
+ const [ev,op,tm]=await Promise.all([
+  sb.from("events").select("*").eq("status","published").order("starts_at",{ascending:true}),
+  sb.from("opportunities").select("*").eq("status","published").order("created_at",{ascending:false}),
+  sb.from("team").select("*").order("created_at",{ascending:true})]);
+ $("#evg").innerHTML=ev.error?empty("Tadbirlarni yuklab bo‘lmadi."):ev.data.length?ev.data.map(evCard).join(""):empty("Hozircha tadbirlar yo‘q.");
+ $("#opg").innerHTML=op.error?empty("Imkoniyatlarni yuklab bo‘lmadi."):op.data.length?op.data.map(opCard).join(""):empty("Hozircha e’lon qilingan imkoniyatlar yo‘q.");
+ $("#teamg").innerHTML=tm.error||!tm.data.length?"":tm.data.map(tmCard).join("");
+ if(!ev.error){
+  const now=new Date();
+  $("#evsel").insertAdjacentHTML("beforeend",ev.data.filter(e=>e.registration_open&&(!e.starts_at||new Date(e.starts_at)>=now)&&(!e.registration_deadline||new Date(e.registration_deadline)>=now))
+   .map(e=>`<option value="${esc(e.id)}">${esc(e.title)}</option>`).join(""));
+ }
 }
 load();
 
+/* Ro'yxatdan o'tish formasi */
 const f=$("#f");
 f.letter.oninput=()=>$("#cnt").textContent=f.letter.value.length+" / 300";
-
-/* Form Registration to Supabase directly */
 f.onsubmit=async ev=>{
-  ev.preventDefault();
-  document.querySelectorAll(".err").forEach(x=>x.textContent="");
-
-  if(!f.fullName.value.trim()){ $('[data-e="fullName"]').textContent="Ismingizni kiriting"; return; }
-  if(!f.age.value){ $('[data-e="age"]').textContent="Yoshingizni kiriting"; return; }
-  if(!f.telegram.value.trim()){ $('[data-e="telegram"]').textContent="Telegram username kiriting"; return; }
-  if(!f.letter.value.trim()){ $('[data-e="letter"]').textContent="Izohingizni yozing"; return; }
-
-  const b=$("#sbm");
-  b.disabled=true;
-  b.textContent="Yuborilmoqda…";
-
-  try{
-    const { error } = await sb.from("registrations").insert([{
-      full_name: f.fullName.value.trim(),
-      age: parseInt(f.age.value) || null,
-      telegram: f.telegram.value.trim(),
-      event_id: f.eventId.value || null,
-      letter: f.letter.value.trim()
-    }]);
-
-    if(error) throw error;
-
-    $("#rf").innerHTML=`<div class="ok"><h2 style="font-size:1.5rem">Ro‘yxatdan o‘tish muvaffaqiyatli yakunlandi!</h2><p class="muted" style="margin:12px 0 22px">Arizangiz qabul qilindi. Jamoa siz bilan Telegram orqali bog‘lanadi.</p><a class="btn acc" href="${esc(CFG.TG)}" target="_blank" rel="noopener">Telegram kanalimizga qo‘shiling</a></div>`;
-  }catch(err){
-    console.error(err);
-    $("#ge").textContent="Xatolik yuz berdi. Qayta urinib ko‘ring.";
-    b.disabled=false;
-    b.textContent="Yuborish";
-  }
+ ev.preventDefault();
+ document.querySelectorAll(".err").forEach(x=>x.textContent="");
+ if(f.website.value)return;
+ if(!f.fullName.value.trim()){$('[data-e="fullName"]').textContent="Ismingizni kiriting";return}
+ if(!f.age.value){$('[data-e="age"]').textContent="Yoshingizni kiriting";return}
+ if(!f.telegram.value.trim()){$('[data-e="telegram"]').textContent="Telegram username kiriting";return}
+ if(!f.letter.value.trim()){$('[data-e="letter"]').textContent="Izohingizni yozing";return}
+ const b=$("#sbm");
+ b.disabled=true;b.textContent="Yuborilmoqda…";
+ try{
+  const {error}=await sb.from("registrations").insert([{
+   full_name:f.fullName.value.trim(),
+   age:parseInt(f.age.value)||null,
+   telegram:f.telegram.value.trim(),
+   event_id:f.eventId.value||null,
+   letter:f.letter.value.trim()
+  }]);
+  if(error)throw error;
+  $("#rf").innerHTML=`<div class="ok"><h2 style="font-size:1.5rem">Ro‘yxatdan o‘tish muvaffaqiyatli yakunlandi!</h2><p class="muted" style="margin:12px 0 22px">Arizangiz qabul qilindi. Jamoa siz bilan Telegram orqali bog‘lanadi.</p><a class="btn acc" href="${esc(CFG.TG)}" target="_blank" rel="noopener">Telegram kanalimizga qo‘shiling</a></div>`;
+ }catch(err){
+  console.error(err);
+  $("#ge").textContent="Xatolik yuz berdi. Qayta urinib ko‘ring.";
+  b.disabled=false;b.textContent="Yuborish";
+ }
 };
 </script>
 </body>
