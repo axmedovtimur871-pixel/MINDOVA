@@ -18,7 +18,7 @@ h1,h2{color:#6366F1}
 table{width:100%;border-collapse:collapse;margin-top:15px;min-width:560px}
 th,td{border:1px solid rgba(255,255,255,.1);padding:10px;text-align:left;font-size:.9rem}
 th{background:#25234A}
-input,textarea,button{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:1px solid #444;background:#0F0E26;color:#fff;box-sizing:border-box;font:inherit}
+input,textarea,button,select{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:1px solid #444;background:#0F0E26;color:#fff;box-sizing:border-box;font:inherit}
 button.submit-btn{background:#6366F1;cursor:pointer;font-weight:bold}
 #out{width:auto;margin:0;cursor:pointer}
 label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
@@ -31,6 +31,7 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
  <button class="tab-btn active" data-tab="users">Ro'yxatdan o'tganlar</button>
  <button class="tab-btn" data-tab="events">Tadbirlar</button>
  <button class="tab-btn" data-tab="team">Jamoa</button>
+ <button class="tab-btn" data-tab="opps">Imkoniyatlar</button>
 </div>
 
 <div id="users" class="section active">
@@ -54,6 +55,23 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
   <button type="submit" class="submit-btn">Tadbirni saqlash</button>
   <div class="msg" id="eMsg"></div>
  </form>
+</div>
+
+<div id="opps" class="section">
+ <h2>Yangi imkoniyat / ish e'loni</h2>
+ <form id="addOppForm">
+  <input type="text" id="opTitle" placeholder="Sarlavha (masalan: SMM mutaxassisi)" required>
+  <select id="opCat"><option>Ish</option><option>Stajirovka</option><option>Grant</option><option>Stipendiya</option><option>Kurs</option><option>Boshqa</option></select>
+  <textarea id="opDesc" placeholder="Batafsil ma'lumot" rows="3" required></textarea>
+  <input type="text" id="opElig" placeholder="Talablar (ixtiyoriy)">
+  <label>Muddat (ixtiyoriy)<input type="date" id="opDeadline"></label>
+  <input type="text" id="opUrl" placeholder="Havola: https://... (ixtiyoriy)">
+  <label>Rasm (ixtiyoriy)<input type="file" id="opImg" accept="image/*"></label>
+  <button type="submit" class="submit-btn">E'lonni saqlash</button>
+  <div class="msg" id="oMsg"></div>
+ </form>
+ <h2 style="margin-top:28px">Joylangan e'lonlar</h2>
+ <div id="opList"></div>
 </div>
 
 <div id="team" class="section">
@@ -149,10 +167,52 @@ $("addTeamForm").onsubmit=async e=>{
  if(!error)e.target.reset();
 };
 
+async function loadOpps(){
+ const {data,error}=await sb.from("opportunities").select("id,title,category").order("created_at",{ascending:false});
+ const box=$("opList");
+ box.innerHTML="";
+ if(error){box.textContent="Yuklab bo'lmadi: "+error.message;return}
+ if(!data.length){box.textContent="Hozircha e'lonlar yo'q.";return}
+ data.forEach(o=>{
+  const row=document.createElement("div");
+  row.style.cssText="display:flex;gap:10px;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.1);padding:8px 0";
+  const t=document.createElement("span");
+  t.textContent=(o.category?o.category+" · ":"")+o.title;
+  const d=document.createElement("button");
+  d.textContent="O'chirish";d.type="button";d.className="tab-btn";d.style.flex="none";
+  d.onclick=async()=>{
+   if(!confirm("O'chirilsinmi?"))return;
+   const {error}=await sb.from("opportunities").delete().eq("id",o.id);
+   if(error){alert("Xato: "+error.message);return}
+   loadOpps();
+  };
+  row.append(t,d);
+  box.appendChild(row);
+ });
+}
+
+$("addOppForm").onsubmit=async e=>{
+ e.preventDefault();
+ $("oMsg").textContent="Saqlanmoqda…";
+ let image_url=null;
+ try{const fl=$("opImg").files[0];if(fl)image_url=await upImg(fl,"opps")}
+ catch(err){$("oMsg").textContent="Rasm yuklanmadi: "+err.message;return}
+ const title=$("opTitle").value.trim();
+ const row={title,category:$("opCat").value,description:$("opDesc").value.trim(),eligibility:$("opElig").value.trim()||null,deadline:$("opDeadline").value||null,source_url:$("opUrl").value.trim()||null,image_url,status:"published"};
+ let {error}=await sb.from("opportunities").insert([row]);
+ if(error&&/slug/i.test(error.message)){
+  row.slug=(title.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")||"opp")+"-"+Date.now().toString(36);
+  ({error}=await sb.from("opportunities").insert([row]));
+ }
+ $("oMsg").textContent=error?"Xato: "+error.message:"E'lon saqlandi ✓";
+ if(!error){e.target.reset();loadOpps()}
+};
+
 (async()=>{
  const {data}=await sb.auth.getSession();
  if(!data.session){location.href="/";return}
  loadUsers();
+ loadOpps();
 })();
 </script>
 </body>
