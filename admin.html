@@ -21,6 +21,7 @@ th{background:#25234A}
 input,textarea,button{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:1px solid #444;background:#0F0E26;color:#fff;box-sizing:border-box;font:inherit}
 button.submit-btn{background:#6366F1;cursor:pointer;font-weight:bold}
 #out{width:auto;margin:0;cursor:pointer}
+label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
 .msg{min-height:1.2em;font-size:.9rem;color:#9FB0FF}
 </style>
 </head>
@@ -49,6 +50,7 @@ button.submit-btn{background:#6366F1;cursor:pointer;font-weight:bold}
   <input type="time" id="evTime" required>
   <input type="text" id="evPlace" placeholder="O'tkazilish joyi" required>
   <textarea id="evDesc" placeholder="Tadbir haqida batafsil" rows="3"></textarea>
+  <label>Tadbir rasmi<input type="file" id="evImg" accept="image/*"></label>
   <button type="submit" class="submit-btn">Tadbirni saqlash</button>
   <div class="msg" id="eMsg"></div>
  </form>
@@ -59,7 +61,8 @@ button.submit-btn{background:#6366F1;cursor:pointer;font-weight:bold}
  <form id="addTeamForm">
   <input type="text" id="mName" placeholder="Ism Familiya" required>
   <input type="text" id="mRole" placeholder="Lavozimi (masalan: Asoschi)" required>
-  <input type="text" id="mPhoto" placeholder="Rasm havolasi (URL)">
+  <label>Rasm yuklash<input type="file" id="mFile" accept="image/*"></label>
+  <input type="text" id="mPhoto" placeholder="yoki rasm havolasi (URL)">
   <textarea id="mBio" placeholder="Qisqacha bio" rows="3"></textarea>
   <button type="submit" class="submit-btn">A'zoni saqlash</button>
   <div class="msg" id="tMsg"></div>
@@ -76,6 +79,22 @@ document.querySelectorAll(".tab-btn[data-tab]").forEach(b=>b.onclick=()=>{
  $(b.dataset.tab).classList.add("active");
  b.classList.add("active");
 });
+
+async function prep(file){
+ const img=await createImageBitmap(file);
+ const s=Math.min(1,1400/Math.max(img.width,img.height));
+ const c=document.createElement("canvas");
+ c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);
+ c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+ return new Promise(r=>c.toBlob(r,"image/jpeg",.85));
+}
+async function upImg(file,folder){
+ const blob=await prep(file);
+ const path=folder+"/"+Date.now()+"-"+Math.random().toString(36).slice(2,8)+".jpg";
+ const {error}=await sb.storage.from("images").upload(path,blob,{contentType:"image/jpeg"});
+ if(error)throw error;
+ return sb.storage.from("images").getPublicUrl(path).data.publicUrl;
+}
 
 $("out").onclick=async()=>{await sb.auth.signOut();location.href="/"};
 
@@ -99,8 +118,14 @@ async function loadUsers(){
 
 $("addEventForm").onsubmit=async e=>{
  e.preventDefault();
+ $("eMsg").textContent="Saqlanmoqda…";
+ let image_url=null;
+ try{const fl=$("evImg").files[0];if(fl)image_url=await upImg(fl,"events")}
+ catch(err){$("eMsg").textContent="Rasm yuklanmadi: "+err.message;return}
  const row={
+  image_url,
   title:$("evTitle").value.trim(),
+  slug:($("evTitle").value.trim().toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")||"event")+"-"+Date.now().toString(36),
   description:$("evDesc").value.trim(),
   starts_at:new Date($("evDate").value+"T"+$("evTime").value).toISOString(),
   location:$("evPlace").value.trim(),
@@ -114,7 +139,11 @@ $("addEventForm").onsubmit=async e=>{
 
 $("addTeamForm").onsubmit=async e=>{
  e.preventDefault();
- const row={name:$("mName").value.trim(),role:$("mRole").value.trim(),photo:$("mPhoto").value.trim()||null,bio:$("mBio").value.trim()};
+ $("tMsg").textContent="Saqlanmoqda…";
+ let photo=$("mPhoto").value.trim()||null;
+ try{const fl=$("mFile").files[0];if(fl)photo=await upImg(fl,"team")}
+ catch(err){$("tMsg").textContent="Rasm yuklanmadi: "+err.message;return}
+ const row={name:$("mName").value.trim(),role:$("mRole").value.trim(),photo,bio:$("mBio").value.trim()};
  const {error}=await sb.from("team").insert([row]);
  $("tMsg").textContent=error?"Xato: "+error.message:"A'zo saqlandi ✓";
  if(!error)e.target.reset();
