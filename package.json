@@ -1,13 +1,21 @@
-{
-  "name": "mindova",
-  "version": "1.0.0",
-  "private": true,
-  "type": "module",
-  "scripts": { "start": "node server.js" },
-  "engines": { "node": ">=18" },
-  "dependencies": {
-    "express": "^4.21.0",
-    "grammy": "^1.30.0",
-    "mongodb": "^6.10.0"
-  }
-}
+import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+const send = (file) => (req, res) =>
+  res.sendFile(path.join(__dirname, file));
+
+app.get('/', send('index.html'));
+app.get('/admin', send('admin.html'));
+app.get('/login', send('login.html'));
+app.get('/index.html', send('index.html'));
+app.get('/admin.html', send('admin.html'));
+app.get('/login.html', send('login.html'));
+app.get('*', send('index.html'));
+
+app.listen(PORT, () =>
+  console.log(`MINDOVA server ${PORT}-portda ishlayapti`));
