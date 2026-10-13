@@ -218,16 +218,17 @@ f.onsubmit=async ev=>{
  ev.preventDefault();
  document.querySelectorAll(".err").forEach(x=>x.textContent="");
  if(f.website.value)return;
- if(!f.fullName.value.trim()){$('[data-e="fullName"]').textContent="Ismingizni kiriting";return}
+ if(f.fullName.value.trim().length<3){$('[data-e="fullName"]').textContent="Ismingizni kiriting";return}
  if(!f.age.value){$('[data-e="age"]').textContent="Yoshingizni kiriting";return}
- if(!f.telegram.value.trim()){$('[data-e="telegram"]').textContent="Telegram username kiriting";return}
+ const tg=f.telegram.value.trim().replace(/^@/,"").toLowerCase();
+ if(!/^[a-z][a-z0-9_]{4,31}$/.test(tg)){$('[data-e="telegram"]').textContent="Username noto‘g‘ri: lotin harflari, raqam va _ (kamida 5 ta belgi)";return}
  const b=$("#sbm");
  b.disabled=true;b.textContent="Yuborilmoqda…";
  try{
   const {error}=await sb.from("registrations").insert([{
    full_name:f.fullName.value.trim(),
    age:parseInt(f.age.value)||null,
-   telegram_username:f.telegram.value.trim(),
+   telegram_username:tg,
    event_id:f.eventId.value||null,
    letter:""
   }]);
