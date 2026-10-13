@@ -118,7 +118,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
   <form id="f" novalidate>
    <label>Ism va familiya<input name="fullName" autocomplete="name" maxlength="80" required><div class="err" data-e="fullName"></div></label>
    <label>Yosh<input name="age" type="number" inputmode="numeric" min="10" max="99" required><div class="err" data-e="age"></div></label>
-   <label>Telegram username<input name="telegram" placeholder="@username" maxlength="33" required><div class="err" data-e="telegram"></div></label>
+   <label>Telegram username<input name="telegram" placeholder="@username" maxlength="33" autocapitalize="none" autocorrect="off" spellcheck="false" required><div class="err" data-e="telegram"></div></label>
    <label>Tadbir<select name="eventId" id="evsel"><option value="">Umumiy ariza</option></select></label>
    <input name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
    <button class="btn acc" style="width:100%" id="sbm" type="submit">Yuborish</button>
@@ -214,6 +214,7 @@ load();
 
 /* Ro'yxatdan o'tish formasi */
 const f=$("#f");
+f.telegram.oninput=()=>{f.telegram.value=f.telegram.value.toLowerCase().replace(/[^a-z0-9_@]/g,"")};
 f.onsubmit=async ev=>{
  ev.preventDefault();
  document.querySelectorAll(".err").forEach(x=>x.textContent="");
