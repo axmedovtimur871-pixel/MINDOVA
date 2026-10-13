@@ -227,7 +227,7 @@ f.onsubmit=async ev=>{
   const {error}=await sb.from("registrations").insert([{
    full_name:f.fullName.value.trim(),
    age:parseInt(f.age.value)||null,
-   telegram:f.telegram.value.trim(),
+   telegram_username:f.telegram.value.trim(),
    event_id:f.eventId.value||null,
    letter:""
   }]);
@@ -235,7 +235,7 @@ f.onsubmit=async ev=>{
   $("#rf").innerHTML=`<div class="ok"><h2 style="font-size:1.5rem">Ro‘yxatdan o‘tish muvaffaqiyatli yakunlandi!</h2><p class="muted" style="margin:12px 0 22px">Arizangiz qabul qilindi. Jamoa siz bilan Telegram orqali bog‘lanadi.</p><a class="btn acc" href="${esc(CFG.TG)}" target="_blank" rel="noopener">Telegram kanalimizga qo‘shiling</a></div>`;
  }catch(err){
   console.error(err);
-  $("#ge").textContent="Xatolik yuz berdi. Qayta urinib ko‘ring.";
+  $("#ge").textContent="Xatolik yuz berdi. Qayta urinib ko‘ring."+(err&&err.message?" ("+err.message+")":"");
   b.disabled=false;b.textContent="Yuborish";
  }
 };
