@@ -125,7 +125,7 @@ async function loadUsers(){
  $("uMsg").textContent="";
  data.forEach(u=>{
   const tr=document.createElement("tr");
-  [u.full_name,u.age,u.telegram,u.letter,u.created_at?new Date(u.created_at).toLocaleDateString():""].forEach(v=>{
+  [u.full_name,u.age,u.telegram_username||u.telegram,u.letter,u.created_at?new Date(u.created_at).toLocaleDateString():""].forEach(v=>{
    const td=document.createElement("td");
    td.textContent=v??"";
    tr.appendChild(td);
