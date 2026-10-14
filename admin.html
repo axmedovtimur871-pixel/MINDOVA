@@ -15,7 +15,7 @@ h1,h2{color:#6366F1}
 .section{display:none;background:#181735;padding:20px;border-radius:12px}
 .section.active{display:block}
 .scroll{overflow-x:auto}
-table{width:100%;border-collapse:collapse;margin-top:15px;min-width:560px}
+table{width:100%;border-collapse:collapse;margin-top:15px;min-width:720px}
 th,td{border:1px solid rgba(255,255,255,.1);padding:10px;text-align:left;font-size:.9rem}
 th{background:#25234A}
 input,textarea,button,select{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:1px solid #444;background:#0F0E26;color:#fff;box-sizing:border-box;font:inherit}
@@ -37,7 +37,7 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
 <div id="users" class="section active">
  <h2>Ro'yxatdan o'tgan foydalanuvchilar</h2>
  <div class="scroll"><table>
-  <thead><tr><th>Ism Familiya</th><th>Yosh</th><th>Telegram</th><th>Izoh</th><th>Sana</th></tr></thead>
+  <thead><tr><th>Ism Familiya</th><th>Yosh</th><th>Telefon</th><th>Telegram</th><th>Tadbir</th><th>Sana</th></tr></thead>
   <tbody id="userList"></tbody>
  </table></div>
  <div class="msg" id="uMsg"></div>
@@ -117,7 +117,8 @@ async function upImg(file,folder){
 $("out").onclick=async()=>{await sb.auth.signOut();location.href="/"};
 
 async function loadUsers(){
- const {data,error}=await sb.from("registrations").select("*").order("created_at",{ascending:false});
+ const [{data,error},evr]=await Promise.all([sb.from("registrations").select("*").order("created_at",{ascending:false}),sb.from("events").select("id,title")]);
+ const evm={};(evr.data||[]).forEach(x=>evm[x.id]=x.title);
  const tb=$("userList");
  tb.innerHTML="";
  if(error){$("uMsg").textContent="Yuklab bo'lmadi: "+error.message;return}
@@ -125,7 +126,7 @@ async function loadUsers(){
  $("uMsg").textContent="";
  data.forEach(u=>{
   const tr=document.createElement("tr");
-  [u.full_name,u.age,u.telegram_username?"@"+u.telegram_username:u.telegram,u.letter,u.created_at?new Date(u.created_at).toLocaleDateString():""].forEach(v=>{
+  [u.full_name,u.age,u.phone,u.telegram_username?"@"+u.telegram_username:u.telegram,u.event_id?(evm[u.event_id]||"—"):"Umumiy",u.created_at?new Date(u.created_at).toLocaleDateString():""].forEach(v=>{
    const td=document.createElement("td");
    td.textContent=v??"";
    tr.appendChild(td);
