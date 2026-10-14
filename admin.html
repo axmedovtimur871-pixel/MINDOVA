@@ -33,6 +33,7 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
  <button class="tab-btn" data-tab="team">Jamoa</button>
  <button class="tab-btn" data-tab="opps">Imkoniyatlar</button>
  <button class="tab-btn" data-tab="jobs">Ish arizalari</button>
+ <button class="tab-btn" data-tab="certs">Sertifikatlar</button>
 </div>
 
 <div id="users" class="section active">
@@ -96,6 +97,8 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
   <div class="msg" id="tMsg"></div>
  </form>
 </div>
+
+<div id="certs" class="section"></div>
 
 <script>
 const sb=supabase.createClient("https://zrebikqvjbvuwbzcunkw.supabase.co","sb_publishable_DszdaPjNPM3i0UbGX3lLjQ_DTjdfLcW");
@@ -257,10 +260,14 @@ $("addOppForm").onsubmit=async e=>{
 (async()=>{
  const {data}=await sb.auth.getSession();
  if(!data.session){location.href="/";return}
+ /* faqat qulaylik uchun; haqiqiy himoya RLS (is_admin) va Edge Function ichida */
+ const {data:adm}=await sb.from("admins").select("id").eq("user_id",data.session.user.id).eq("is_active",true).maybeSingle();
+ if(!adm){location.href="/dashboard.html";return}
  loadUsers();
  loadOpps();
  loadJobs();
 })();
 </script>
+<script src="admin-certs.js"></script>
 </body>
 </html>
