@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Sertifikatni tekshirish — MINDOVA</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
+:root{--bg:#F5F3FF;--ink:#0F0E26;--acc:#6366F1;--mut:#687386;--ok:#0F7B3F;--bad:#B42318}
+@media(prefers-color-scheme:dark){:root{--bg:#080F2B;--ink:#fff;--mut:#9AA6C7;--ok:#4ADE80;--bad:#F87171}}
+*{box-sizing:border-box;margin:0}
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.box{width:100%;max-width:460px;background:color-mix(in srgb,var(--bg) 70%,#fff);border:1px solid color-mix(in srgb,var(--acc) 30%,transparent);border-radius:20px;padding:28px}
+@media(prefers-color-scheme:dark){.box{background:#0D1636}}
+.logo{font-weight:800;font-size:1.1rem;margin-bottom:18px}.logo i{color:var(--acc);font-style:normal}
+h1{font-size:1.4rem;line-height:1.2;margin-bottom:6px}
+.st{font-weight:800;margin:14px 0}
+.ok{color:var(--ok)}.bad{color:var(--bad)}
+dl{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;font-size:.92rem;margin-top:12px}
+dt{color:var(--mut)}dd{font-weight:600;word-break:break-word}
+a.b{display:inline-block;margin-top:22px;color:var(--acc);font-weight:600;text-decoration:none}
+</style>
+</head>
+<body>
+<main class="box">
+ <div class="logo"><i>M</i> MINDOVA</div>
+ <h1>Sertifikatni tekshirish</h1>
+ <div id="out" class="st" aria-live="polite">Tekshirilmoqda…</div>
+ <dl id="det" hidden></dl>
+ <a class="b" href="/">Mindova saytiga qaytish</a>
+</main>
+<script>
+const sb=supabase.createClient("https://zrebikqvjbvuwbzcunkw.supabase.co","sb_publishable_DszdaPjNPM3i0UbGX3lLjQ_DTjdfLcW");
+const MN=["yanvar","fevral","mart","aprel","may","iyun","iyul","avgust","sentabr","oktabr","noyabr","dekabr"];
+(async()=>{
+ const out=document.getElementById("out"),det=document.getElementById("det");
+ const code=(new URLSearchParams(location.search).get("c")||"").trim();
+ if(!/^[a-z0-9]{24}$/.test(code)){out.textContent="Havola noto‘g‘ri. QR-kodni qayta skanerlang.";out.className="st bad";return}
+ const {data,error}=await sb.rpc("verify_certificate",{p_code:code});
+ if(error){out.textContent="Tekshirib bo‘lmadi. Birozdan keyin qayta urinib ko‘ring.";out.className="st bad";return}
+ const c=data&&data[0];
+ if(!c){out.textContent="Bunday sertifikat topilmadi.";out.className="st bad";return}
+ const active=c.status==="active";
+ out.textContent=active?"✔ Sertifikat haqiqiy":"✖ Sertifikat bekor qilingan";
+ out.className="st "+(active?"ok":"bad");
+ const d=new Date(c.issued_at);
+ const rows=[["Egasi",c.holder_name],["Tadbir",c.event_title],["Berilgan sana",`${d.getDate()}-${MN[d.getMonth()]} ${d.getFullYear()}`],["Raqam",c.serial]];
+ rows.forEach(([k,v])=>{const a=document.createElement("dt"),b=document.createElement("dd");a.textContent=k;b.textContent=v;det.append(a,b)});
+ det.hidden=false;
+})();
+</script>
+</body>
+</html>
