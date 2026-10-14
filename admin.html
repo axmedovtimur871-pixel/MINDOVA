@@ -59,7 +59,10 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
  <form id="certForm">
   <label>Foydalanuvchi<select id="cUser" required></select></label>
   <input type="text" id="cTitle" placeholder="Sertifikat nomi (masalan: Ishtirok sertifikati)" required>
-  <input type="text" id="cEvent" placeholder="Tadbir nomi">
+  <input type="text" id="cEvent" placeholder="Tadbir nomi (masalan: Cohort III)">
+  <label>Tadbir sanasi<input type="date" id="cEDate"></label>
+  <input type="text" id="cPlace" placeholder="Tadbir joyi (masalan: IT Park, Toshkent)">
+  <input type="text" id="cOrg" placeholder="Tashkilot" value="Mindova">
   <label>Berilgan sana<input type="date" id="cDate" required></label>
   <button type="submit" class="submit-btn">Sertifikat berish</button>
   <div class="msg" id="cMsg"></div>
@@ -257,7 +260,7 @@ async function loadCerts(){
 }
 $("certForm").onsubmit=async e=>{
  e.preventDefault();
- const {error}=await sb.from("certificates").insert([{user_id:$("cUser").value,title:$("cTitle").value.trim(),event_title:$("cEvent").value.trim()||null,issued_at:$("cDate").value}]);
+ const {error}=await sb.from("certificates").insert([{user_id:$("cUser").value,title:$("cTitle").value.trim(),event_title:$("cEvent").value.trim()||null,event_date:$("cEDate").value||null,event_place:$("cPlace").value.trim()||null,organization:$("cOrg").value.trim()||"Mindova",issued_at:$("cDate").value}]);
  $("cMsg").textContent=error?"Xato: "+error.message:"Sertifikat berildi ✓";
  if(!error){e.target.reset();loadCerts()}
 };
