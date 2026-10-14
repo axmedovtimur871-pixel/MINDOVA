@@ -134,12 +134,14 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
 <div class="modal-backdrop" id="loginModal">
  <div class="modal">
   <button class="modal-close" id="closeLogin" type="button" aria-label="Yopish">✕</button>
-  <h3 style="margin-bottom:16px">Admin Panelga kirish</h3>
+  <h3 id="authTitle" style="margin-bottom:16px">Kirish</h3>
   <form id="loginForm">
-   <label>Email<input type="email" name="email" required></label>
-   <label style="margin-top:10px">Parol<input type="password" name="password" required></label>
-   <button class="btn acc" style="width:100%;margin-top:20px" type="submit">Kirish</button>
+   <label id="nameRow" hidden>Ism va familiya<input name="full_name" maxlength="80" autocomplete="name"></label>
+   <label>Email<input type="email" name="email" required autocomplete="email"></label>
+   <label style="margin-top:10px">Parol<input type="password" name="password" required minlength="8" autocomplete="current-password"></label>
+   <button class="btn acc" id="authBtn" style="width:100%;margin-top:20px" type="submit">Kirish</button>
    <div class="err" id="loginErr" style="margin-top:10px;text-align:center"></div>
+   <button class="btn sm" id="authSwitch" type="button" style="width:100%;margin-top:10px;background:transparent;color:var(--mut)">Akkauntingiz yo‘qmi? Ro‘yxatdan o‘ting</button>
   </form>
  </div>
 </div>
@@ -193,16 +195,55 @@ $("#closeLogin").onclick=()=>$("#loginModal").classList.remove("open");
 
 const sb=window.supabase?supabase.createClient(CFG.URL,CFG.KEY):null;
 
-/* Admin kirish */
-$("#loginForm").onsubmit=async ev=>{
- ev.preventDefault();
+/* Kirish / ro'yxatdan o'tish (oddiy foydalanuvchi va admin) */
+let regMode=false;
+const lf=$("#loginForm");
+function setMode(r){
+ regMode=r;
+ $("#nameRow").hidden=!r;
+ $("#authTitle").textContent=r?"Ro‘yxatdan o‘tish":"Kirish";
+ $("#authBtn").textContent=r?"Akkaunt yaratish":"Kirish";
+ $("#authSwitch").textContent=r?"Akkauntingiz bormi? Kiring":"Akkauntingiz yo‘qmi? Ro‘yxatdan o‘ting";
+ lf.password.autocomplete=r?"new-password":"current-password";
  $("#loginErr").textContent="";
- if(!sb){$("#loginErr").textContent="Ulanish xatosi. Sahifani yangilang.";return}
- const form=ev.target;
- const {error}=await sb.auth.signInWithPassword({email:form.email.value,password:form.password.value});
- if(error){$("#loginErr").textContent="Email yoki parol xato!";return}
- location.href="/admin";
+ $("#loginErr").style.color="";
+}
+$("#authSwitch").onclick=()=>setMode(!regMode);
+async function goAfterLogin(userId){
+ const {data}=await sb.from("admins").select("id").eq("user_id",userId).eq("is_active",true).maybeSingle();
+ location.href=data?"/admin":"/dashboard.html";
+}
+lf.onsubmit=async ev=>{
+ ev.preventDefault();
+ const E=$("#loginErr");
+ E.textContent="";E.style.color="";
+ if(!sb){E.textContent="Ulanish xatosi. Sahifani yangilang.";return}
+ const email=lf.email.value.trim(),password=lf.password.value,btn=$("#authBtn");
+ if(regMode){
+  const name=lf.full_name.value.trim();
+  if(name.length<3){E.textContent="Ism va familiyangizni kiriting";return}
+  if(password.length<8){E.textContent="Parol kamida 8 belgidan iborat bo‘lsin";return}
+  btn.disabled=true;
+  const {data,error}=await sb.auth.signUp({email,password,options:{data:{full_name:name},emailRedirectTo:location.origin+"/dashboard.html"}});
+  btn.disabled=false;
+  if(error){E.textContent="Ro‘yxatdan o‘tib bo‘lmadi: "+error.message;return}
+  if(data.session){location.href="/dashboard.html";return}
+  E.style.color="#0F7B3F";
+  E.textContent="Emailingizga tasdiqlash havolasi yuborildi. Havolani bosing, so‘ng kiring.";
+  return;
+ }
+ btn.disabled=true;
+ const {data,error}=await sb.auth.signInWithPassword({email,password});
+ btn.disabled=false;
+ if(error){E.textContent="Email yoki parol xato!";return}
+ goAfterLogin(data.user.id);
 };
+const uid=async()=>sb?((await sb.auth.getSession()).data.session?.user.id||null):null;
+if(sb)sb.auth.getSession().then(({data})=>{
+ const s=data.session;if(!s)return;
+ const b=$("#openLogin");b.textContent="Kabinet";
+ b.onclick=()=>goAfterLogin(s.user.id);
+});
 
 /* Kartochkalar */
 function canReg(e){const n=new Date();return !!e.registration_open&&(!e.starts_at||new Date(e.starts_at)>=n)&&(!e.registration_deadline||new Date(e.registration_deadline)>=n)}
@@ -233,6 +274,9 @@ async function load(){
   const now=new Date();
   $("#evsel").insertAdjacentHTML("beforeend",ev.data.filter(canReg)
    .map(e=>`<option value="${esc(e.id)}">${esc(e.title)}</option>`).join(""));
+  /* kabinetdan kelganda tadbir oldindan tanlanadi */
+  const pre=new URLSearchParams(location.search).get("event");
+  if(pre)$("#evsel").value=pre;
  }
 }
 load();
@@ -286,6 +330,7 @@ jf.onsubmit=async ev=>{
   }
   const {error}=await sb.from("job_applications").insert([{
    opportunity_id:jobOpp.id,
+   user_id:await uid(),
    full_name:jf.fullName.value.trim(),
    age,
    phone:"+"+d,
@@ -305,6 +350,17 @@ jf.onsubmit=async ev=>{
 /* Ro'yxatdan o'tish formasi */
 const f=$("#f");
 f.telegram.oninput=()=>{f.telegram.value=f.telegram.value.toLowerCase().replace(/[^a-z0-9_@]/g,"")};
+
+/* kirgan foydalanuvchi uchun forma oldindan to'ldiriladi */
+(async()=>{
+ const id=await uid();if(!id)return;
+ const {data}=await sb.from("profiles").select("full_name,phone").eq("id",id).maybeSingle();
+ if(data){
+  if(!f.fullName.value)f.fullName.value=data.full_name||"";
+  if(!f.phone.value&&data.phone)f.phone.value=data.phone;
+ }
+})();
+
 f.onsubmit=async ev=>{
  ev.preventDefault();
  document.querySelectorAll(".err").forEach(x=>x.textContent="");
@@ -320,6 +376,7 @@ f.onsubmit=async ev=>{
  b.disabled=true;b.textContent="Yuborilmoqda…";
  try{
   const {error}=await sb.from("registrations").insert([{
+   user_id:await uid(),
    full_name:f.fullName.value.trim(),
    age:parseInt(f.age.value)||null,
    phone:ph,
@@ -331,7 +388,9 @@ f.onsubmit=async ev=>{
   $("#rf").innerHTML=`<div class="ok"><h2 style="font-size:1.5rem">Ro‘yxatdan o‘tish muvaffaqiyatli yakunlandi!</h2><p class="muted" style="margin:12px 0 22px">Arizangiz qabul qilindi. Jamoa siz bilan Telegram orqali bog‘lanadi.</p><a class="btn acc" href="${esc(CFG.TG)}" target="_blank" rel="noopener">Telegram kanalimizga qo‘shiling</a></div>`;
  }catch(err){
   console.error(err);
-  $("#ge").textContent="Xatolik yuz berdi. Qayta urinib ko‘ring."+(err&&err.message?" ("+err.message+")":"");
+  $("#ge").textContent=err&&err.code==="23505"
+   ?"Siz bu tadbirga allaqachon ro‘yxatdan o‘tgansiz."
+   :"Xatolik yuz berdi. Qayta urinib ko‘ring."+(err&&err.message?" ("+err.message+")":"");
   b.disabled=false;b.textContent="Yuborish";
  }
 };
