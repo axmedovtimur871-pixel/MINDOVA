@@ -64,6 +64,9 @@ section.s{padding:60px 0}
 .btn svg{width:18px;height:18px;margin-right:8px;fill:currentColor;flex:none}
 .fbtns{display:flex;gap:10px;flex-wrap:wrap}
 [hidden]{display:none!important}
+.acts{margin-top:auto;display:flex;gap:8px;flex-wrap:wrap}
+.card .acts .btn{margin-top:0}
+#jobModal .modal{max-width:460px;max-height:92vh;overflow-y:auto}
 .empty{background:#fff;border:1px dashed #C7D0DB;border-radius:16px;padding:28px;text-align:center;color:var(--mut);grid-column:1/-1}
 .form{max-width:560px;margin:24px auto 0;background:#fff;border:1px solid var(--line);border-radius:20px;padding:28px}
 label{display:block;font-weight:600;font-size:.88rem;margin-bottom:14px}
@@ -141,6 +144,26 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
  </div>
 </div>
 
+<div class="modal-backdrop" id="jobModal">
+ <div class="modal">
+  <button class="modal-close" id="closeJob" type="button" aria-label="Yopish">✕</button>
+  <h3 style="margin-bottom:6px">Ish uchun ariza</h3>
+  <p class="muted" id="jobSub" style="font-size:.88rem;margin-bottom:14px"></p>
+  <form id="jobForm" novalidate>
+   <label>Ism va familiya<input name="fullName" maxlength="80" autocomplete="name" required><div class="err" data-j="fullName"></div></label>
+   <label>Yosh<input name="age" type="number" inputmode="numeric" min="10" max="99" required><div class="err" data-j="age"></div></label>
+   <label>Telefon raqam<input name="phone" type="tel" inputmode="tel" placeholder="+998 90 123 45 67" maxlength="20" required><div class="err" data-j="phone"></div></label>
+   <label>Telegram username<input name="telegram" placeholder="@username" maxlength="33" autocapitalize="none" autocorrect="off" spellcheck="false" required><div class="err" data-j="telegram"></div></label>
+   <label>Ish tajribangiz bormi?<select name="exp"><option value="">Tanlang</option><option value="yes">Ha, bor</option><option value="no">Yo‘q</option></select><div class="err" data-j="exp"></div></label>
+   <label>CV yuklash (ixtiyoriy: PDF, Word yoki rasm, 5 MB gacha)<input name="cv" type="file" accept=".pdf,.doc,.docx,image/*"><div class="err" data-j="cv"></div></label>
+   <input name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+   <button class="btn acc" style="width:100%" id="jobSbm" type="submit">Ariza yuborish</button>
+   <div class="err" id="jobErr" style="text-align:center;margin-top:10px"></div>
+  </form>
+  <div class="ok" id="jobOk" hidden><h3>Arizangiz qabul qilindi!</h3><p class="muted" style="margin:10px 0 18px">Jamoa siz bilan Telegram orqali bog‘lanadi.</p><button class="btn acc" type="button" id="jobDone">Yopish</button></div>
+ </div>
+</div>
+
 <footer><div class="wrap">
  <span>© <span id="yr"></span> MINDOVA. Fikrla. Muloqot qil. Yarat.</span>
  <div class="fbtns">
@@ -185,7 +208,7 @@ $("#loginForm").onsubmit=async ev=>{
 function canReg(e){const n=new Date();return !!e.registration_open&&(!e.starts_at||new Date(e.starts_at)>=n)&&(!e.registration_deadline||new Date(e.registration_deadline)>=n)}
 const evCard=e=>`<article class="card">${safe(e.image_url)?`<img class="evimg" src="${esc(safe(e.image_url))}" alt="${esc(e.title)}" loading="lazy">`:""}<h3>${esc(e.title)}</h3><p>${esc((e.description||"").slice(0,140))}</p>
 <div class="meta">${e.starts_at?`<span>📅 ${fd(e.starts_at)}, ${ft(e.starts_at)}</span>`:""}${e.location?`<span>📍 ${esc(e.location)}</span>`:""}${e.format?`<span>🏷 ${esc(e.format)}</span>`:""}</div>${canReg(e)?`<a class="btn acc sm" href="#royxat" data-ev="${esc(e.id)}">Ro‘yxatdan o‘tish</a>`:""}</article>`;
-const opCard=o=>{const u=safe(o.source_url);return `<article class="card">${safe(o.image_url)?`<img class="evimg" src="${esc(safe(o.image_url))}" alt="${esc(o.title)}" loading="lazy">`:""}<span class="pill">${esc(o.category)}</span><h3>${esc(o.title)}</h3><p>${esc(o.description)}</p>${o.eligibility?`<p><b>Talablar:</b> ${esc(o.eligibility)}</p>`:""}${o.deadline?`<p><b>Muddat:</b> ${fd(o.deadline)}</p>`:""}${u?`<a class="btn acc sm" href="${esc(u)}" target="_blank" rel="noopener">Rasmiy manba ↗</a>`:""}</article>`};
+const opCard=o=>{const u=safe(o.source_url);return `<article class="card">${safe(o.image_url)?`<img class="evimg" src="${esc(safe(o.image_url))}" alt="${esc(o.title)}" loading="lazy">`:""}<span class="pill">${esc(o.category)}</span><h3>${esc(o.title)}</h3><p>${esc(o.description)}</p>${o.eligibility?`<p><b>Talablar:</b> ${esc(o.eligibility)}</p>`:""}${o.deadline?`<p><b>Muddat:</b> ${fd(o.deadline)}</p>`:""}<div class="acts">${u?`<a class="btn acc sm" href="${esc(u)}" target="_blank" rel="noopener">Rasmiy manba ↗</a>`:""}${/^ish$/i.test(o.category||"")?`<button class="btn acc sm" type="button" data-job="${esc(o.id)}" data-t="${esc(o.title)}">Ariza topshirish</button>`:""}</div></article>`};
 const tmCard=m=>{const p=safe(m.photo);return `<article class="card"><div class="photo"${p?` style="background-image:url('${esc(p)}')"`:""}></div><h3>${esc(m.name)}</h3><b style="color:var(--acc);font-size:.85rem">${esc(m.role)}</b><p>${esc(m.bio)}</p></article>`};
 
 function renderTeam(list){
@@ -215,6 +238,69 @@ async function load(){
 load();
 
 $("#evg").addEventListener("click",ev=>{const b=ev.target.closest("[data-ev]");if(b)$("#evsel").value=b.dataset.ev});
+
+/* Ish uchun ariza */
+let jobOpp=null;
+const jf=$("#jobForm");
+const closeJob=()=>$("#jobModal").classList.remove("open");
+$("#opg").addEventListener("click",ev=>{
+ const b=ev.target.closest("[data-job]");
+ if(!b)return;
+ jobOpp={id:b.dataset.job,title:b.dataset.t};
+ $("#jobSub").textContent=jobOpp.title;
+ jf.reset();jf.hidden=false;$("#jobOk").hidden=true;
+ $("#jobSbm").disabled=false;$("#jobSbm").textContent="Ariza yuborish";
+ document.querySelectorAll("[data-j]").forEach(x=>x.textContent="");$("#jobErr").textContent="";
+ $("#jobModal").classList.add("open");
+});
+$("#closeJob").onclick=closeJob;
+$("#jobDone").onclick=closeJob;
+jf.telegram.oninput=()=>{jf.telegram.value=jf.telegram.value.toLowerCase().replace(/[^a-z0-9_@]/g,"")};
+jf.onsubmit=async ev=>{
+ ev.preventDefault();
+ document.querySelectorAll("[data-j]").forEach(x=>x.textContent="");
+ $("#jobErr").textContent="";
+ if(jf.website.value||!jobOpp)return;
+ const E=(k,t)=>{$(`[data-j="${k}"]`).textContent=t};
+ if(jf.fullName.value.trim().length<3){E("fullName","Ismingizni kiriting");return}
+ const age=parseInt(jf.age.value);
+ if(!(age>=10&&age<=99)){E("age","Yoshingizni to‘g‘ri kiriting");return}
+ let d=jf.phone.value.replace(/\D/g,"");if(d.length===9)d="998"+d;
+ if(!/^998\d{9}$/.test(d)){E("phone","Telefon raqamni to‘g‘ri kiriting (masalan: 90 123 45 67)");return}
+ const tg=jf.telegram.value.trim().replace(/^@/,"").toLowerCase();
+ if(!/^[a-z][a-z0-9_]{4,31}$/.test(tg)){E("telegram","Username noto‘g‘ri: lotin harflari, raqam va _ (kamida 5 ta belgi)");return}
+ if(!jf.exp.value){E("exp","Tanlang");return}
+ const file=jf.cv.files[0];
+ if(file&&file.size>5*1024*1024){E("cv","Fayl 5 MB dan katta bo‘lmasin");return}
+ const b=$("#jobSbm");
+ b.disabled=true;b.textContent="Yuborilmoqda…";
+ try{
+  let cv_path=null;
+  if(file){
+   const ext=(file.name.split(".").pop()||"").toLowerCase().replace(/[^a-z0-9]/g,"");
+   const mime={pdf:"application/pdf",doc:"application/msword",docx:"application/vnd.openxmlformats-officedocument.wordprocessingml.document",jpg:"image/jpeg",jpeg:"image/jpeg",png:"image/png"}[ext];
+   if(!mime){E("cv","Faqat PDF, Word yoki rasm (jpg, png)");b.disabled=false;b.textContent="Ariza yuborish";return}
+   cv_path=Date.now()+"-"+Math.random().toString(36).slice(2,10)+"."+ext;
+   const up=await sb.storage.from("cvs").upload(cv_path,file,{contentType:mime});
+   if(up.error)throw up.error;
+  }
+  const {error}=await sb.from("job_applications").insert([{
+   opportunity_id:jobOpp.id,
+   full_name:jf.fullName.value.trim(),
+   age,
+   phone:"+"+d,
+   telegram_username:tg,
+   has_experience:jf.exp.value==="yes",
+   cv_path
+  }]);
+  if(error)throw error;
+  jf.hidden=true;$("#jobOk").hidden=false;
+ }catch(err){
+  console.error(err);
+  $("#jobErr").textContent="Xatolik yuz berdi. Qayta urinib ko‘ring."+(err&&err.message?" ("+err.message+")":"");
+  b.disabled=false;b.textContent="Ariza yuborish";
+ }
+};
 
 /* Ro'yxatdan o'tish formasi */
 const f=$("#f");
