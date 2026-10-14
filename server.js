@@ -12,6 +12,8 @@ const send = (file) => (req, res) =>
 app.get('/', send('index.html'));
 app.get('/admin', send('admin.html'));
 app.get('/kabinet', send('dashboard.html'));
+app.get('/verify', send('verify.html'));
+app.get('/verify.html', send('verify.html'));
 app.get('/login', send('login.html'));
 app.get('/index.html', send('index.html'));
 app.get('/admin.html', send('admin.html'));
