@@ -6,58 +6,69 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <style>
-:root{--l:rgba(255,255,255,.09);--a:#6366F1;--m:#9aa0d0}
+:root{--bg:#0F0E26;--pn:#151433;--ln:rgba(255,255,255,.08);--a:#6366F1;--m:#8f93b8;--t:#ECECF8}
 *{box-sizing:border-box;margin:0}
-body{font-family:Inter,system-ui,sans-serif;background:#0b0b24;color:#e8eaff;line-height:1.5}
-a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit}
-[hidden]{display:none!important}
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--t);line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit}[hidden]{display:none!important}
 .app{display:flex;min-height:100vh}
-.sb{width:250px;flex:none;background:#0e0e2c;border-right:1px solid var(--l);padding:20px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px;overflow:auto;z-index:50}
-.logo{font-weight:800;font-size:1.3rem;padding:4px 10px 18px}.logo i{color:var(--a);font-style:normal}
-.nv{display:flex;gap:10px;align-items:center;padding:11px 12px;border-radius:10px;color:#b9bde6;cursor:pointer;border:0;background:none;width:100%;text-align:left;font-size:.93rem}
-.nv:hover{background:#171742}.nv.on{background:var(--a);color:#fff}
-.main{flex:1;min-width:0;padding:26px;max-width:1180px}
-.top{display:none;align-items:center;gap:12px;padding:12px 16px;background:#0e0e2c;border-bottom:1px solid var(--l);position:sticky;top:0;z-index:40}
-.top button{background:none;border:0;color:#fff;font-size:1.5rem}
-.card{background:linear-gradient(160deg,#16163f,#101033);border:1px solid var(--l);border-radius:16px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
-.g{display:grid;gap:16px;margin-top:16px}.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}.g3{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
-h1{font-size:clamp(1.5rem,4vw,2rem);font-weight:800}h2{font-size:1.25rem}h3{font-size:1.02rem;margin-bottom:10px}
-.m{color:var(--m);font-size:.9rem}
-.view{animation:in .3s ease}@keyframes in{from{opacity:0;transform:translateY(8px)}}
+.sb{width:232px;flex:none;border-right:1px solid var(--ln);padding:22px 12px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:2px;overflow:auto;background:var(--bg);z-index:60}
+.logo{font-weight:800;font-size:1.15rem;letter-spacing:.03em;padding:2px 10px 22px}.logo i{color:var(--a);font-style:normal;margin-right:3px}
+.nv{display:flex;gap:12px;align-items:center;padding:10px 12px;border-radius:6px;color:var(--m);cursor:pointer;border:0;background:none;width:100%;text-align:left;font-size:.92rem}
+.nv:hover{color:var(--t)}.nv.on{color:#fff;background:rgba(99,102,241,.16);box-shadow:inset 2px 0 var(--a)}
+.ic{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.sp{height:1px;background:var(--ln);margin:10px 8px}
+.main{flex:1;min-width:0;padding:0 28px 48px;max-width:1100px}
+.top,.bn,.ov{display:none}
+.hero{margin:0 -28px 22px;padding:64px 28px 28px;min-height:250px;display:flex;flex-direction:column;justify-content:flex-end;background:linear-gradient(180deg,rgba(15,14,38,.35) 0%,rgba(15,14,38,.8) 65%,#0F0E26 100%),url(/3291A6AB-8BF9-4FD3-A90A-B84FCCCC9B70.png) center/cover,#16153d}
+.eb{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:#a5a8ff;font-weight:600}
+h1{font-size:clamp(1.7rem,5vw,2.4rem);font-weight:700;letter-spacing:-.01em;line-height:1.15;margin:8px 0}
+h2{font-size:1.15rem;font-weight:700}h3{font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--m);font-weight:600;margin-bottom:6px}
+.hero p{color:#c7c9e6;max-width:520px;font-size:.95rem}
+.m{color:var(--m);font-size:.88rem}
+.view{animation:in .25s ease}@keyframes in{from{opacity:0;transform:translateY(6px)}}
+.card{background:var(--pn);border:1px solid var(--ln);border-radius:10px;padding:18px}
+.g{display:grid;gap:14px;margin-top:14px}.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}.g3{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.strip{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--ln);border-radius:10px;background:var(--pn)}
+.strip button{background:none;border:0;color:inherit;padding:16px 8px;text-align:center;cursor:pointer;border-right:1px solid var(--ln)}.strip button:last-child{border:0}
+.strip b{display:block;font-size:1.7rem;font-weight:700;line-height:1.2}.strip span{font-size:.76rem;color:var(--m)}
+.nx{border-left:3px solid var(--a)}
 .pc{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
-.av{width:84px;height:84px;border-radius:50%;object-fit:cover;background:#3b3d9e;display:grid;place-items:center;font-weight:800;font-size:1.6rem;border:3px solid #6366F1;flex:none}
-.bt{border:0;border-radius:99px;padding:9px 18px;background:var(--a);color:#fff;cursor:pointer;font-weight:700;font-size:.88rem;display:inline-block}
-.bt:hover{filter:brightness(1.12)}.bt.o{background:none;border:1px solid var(--l)}.bt.r{background:#7f1d1d}
-.b{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.75rem;font-weight:700;background:#2a2b6b;color:#c7c9ff}
-.b.amber{background:#5a4510;color:#fcd34d}.b.green{background:#0f4a33;color:#6ee7b7}.b.red{background:#6b1d2a;color:#fca5a5}
-.st{display:flex;justify-content:space-around;text-align:center;margin:8px 0}.st b{display:block;font-size:1.8rem}
-.lk{cursor:pointer;transition:.2s}.lk:hover{transform:translateY(-3px);border-color:#6366F1}
-.rw{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--l);flex-wrap:wrap}.rw:last-child{border:0}
-.em{text-align:center;padding:34px 16px;color:var(--m);border:1px dashed var(--l);border-radius:14px}
-input,select,textarea{width:100%;padding:11px 13px;margin:5px 0 12px;border-radius:10px;border:1px solid var(--l);background:#0b0b24;color:#fff}
-label{font-size:.85rem;color:var(--m);display:block}textarea{min-height:90px}
-.cc{width:100%;border-radius:10px;background:#1b1b4d;aspect-ratio:1.5;object-fit:cover;display:block;margin-bottom:10px}
-.md{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;place-items:center;z-index:99;padding:16px}.md.on{display:grid}
-.md img{max-width:100%;max-height:85vh;border-radius:10px}
-.ev{display:flex;gap:12px;align-items:center}.ev img{width:64px;height:64px;border-radius:10px;object-fit:cover;flex:none}
-#msg{color:#fca5a5;font-size:.9rem}.ok{color:#6ee7b7;font-size:.88rem}
-@media(max-width:860px){.sb{position:fixed;left:-270px;transition:.25s}.sb.open{left:0;box-shadow:0 0 60px #000}.top{display:flex}.main{padding:16px}}
+.av{width:84px;height:84px;border-radius:50%;object-fit:cover;background:#2c2d7a;display:grid;place-items:center;font-weight:700;font-size:1.5rem;flex:none}
+.bt{border:0;border-radius:7px;padding:9px 16px;background:var(--a);color:#fff;cursor:pointer;font-weight:600;font-size:.86rem;display:inline-block}
+.bt:hover{filter:brightness(1.1)}.bt.o{background:none;border:1px solid var(--ln);color:var(--t)}.bt.r{background:#7a1f2e}
+.b{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.72rem;font-weight:600;background:rgba(99,102,241,.18);color:#b9bbff}
+.b.amber{background:rgba(245,158,11,.16);color:#fcd34d}.b.green{background:rgba(16,185,129,.16);color:#6ee7b7}.b.red{background:rgba(239,68,68,.16);color:#fca5a5}
+.rw{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--ln);flex-wrap:wrap}.rw:last-child{border:0}
+.em{text-align:center;padding:26px 14px;color:var(--m);border:1px dashed var(--ln);border-radius:8px;font-size:.9rem}
+input,select,textarea{width:100%;padding:11px 12px;margin:5px 0 12px;border-radius:7px;border:1px solid var(--ln);background:var(--bg);color:#fff}
+input:focus,select:focus,textarea:focus{outline:1px solid var(--a)}
+label{font-size:.82rem;color:var(--m);display:block}textarea{min-height:90px}
+.cc{width:100%;border-radius:6px;background:#1b1b4d;aspect-ratio:1.5;object-fit:cover;display:block;margin-bottom:10px}
+.md{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;place-items:center;z-index:99;padding:16px}.md.on{display:grid}
+.md img{max-width:100%;max-height:85vh;border-radius:6px}
+.ev{display:flex;gap:12px;align-items:center;min-width:0}.ev img{width:56px;height:56px;border-radius:6px;object-fit:cover;flex:none}
+.dt{width:56px;height:56px;border:1px solid var(--ln);border-radius:6px;display:grid;place-content:center;text-align:center;flex:none}
+.dt b{font-size:1.2rem;line-height:1}.dt span{font-size:.62rem;text-transform:uppercase;color:var(--m);letter-spacing:.08em}
+#msg{color:#fca5a5;font-size:.88rem;padding-top:12px}.ok{color:#6ee7b7;font-size:.86rem}
+@media(max-width:860px){
+ .sb{position:fixed;left:-262px;width:250px;transition:left .2s}.sb.open{left:0}
+ .ov.on{display:block;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:58}
+ .top{display:flex;position:sticky;top:0;height:54px;align-items:center;gap:12px;padding:0 14px;background:var(--bg);border-bottom:1px solid var(--ln);z-index:50}
+ .top .logo{padding:0;flex:1;font-size:1.05rem}.top button{background:none;border:0;color:#fff;padding:4px;display:grid;place-items:center}
+ .tav .av{width:32px;height:32px;font-size:.78rem}
+ .main{padding:0 14px 84px}.hero{margin:0 -14px 18px;padding:44px 14px 22px;min-height:210px}
+ .bn{display:flex;position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--ln);z-index:55;padding-bottom:env(safe-area-inset-bottom)}
+ .bn button{flex:1;background:none;border:0;color:var(--m);padding:9px 2px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.64rem}
+ .bn button.on{color:#fff}.bn button.on .ic{stroke:var(--a)}
+ .card{padding:16px}.rw .bt{padding:8px 14px}
+}
 </style></head><body>
-<div class="top"><button onclick="$('#sb').classList.toggle('open')" aria-label="Menyu">☰</button><b>MINDOVA</b></div>
+<div class="top"><button onclick="menu(true)" aria-label="Menyu"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><div class="logo"><i>M</i>MINDOVA</div><button class="tav" id="tav" onclick="go('prof')" aria-label="Profil"></button></div>
+<div class="ov" id="ov" onclick="menu(false)"></div>
 <div class="app">
-<nav class="sb" id="sb"><div class="logo"><i>M</i> MINDOVA</div>
-<button class="nv" data-v="home">🏠 Bosh sahifa</button>
-<button class="nv" data-v="prof">👤 Profilim</button>
-<button class="nv" data-v="apps">📄 Mening arizalarim</button>
-<button class="nv" data-v="evs">🗓 Mening tadbirlarim</button>
-<button class="nv" data-v="certs">🎓 Mening sertifikatlarim</button>
-<button class="nv" data-v="port">💼 Portfolio</button>
-<button class="nv" data-v="set">⚙️ Sozlamalar</button>
-<a class="nv" href="/verify">✅ Sertifikatni tekshirish</a>
-<a class="nv" href="/">🌐 Saytga qaytish</a>
-<a class="nv" id="adm" href="/admin" hidden>🛠 Admin panel</a>
-<button class="nv" onclick="out()" style="margin-top:auto">🚪 Chiqish</button></nav>
+<nav class="sb" id="sb"></nav>
 <main class="main"><div id="msg"></div><div id="view" class="view"><p class="m">Yuklanmoqda…</p></div></main></div>
+<nav class="bn" id="bn"></nav>
 <div class="md" id="md" onclick="this.classList.remove('on')"><img id="mi" alt="Sertifikat"></div>
 <script>
 const sb=supabase.createClient("https://zrebikqvjbvuwbzcunkw.supabase.co","sb_publishable_DszdaPjNPM3i0UbGX3lLjQ_DTjdfLcW");
@@ -111,22 +122,26 @@ async function cert(c){
 async function zoom(i){$("#mi").src=await cert(D.cert[i]);$("#md").classList.add("on")}
 async function pdf(i){const c=D.cert[i],u=await cert(c),d=new window.jspdf.jsPDF({orientation:"landscape",unit:"pt",format:[841.89,561.26]});d.addImage(u,"JPEG",0,0,841.89,561.26);d.save("MINDOVA-sertifikat-"+c.code+".pdf")}
 function fill(){document.querySelectorAll("img[data-ci]").forEach(im=>cert(D.cert[im.dataset.ci]).then(u=>im.src=u))}
-const certCard=(c,i)=>`<div class="card"><img class="cc" data-ci="${i}" alt=""><b>${esc(c.title)}</b><p class="m">${esc(c.event_title||"")} · ${fd(c.issued_at)} <span class="b green">Tasdiqlangan</span></p><div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="bt o" onclick="zoom(${i})">🔍 Kattalashtirish</button><button class="bt" onclick="pdf(${i})">⬇ PDF yuklab olish</button></div></div>`;
+const certCard=(c,i)=>`<div class="card"><img class="cc" data-ci="${i}" alt=""><b>${esc(c.title)}</b><p class="m">${esc(c.event_title||"")} · ${fd(c.issued_at)} <span class="b green">Tasdiqlangan</span></p><div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="bt o" onclick="zoom(${i})">Kattalashtirish</button><button class="bt" onclick="pdf(${i})">PDF yuklab olish</button></div></div>`;
 const NO_CERT="Sizda hozircha sertifikatlar yo‘q. Yangi sertifikatlar berilganda shu yerda paydo bo‘ladi.";
 
 const V={
 home(){
  const now=new Date(),em=evM(),om=opM(),mine=new Set(D.reg.map(r=>r.event_id)),myEv=D.reg.filter(r=>r.event_id&&em[r.event_id]);
- const up=D.ev.filter(e=>e.starts_at&&new Date(e.starts_at)>=now).slice(0,3);
+ const up=D.ev.filter(e=>e.starts_at&&new Date(e.starts_at)>=now),nx=up[0];
  const act=[...myEv.map(r=>({t:"Tadbirga yozildingiz: "+em[r.event_id].title,d:r.created_at})),...D.job.map(j=>({t:"Ishga ariza topshirdingiz: "+(om[j.opportunity_id]?.title||"e’lon"),d:j.created_at})),...D.cert.map(c=>({t:"Sertifikat berildi: "+c.title,d:c.created_at}))].sort((a,b)=>new Date(b.d)-new Date(a.d)).slice(0,5);
- return `<h1>Xush kelibsan, ${esc(nm().split(" ")[0])}! 👋</h1><p class="m">Mindova — imkoniyatlar, yangi tanishuvlar va kelajakka yo‘l ochadigan platforma.</p>
-<div class="g g2"><div class="card pc">${av()}<div><h2>${esc(nm())}</h2><span class="b">Mindova a’zosi · ${fd(P.created_at)}</span><p class="m" style="margin:8px 0">📍 ${esc(P.city||"Shahar ko‘rsatilmagan")}<br>✉️ ${esc(U.email)}<br>📞 ${esc(P.phone||"Telefon kiritilmagan")}</p><button class="bt o" onclick="go('prof')">✏️ Profilni tahrirlash</button></div></div>
-<div class="card"><h3>📊 Mening faoliyatim</h3><div class="st"><div><b>${D.job.length}</b><span class="m">Arizalar</span></div><div><b>${myEv.length}</b><span class="m">Tadbirlar</span></div><div><b>${D.cert.length}</b><span class="m">Sertifikatlar</span></div></div></div></div>
-<div class="g g3"><div class="card lk" onclick="go('apps')"><h3>💼 Mening arizalarim</h3><p class="m">Ishga yuborgan arizalaringiz holati</p></div><div class="card lk" onclick="go('evs')"><h3>🗓 Mening tadbirlarim</h3><p class="m">Ro‘yxatdan o‘tgan tadbirlaringiz</p></div><div class="card lk" onclick="go('certs')"><h3>🎓 Sertifikatlarim</h3><p class="m">Sizga berilgan sertifikatlar</p></div><div class="card lk" onclick="go('port')"><h3>📁 Portfolio</h3><p class="m">Loyiha, ko‘nikma va yutuqlaringiz</p></div></div>
-<div class="g g2"><div class="card"><h3>🗓 Yaqinlashayotgan tadbirlar</h3>${up.length?up.map(e=>`<div class="rw"><div class="ev">${safe(e.image_url)?`<img src="${esc(safe(e.image_url))}" alt="">`:""}<div><b>${esc(e.title)}</b><p class="m">${fd(e.starts_at)} ${e.location?"· "+esc(e.location):""}</p></div></div>${mine.has(e.id)?`<span class="b green">Ro‘yxatdan o‘tgansiz</span>`:e.registration_open?`<a class="bt" href="/#royxat">Ro‘yxatdan o‘ting</a>`:""}</div>`).join(""):empty("Yaqin tadbirlar yo‘q.")}</div>
-<div class="card"><h3>📄 So‘nggi arizalarim</h3>${D.job.length?D.job.slice(0,3).map(j=>`<div class="rw"><b>${esc(om[j.opportunity_id]?.title||"E’lon")}</b>${badge(j.status)}</div>`).join(""):empty("Hozircha arizalar yo‘q.")}</div></div>
-<div class="g g2"><div class="card"><h3>🎓 So‘nggi sertifikatlar</h3>${D.cert.length?D.cert.slice(0,2).map((c,i)=>certCard(c,i)).join(""):empty(NO_CERT)}</div>
-<div class="card"><h3>⚡ So‘nggi faoliyatlar</h3>${act.length?act.map(a=>`<div class="rw"><span>${esc(a.t)}</span><span class="m">${fd(a.d)}</span></div>`).join(""):empty("Faoliyat hali yo‘q.")}<div style="margin-top:14px"><a class="bt" href="/#imkoniyatlar">Yangi imkoniyatlarni ko‘rish →</a></div></div></div>`},
+ const cta=e=>mine.has(e.id)?`<span class="b green">Ro‘yxatdan o‘tgansiz</span>`:e.registration_open?`<a class="bt" href="/#royxat">Ro‘yxatdan o‘tish</a>`:"";
+ const dt=e=>{const x=new Date(e.starts_at);return `<div class="dt"><b>${x.getDate()}</b><span>${ML[x.getMonth()].slice(0,3)}</span></div>`};
+ const th=e=>safe(e.image_url)?`<img src="${esc(safe(e.image_url))}" alt="" loading="lazy">`:dt(e);
+ const mt=e=>fd(e.starts_at)+(e.location?" · "+esc(e.location):"");
+ const more=up.slice(1,4);
+ return `<section class="hero"><span class="eb">Mindova a’zosi · ${fd(P.created_at)}</span><h1>Xush kelibsan, ${esc(nm().split(" ")[0])}</h1><p>Mindova — imkoniyatlar, yangi tanishuvlar va kelajakka yo‘l ochadigan platforma.</p></section>
+<div class="strip"><button onclick="go('apps')"><b>${D.job.length}</b><span>Arizalar</span></button><button onclick="go('evs')"><b>${myEv.length}</b><span>Tadbirlar</span></button><button onclick="go('certs')"><b>${D.cert.length}</b><span>Sertifikatlar</span></button></div>
+${nx?`<div class="card nx" style="margin-top:14px"><span class="eb">Eng yaqin tadbir</span><div class="ev" style="margin:12px 0 14px">${dt(nx)}<div><h2>${esc(nx.title)}</h2><p class="m">${mt(nx)}</p></div></div>${cta(nx)}</div>`:""}
+<div class="g g2"><div class="card"><h3>Yaqinlashayotgan tadbirlar</h3>${more.length?more.map(e=>`<div class="rw"><div class="ev">${th(e)}<div><b>${esc(e.title)}</b><p class="m">${mt(e)}</p></div></div>${cta(e)}</div>`).join(""):empty("Boshqa yaqin tadbirlar yo‘q.")}</div>
+<div class="card"><h3>So‘nggi arizalarim</h3>${D.job.length?D.job.slice(0,3).map(j=>`<div class="rw"><b>${esc(om[j.opportunity_id]?.title||"E’lon")}</b>${badge(j.status)}</div>`).join(""):empty("Hozircha arizalar yo‘q.")}</div></div>
+<div class="g g2"><div class="card"><h3>So‘nggi sertifikatlar</h3>${D.cert.length?D.cert.slice(0,2).map((c,i)=>certCard(c,i)).join(""):empty(NO_CERT)}</div>
+<div class="card"><h3>So‘nggi faoliyatlar</h3>${act.length?act.map(a=>`<div class="rw"><span>${esc(a.t)}</span><span class="m">${fd(a.d)}</span></div>`).join(""):empty("Faoliyat hali yo‘q.")}<div style="margin-top:14px"><a class="bt o" href="/#imkoniyatlar">Imkoniyatlarni ko‘rish</a></div></div></div>`},
 prof(){return `<h1>Profilim</h1><form class="card" style="margin-top:16px;max-width:640px" onsubmit="saveP(event)"><div class="pc" style="margin-bottom:14px">${av()}<div><label>Profil rasmi<input type="file" accept="image/*" onchange="upAv(this)" style="margin-bottom:0"></label></div></div>
 <label>Ism va familiya<input name="fn" maxlength="80" value="${esc(P.full_name)}" required></label><label>Email<input value="${esc(U.email)}" disabled></label>
 <label>Telefon raqami<input name="ph" type="tel" maxlength="20" value="${esc(P.phone)}"></label><label>Shahar<input name="ct" maxlength="60" value="${esc(P.city)}"></label>
@@ -134,18 +149,27 @@ prof(){return `<h1>Profilim</h1><form class="card" style="margin-top:16px;max-wi
 ${P.interests?`<p style="margin-bottom:12px">${P.interests.split(",").map(s=>s.trim()).filter(Boolean).map(s=>`<span class="b">${esc(s)}</span> `).join("")}</p>`:""}
 <button class="bt">Saqlash</button> <span id="pm" class="ok"></span></form>`},
 apps(){const om=opM();return `<h1>Mening arizalarim</h1><div class="card" style="margin-top:16px">${D.job.length?D.job.map(j=>`<div class="rw"><div><b>${esc(om[j.opportunity_id]?.title||"E’lon")}</b><p class="m">${esc(om[j.opportunity_id]?.category||"")} · ${fd(j.created_at)}</p></div>${badge(j.status)}</div>`).join(""):empty("Siz hali ishga ariza topshirmagansiz. Saytdagi “Dolzarb imkoniyatlar” bo‘limidan ariza topshiring.")}</div>`},
-evs(){const em=evM(),now=new Date(),L=D.reg.filter(r=>r.event_id&&em[r.event_id]);return `<h1>Mening tadbirlarim</h1><div class="card" style="margin-top:16px">${L.length?L.map(r=>{const e=em[r.event_id],past=e.starts_at&&new Date(e.starts_at)<now;return `<div class="rw"><div><b>${esc(e.title)}</b><p class="m">${fd(e.starts_at)} ${e.location?"· 📍 "+esc(e.location):""}</p></div><div><span class="b ${past?"":"green"}">${past?"Yakunlangan":"Ro‘yxatdan o‘tgansiz"}</span> <button class="bt o" onclick="this.parentNode.parentNode.nextElementSibling.hidden=!this.parentNode.parentNode.nextElementSibling.hidden">Tafsilotlar</button></div></div><p class="m" hidden style="padding:8px 0">${esc(e.description||"Tavsif yo‘q.")}</p>`}).join(""):empty("Siz hali tadbirga ro‘yxatdan o‘tmagansiz. Tizimga kirgan holda tadbirga yoziling.")}</div>`},
+evs(){const em=evM(),now=new Date(),L=D.reg.filter(r=>r.event_id&&em[r.event_id]);return `<h1>Mening tadbirlarim</h1><div class="card" style="margin-top:16px">${L.length?L.map(r=>{const e=em[r.event_id],past=e.starts_at&&new Date(e.starts_at)<now;return `<div class="rw"><div><b>${esc(e.title)}</b><p class="m">${fd(e.starts_at)} ${e.location?"· "+esc(e.location):""}</p></div><div><span class="b ${past?"":"green"}">${past?"Yakunlangan":"Ro‘yxatdan o‘tgansiz"}</span> <button class="bt o" onclick="this.parentNode.parentNode.nextElementSibling.hidden=!this.parentNode.parentNode.nextElementSibling.hidden">Tafsilotlar</button></div></div><p class="m" hidden style="padding:8px 0">${esc(e.description||"Tavsif yo‘q.")}</p>`}).join(""):empty("Siz hali tadbirga ro‘yxatdan o‘tmagansiz. Tizimga kirgan holda tadbirga yoziling.")}</div>`},
 certs(){return `<h1>Mening sertifikatlarim</h1>${D.cert.length?`<div class="g g2">${D.cert.map(certCard).join("")}</div>`:`<div class="card" style="margin-top:16px">${empty(NO_CERT)}</div>`}`},
 port(){const it=D.pf.find(x=>x.id===editId)||{};return `<h1>Portfolio</h1><div class="g g2"><form class="card" onsubmit="savePf(event)"><h3>${editId?"Tahrirlash":"Yangi qo‘shish"}</h3><label>Turi<select name="k">${["loyiha","ko‘nikma","yutuq"].map(k=>`<option ${it.kind===k?"selected":""}>${k}</option>`).join("")}</select></label><label>Nomi<input name="t" maxlength="100" value="${esc(it.title)}" required></label><label>Tavsif<textarea name="d" maxlength="500">${esc(it.description)}</textarea></label><label>Havola (ixtiyoriy)<input name="l" maxlength="300" placeholder="https://" value="${esc(it.link)}"></label><button class="bt">Saqlash</button>${editId?` <button type="button" class="bt o" onclick="editId=null;go('port')">Bekor</button>`:""}</form>
-<div class="card"><h3>Mening ishlarim</h3>${D.pf.length?D.pf.map(p=>`<div class="rw"><div><span class="b">${esc(p.kind)}</span> <b>${esc(p.title)}</b><p class="m">${esc(p.description||"")} ${safe(p.link)?`<a href="${esc(safe(p.link))}" target="_blank" rel="noopener" style="color:#a5b4fc">havola ↗</a>`:""}</p></div><div><button class="bt o" onclick="editId='${p.id}';go('port')">✏️</button> <button class="bt r" onclick="delPf('${p.id}')">🗑</button></div></div>`).join(""):empty("Portfolio hozircha bo‘sh.")}</div></div>`},
-set(){return `<h1>Sozlamalar</h1><div class="g g2"><form class="card" onsubmit="savePw(event)"><h3>🔒 Parolni o‘zgartirish</h3><label>Yangi parol (kamida 6 belgi)<input type="password" name="pw" minlength="6" required></label><button class="bt">Parolni yangilash</button> <span id="sm" class="ok"></span></form>
-<div class="card"><h3>👤 Profil</h3><p class="m" style="margin-bottom:12px">Ma’lumotlaringizni “Profilim” bo‘limida tahrirlaysiz.</p><button class="bt o" onclick="go('prof')">Profilga o‘tish</button><h3 style="margin-top:22px">🔔 Bildirishnomalar</h3><p class="m">Yangiliklar hozircha Telegram kanalimiz orqali beriladi.</p><button class="bt" style="margin-top:22px" onclick="out()">Xavfsiz chiqish</button></div></div>`}};
+<div class="card"><h3>Mening ishlarim</h3>${D.pf.length?D.pf.map(p=>`<div class="rw"><div><span class="b">${esc(p.kind)}</span> <b>${esc(p.title)}</b><p class="m">${esc(p.description||"")} ${safe(p.link)?`<a href="${esc(safe(p.link))}" target="_blank" rel="noopener" style="color:#a5b4fc">havola ↗</a>`:""}</p></div><div><button class="bt o" onclick="editId='${p.id}';go('port')">Tahrirlash</button> <button class="bt r" onclick="delPf('${p.id}')">O‘chirish</button></div></div>`).join(""):empty("Portfolio hozircha bo‘sh.")}</div></div>`},
+set(){return `<h1>Sozlamalar</h1><div class="g g2"><form class="card" onsubmit="savePw(event)"><h3>Parolni o‘zgartirish</h3><label>Yangi parol (kamida 6 belgi)<input type="password" name="pw" minlength="6" required></label><button class="bt">Parolni yangilash</button> <span id="sm" class="ok"></span></form>
+<div class="card"><h3>Profil</h3><p class="m" style="margin-bottom:12px">Ma’lumotlaringizni “Profilim” bo‘limida tahrirlaysiz.</p><button class="bt o" onclick="go('prof')">Profilga o‘tish</button><h3 style="margin-top:22px">Bildirishnomalar</h3><p class="m">Yangiliklar hozircha Telegram kanalimiz orqali beriladi.</p><button class="bt" style="margin-top:22px" onclick="out()">Xavfsiz chiqish</button></div></div>`}};
 
-function go(n){cur=n;document.querySelectorAll(".nv[data-v]").forEach(b=>b.classList.toggle("on",b.dataset.v===n));$("#view").innerHTML=V[n]();$("#sb").classList.remove("open");scrollTo(0,0);fill()}
+const IC={home:"M3 11 12 3l9 8v10h-6v-6H9v6H3z",prof:"M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c0-4 4-6 8-6s8 2 8 6",apps:"M3 8h18v12H3zM9 8V5h6v3",evs:"M4 6h16v14H4zM4 10h16M8 3v4M16 3v4",certs:"M12 14a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM8.5 13.5 7 22l5-3 5 3-1.5-8.5",port:"M3 6h6l2 2h10v12H3z",set:"M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M6 14v6",ver:"M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4",site:"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18",adm:"M12 3l8 4v5c0 4-3 7-8 9-5-2-8-5-8-9V7z",out:"M9 4H4v16h5M16 8l4 4-4 4M20 12H9"};
+const ic=n=>`<svg class="ic" viewBox="0 0 24 24"><path d="${IC[n]}"/></svg>`;
+function buildNav(){
+ const L=[["home","Bosh sahifa"],["prof","Profilim"],["apps","Mening arizalarim"],["evs","Mening tadbirlarim"],["certs","Mening sertifikatlarim"],["port","Portfolio"],["set","Sozlamalar"]];
+ $("#sb").innerHTML=`<div class="logo"><i>M</i>MINDOVA</div>`+L.map(([v,t])=>`<button class="nv" data-v="${v}">${ic(v)}${t}</button>`).join("")+`<div class="sp"></div><a class="nv" href="/verify">${ic("ver")}Sertifikatni tekshirish</a><a class="nv" href="/">${ic("site")}Saytga qaytish</a><a class="nv" id="adm" href="/admin" hidden>${ic("adm")}Admin panel</a><button class="nv" style="margin-top:auto" onclick="out()">${ic("out")}Chiqish</button>`;
+ $("#bn").innerHTML=[["home","Bosh"],["apps","Arizalar"],["evs","Tadbirlar"],["certs","Sertifikat"],["prof","Profil"]].map(([v,t])=>`<button data-v="${v}">${ic(v)}${t}</button>`).join("");
+ document.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>go(b.dataset.v));
+}
+const menu=o=>{$("#sb").classList.toggle("open",o);$("#ov").classList.toggle("on",o)};
+function go(n){cur=n;document.querySelectorAll("[data-v]").forEach(b=>b.classList.toggle("on",b.dataset.v===n));$("#tav").innerHTML=av();$("#view").innerHTML=V[n]();menu(false);scrollTo(0,0);fill()}
 async function out(){await sb.auth.signOut();location.href="/"}
 async function saveP(e){e.preventDefault();const f=e.target,v={full_name:f.fn.value.trim(),phone:f.ph.value.trim(),city:f.ct.value.trim(),bio:f.bio.value.trim(),interests:f.it.value.trim(),updated_at:new Date().toISOString()};
  const {error}=await sb.from("profiles").update(v).eq("id",U.id);
- if(error){$("#pm").textContent="Xato: "+error.message;return}Object.assign(P,v);go("prof");$("#pm").textContent="Saqlandi ✓"}
+ if(error){$("#pm").textContent="Xato: "+error.message;return}Object.assign(P,v);go("prof");$("#pm").textContent="Saqlandi "}
 async function upAv(i){const fl=i.files[0];if(!fl)return;try{const im=await createImageBitmap(fl),s=Math.min(1,512/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*s;c.height=im.height*s;c.getContext("2d").drawImage(im,0,0,c.width,c.height);
  const b=await new Promise(r=>c.toBlob(r,"image/jpeg",.85)),p=U.id+"/"+Date.now()+".jpg",u=await sb.storage.from("avatars").upload(p,b,{contentType:"image/jpeg"});if(u.error)throw u.error;
  const url=sb.storage.from("avatars").getPublicUrl(p).data.publicUrl,{error}=await sb.from("profiles").update({avatar_url:url}).eq("id",U.id);if(error)throw error;P.avatar_url=url;go("prof")}catch(e){alert("Rasm yuklanmadi: "+e.message)}}
@@ -153,7 +177,7 @@ async function savePf(e){e.preventDefault();const f=e.target,v={kind:f.k.value,t
  const r=editId?await sb.from("portfolio_items").update(v).eq("id",editId):await sb.from("portfolio_items").insert([v]);
  if(r.error){alert("Xato: "+r.error.message);return}editId=null;await load();go("port")}
 async function delPf(id){if(!confirm("O‘chirilsinmi?"))return;const {error}=await sb.from("portfolio_items").delete().eq("id",id);if(error){alert(error.message);return}await load();go("port")}
-async function savePw(e){e.preventDefault();const {error}=await sb.auth.updateUser({password:e.target.pw.value});$("#sm").textContent=error?"Xato: "+error.message:"Parol yangilandi ✓";if(!error)e.target.reset()}
+async function savePw(e){e.preventDefault();const {error}=await sb.auth.updateUser({password:e.target.pw.value});$("#sm").textContent=error?"Xato: "+error.message:"Parol yangilandi ";if(!error)e.target.reset()}
 
 async function load(){
  const q=(t,f)=>f(sb.from(t).select("*"));
@@ -175,7 +199,7 @@ async function load(){
  if(!session){location.href="/";return}
  U=session.user;
  sb.auth.onAuthStateChange(ev=>{if(ev==="SIGNED_OUT")location.href="/"});
- document.querySelectorAll(".nv[data-v]").forEach(b=>b.onclick=()=>go(b.dataset.v));
+ buildNav();
  const a=await sb.rpc("is_admin");ADMIN=!!a.data;$("#adm").hidden=!ADMIN;
  await load();go("home");
 })();
