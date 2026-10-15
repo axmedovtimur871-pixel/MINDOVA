@@ -14,6 +14,7 @@ app.get('/admin', send('admin.html'));
 app.get('/kabinet', send('dashboard.html'));
 app.get('/verify', send('verify.html'));
 app.get('/certificate-bg.jpg', send('certificate-bg.jpg'));
+app.get('/3291A6AB-8BF9-4FD3-A90A-B84FCCCC9B70.png', send('3291A6AB-8BF9-4FD3-A90A-B84FCCCC9B70.png'));
 app.get('/verify.html', send('verify.html'));
 app.get('/login', send('login.html'));
 app.get('/index.html', send('index.html'));
