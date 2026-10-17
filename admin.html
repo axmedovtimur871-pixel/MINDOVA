@@ -34,6 +34,7 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
  <button class="tab-btn" data-tab="opps">Imkoniyatlar</button>
  <button class="tab-btn" data-tab="jobs">Ish arizalari</button>
  <button class="tab-btn" data-tab="certs">Sertifikatlar</button>
+ <button class="tab-btn" data-tab="faqs">FAQ</button>
 </div>
 
 <div id="users" class="section active">
@@ -69,6 +70,18 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
  </form>
  <h2 style="margin-top:28px">Berilgan sertifikatlar</h2>
  <div id="cList"></div>
+</div>
+
+<div id="faqs" class="section">
+ <h2>Yangi savol-javob qo'shish</h2>
+ <form id="faqForm">
+  <input type="text" id="fQ" placeholder="Savol" required>
+  <textarea id="fA" placeholder="Javob" rows="4" required></textarea>
+  <button type="submit" class="submit-btn">Saqlash</button>
+  <div class="msg" id="fMsg"></div>
+ </form>
+ <h2 style="margin-top:28px">Savol-javoblar</h2>
+ <div id="fList"></div>
 </div>
 
 <div id="events" class="section">
@@ -265,6 +278,30 @@ $("certForm").onsubmit=async e=>{
  if(!error){e.target.reset();loadCerts()}
 };
 
+let FQ=[];
+async function loadFaqs(){
+ const {data,error}=await sb.from("faqs").select("*").order("position",{ascending:true}).order("created_at",{ascending:true});
+ const box=$("fList");box.innerHTML="";
+ if(error){box.textContent="Yuklab bo'lmadi: "+error.message;return}
+ FQ=data||[];
+ if(!FQ.length){box.textContent="Hozircha savol yo'q. Saytda standart savollar ko'rinadi.";return}
+ FQ.forEach(x=>{
+  const row=document.createElement("div");
+  row.style.cssText="display:flex;gap:10px;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.1);padding:8px 0";
+  const t=document.createElement("span");t.textContent=x.question;
+  const d=document.createElement("button");
+  d.type="button";d.className="tab-btn";d.textContent="O'chirish";
+  d.onclick=async()=>{if(!confirm("O'chirilsinmi?"))return;const {error}=await sb.from("faqs").delete().eq("id",x.id);if(error){alert(error.message);return}loadFaqs()};
+  row.append(t,d);box.appendChild(row);
+ });
+}
+$("faqForm").onsubmit=async e=>{
+ e.preventDefault();
+ const {error}=await sb.from("faqs").insert([{question:$("fQ").value.trim(),answer:$("fA").value.trim(),position:(FQ.length+1)*10}]);
+ $("fMsg").textContent=error?"Xato: "+error.message:"Saqlandi ✓";
+ if(!error){e.target.reset();loadFaqs()}
+};
+
 async function loadOpps(){
  const {data,error}=await sb.from("opportunities").select("id,title,category").order("created_at",{ascending:false});
  const box=$("opList");
@@ -315,6 +352,7 @@ $("addOppForm").onsubmit=async e=>{
  loadOpps();
  loadJobs();
  loadCerts();
+ loadFaqs();
 })();
 </script>
 </body>
