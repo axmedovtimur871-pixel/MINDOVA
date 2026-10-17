@@ -67,6 +67,13 @@ section.s{padding:60px 0}
 .acts{margin-top:auto;display:flex;gap:8px;flex-wrap:wrap}
 .card .acts .btn{margin-top:0}
 #jobModal .modal{max-width:460px;max-height:92vh;overflow-y:auto}
+.faq{margin-top:24px;max-width:760px}
+.faq details{background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:10px}
+.faq summary{cursor:pointer;padding:16px 18px;font-weight:700;list-style:none;display:flex;justify-content:space-between;gap:12px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";color:var(--acc);font-size:1.3rem;line-height:1}
+.faq details[open] summary::after{content:"–"}
+.faq .a{padding:0 18px 16px;color:var(--mut);white-space:pre-line}
 .empty{background:#fff;border:1px dashed #C7D0DB;border-radius:16px;padding:28px;text-align:center;color:var(--mut);grid-column:1/-1}
 .form{max-width:560px;margin:24px auto 0;background:#fff;border:1px solid var(--line);border-radius:20px;padding:28px}
 label{display:block;font-weight:600;font-size:.88rem;margin-bottom:14px}
@@ -91,6 +98,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
   <a href="#tadbirlar">Tadbirlar</a>
   <a href="#imkoniyatlar">Imkoniyatlar</a>
   <a href="#haqimizda">Biz haqimizda</a>
+  <a href="#faq">FAQ</a>
   <a href="/verify">Sertifikatni tekshirish</a>
   <a id="tg1" target="_blank" rel="noopener">Telegram kanalimiz</a>
  </div>
@@ -115,6 +123,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
 <section class="s" id="haqimizda" style="padding-top:0"><div class="wrap"><h2>Biz haqimizda</h2>
  <p class="muted" style="max-width:720px;margin-top:12px">MINDOVA — yoshlar uchun fikr almashish, rivojlanish va kelajak sari birgalikda harakat qilish maydoni.</p>
  <div class="marquee" id="teamg"></div></div></section>
+
+<section class="s" id="faq" style="padding-top:0"><div class="wrap"><h2>Ko‘p so‘raladigan savollar</h2><div class="faq" id="faqg"></div></div></section>
 
 <section class="s" id="royxat" style="padding-top:0"><div class="wrap">
  <h2 style="text-align:center">Ro‘yxatdan o‘tish</h2>
@@ -251,6 +261,13 @@ async function load(){
  }
 }
 load();
+const FAQ0=[["Qanday ro‘yxatdan o‘taman?", "Saytdagi “Kirish” tugmasini bosib, “Ro‘yxatdan o‘ting” orqali hisob yarating. Hisob kabinetingizni ochadi: arizalaringiz, tadbirlaringiz va sertifikatlaringiz shu yerda ko‘rinadi."], ["Tadbirga qanday yozilaman?", "“Tadbirlar” bo‘limidan kerakli tadbirni toping va “Ro‘yxatdan o‘tish” tugmasini bosing. Ism, yosh, telefon raqam va Telegram username’ingizni kiriting. Jamoa siz bilan Telegram orqali bog‘lanadi. Tadbirlaringizni kabinetda ko‘rish uchun avval tizimga kiring."], ["Ishga qanday ariza topshiraman?", "“Dolzarb imkoniyatlar” bo‘limidagi ish e’lonida “Ariza topshirish” tugmasini bosing, ma’lumotlarni to‘ldiring va xohlasangiz CV yuklang. Tizimga kirgan holda topshirsangiz, ariza holatini kabinetdagi “Mening arizalarim” bo‘limida kuzatasiz."], ["Sertifikatni qayerdan olaman?", "Sertifikat berilgach, kabinetingizdagi “Mening sertifikatlarim” bo‘limida paydo bo‘ladi. U yerda ko‘rib, kattalashtirib, PDF shaklida yuklab olishingiz mumkin."], ["Sertifikat haqiqiyligini qanday tekshiraman?", "Saytdagi “Sertifikatni tekshirish” sahifasida sertifikatdagi raqamni kiriting yoki sertifikatdagi QR kodni telefon kamerasi bilan skanerlang."], ["Savolim bo‘lsa kimga murojaat qilaman?", "Sayt pastidagi “Admin bilan bog‘lanish” tugmasi orqali Telegram’da yozing yoki Telegram kanalimizga qo‘shiling."]];
+async function loadFaq(){
+ let list=FAQ0;
+ if(sb){const {data,error}=await sb.from("faqs").select("question,answer").order("position",{ascending:true}).order("created_at",{ascending:true});if(!error&&data&&data.length)list=data.map(x=>[x.question,x.answer])}
+ $("#faqg").innerHTML=list.map(([q,a])=>`<details><summary>${esc(q)}</summary><div class="a">${esc(a)}</div></details>`).join("");
+}
+loadFaq();
 
 $("#evg").addEventListener("click",ev=>{const b=ev.target.closest("[data-ev]");if(b)$("#evsel").value=b.dataset.ev});
 
