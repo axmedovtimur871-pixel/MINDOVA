@@ -73,6 +73,7 @@ label{font-size:.82rem;color:var(--m);display:block}textarea{min-height:90px}
 <nav class="bn" id="bn"></nav>
 <div class="md" id="md" onclick="this.classList.remove('on')"><img id="mi" alt="Sertifikat"></div>
 <script>
+const REC=/type=recovery/.test(location.hash);
 const sb=supabase.createClient("https://zrebikqvjbvuwbzcunkw.supabase.co","sb_publishable_DszdaPjNPM3i0UbGX3lLjQ_DTjdfLcW");
 const $=q=>document.querySelector(q);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -132,7 +133,7 @@ home(){
  const now=new Date(),em=evM(),om=opM(),mine=new Set(D.reg.map(r=>r.event_id)),myEv=D.reg.filter(r=>r.event_id&&em[r.event_id]);
  const up=D.ev.filter(e=>e.starts_at&&new Date(e.starts_at)>=now),nx=up[0];
  const act=[...myEv.map(r=>({t:"Tadbirga yozildingiz: "+em[r.event_id].title,d:r.created_at})),...D.job.map(j=>({t:"Ishga ariza topshirdingiz: "+(om[j.opportunity_id]?.title||"e’lon"),d:j.created_at})),...D.cert.map(c=>({t:"Sertifikat berildi: "+c.title,d:c.created_at}))].sort((a,b)=>new Date(b.d)-new Date(a.d)).slice(0,5);
- const cta=e=>mine.has(e.id)?`<span class="b green">Ro‘yxatdan o‘tgansiz</span>`:e.registration_open?`<a class="bt" href="/#royxat">Ro‘yxatdan o‘tish</a>`:"";
+ const cta=e=>mine.has(e.id)?`<span class="b green">Ro‘yxatdan o‘tgansiz</span>`:e.registration_open?`<a class="bt" href="/#tadbirlar">Ro‘yxatdan o‘tish</a>`:"";
  const dt=e=>{const x=new Date(e.starts_at);return `<div class="dt"><b>${x.getDate()}</b><span>${ML[x.getMonth()].slice(0,3)}</span></div>`};
  const th=e=>safe(e.image_url)?`<img src="${esc(safe(e.image_url))}" alt="" loading="lazy">`:dt(e);
  const mt=e=>fd(e.starts_at)+(e.location?" · "+esc(e.location):"");
@@ -146,7 +147,7 @@ ${nx?`<div class="card nx" style="margin-top:14px"><span class="eb">Eng yaqin ta
 <div class="card"><h3>So‘nggi faoliyatlar</h3>${act.length?act.map(a=>`<div class="rw"><span>${esc(a.t)}</span><span class="m">${fd(a.d)}</span></div>`).join(""):empty("Faoliyat hali yo‘q.")}<div style="margin-top:14px"><a class="bt o" href="/#imkoniyatlar">Imkoniyatlarni ko‘rish</a></div></div></div>`},
 prof(){return `<h1>Profilim</h1><form class="card" style="margin-top:16px;max-width:640px" onsubmit="saveP(event)"><div class="pc" style="margin-bottom:14px">${av()}<div><label>Profil rasmi<input type="file" accept="image/*" onchange="upAv(this)" style="margin-bottom:0"></label></div></div>
 <label>Ism va familiya<input name="fn" maxlength="80" value="${esc(P.full_name)}" required></label><label>Email<input value="${esc(U.email)}" disabled></label>
-<label>Telefon raqami<input name="ph" type="tel" maxlength="20" value="${esc(P.phone)}"></label><label>Shahar<input name="ct" maxlength="60" value="${esc(P.city)}"></label>
+<label>Telefon raqami<input name="ph" type="tel" maxlength="20" value="${esc(P.phone)}"></label><label>Yosh<input name="ag" type="number" min="10" max="99" value="${esc(P.age)}"></label><label>Telegram username<input name="tg" maxlength="33" placeholder="username" value="${esc(P.telegram_username)}"></label><label>Shahar<input name="ct" maxlength="60" value="${esc(P.city)}"></label>
 <label>O‘zingiz haqingizda<textarea name="bio" maxlength="500">${esc(P.bio)}</textarea></label><label>Qiziqishlar va ko‘nikmalar (vergul bilan)<input name="it" maxlength="200" value="${esc(P.interests)}"></label>
 ${P.interests?`<p style="margin-bottom:12px">${P.interests.split(",").map(s=>s.trim()).filter(Boolean).map(s=>`<span class="b">${esc(s)}</span> `).join("")}</p>`:""}
 <button class="bt">Saqlash</button> <span id="pm" class="ok"></span></form>`},
@@ -169,7 +170,8 @@ function buildNav(){
 const menu=o=>{$("#sb").classList.toggle("open",o);$("#ov").classList.toggle("on",o)};
 function go(n){cur=n;document.querySelectorAll("[data-v]").forEach(b=>b.classList.toggle("on",b.dataset.v===n));$("#tav").innerHTML=av();$("#view").innerHTML=V[n]();menu(false);scrollTo(0,0);fill()}
 async function out(){await sb.auth.signOut();location.href="/"}
-async function saveP(e){e.preventDefault();const f=e.target,v={full_name:f.fn.value.trim(),phone:f.ph.value.trim(),city:f.ct.value.trim(),bio:f.bio.value.trim(),interests:f.it.value.trim(),updated_at:new Date().toISOString()};
+async function saveP(e){e.preventDefault();const f=e.target,v={full_name:f.fn.value.trim(),phone:f.ph.value.trim(),city:f.ct.value.trim(),bio:f.bio.value.trim(),interests:f.it.value.trim(),age:parseInt(f.ag.value)||null,telegram_username:f.tg.value.trim().replace(/^@/,"").toLowerCase()||null,updated_at:new Date().toISOString()};
+ if(v.telegram_username&&!/^[a-z][a-z0-9_]{4,31}$/.test(v.telegram_username)){$("#pm").textContent="Telegram username noto‘g‘ri";return}
  const {error}=await sb.from("profiles").update(v).eq("id",U.id);
  if(error){$("#pm").textContent="Xato: "+error.message;return}Object.assign(P,v);go("prof");$("#pm").textContent="Saqlandi "}
 async function upAv(i){const fl=i.files[0];if(!fl)return;try{const im=await createImageBitmap(fl),s=Math.min(1,512/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*s;c.height=im.height*s;c.getContext("2d").drawImage(im,0,0,c.width,c.height);
@@ -206,7 +208,7 @@ async function load(){
  sb.auth.onAuthStateChange(ev=>{if(ev==="SIGNED_OUT")location.href="/"});
  buildNav();
  const a=await sb.rpc("is_admin");ADMIN=!!a.data;$("#adm").hidden=!ADMIN;
- await load();go("home");
+ await load();const h=location.hash.slice(1);go(REC?"set":V[h]?h:"home");
 })();
 
 /* Fon harakati: telefonni qiyshaytirganda (yoki sichqoncha bilan) rasm sekin siljiydi */
