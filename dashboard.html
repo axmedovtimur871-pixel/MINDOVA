@@ -181,6 +181,7 @@ async function savePf(e){e.preventDefault();const f=e.target,v={kind:f.k.value,t
 async function delPf(id){if(!confirm("O‘chirilsinmi?"))return;const {error}=await sb.from("portfolio_items").delete().eq("id",id);if(error){alert(error.message);return}await load();go("port")}
 async function savePw(e){e.preventDefault();const {error}=await sb.auth.updateUser({password:e.target.pw.value});$("#sm").textContent=error?"Xato: "+error.message:"Parol yangilandi ";if(!error)e.target.reset()}
 
+async function retry(){$("#msg").textContent="Qayta yuklanmoqda…";await load();go(cur)}
 async function load(){
  const q=(t,f)=>f(sb.from(t).select("*"));
  const R=await Promise.all([
@@ -191,9 +192,11 @@ async function load(){
   q("certificates",x=>x.eq("user_id",U.id).order("issued_at",{ascending:false})),
   q("portfolio_items",x=>x.eq("user_id",U.id).order("created_at",{ascending:false})),
   q("opportunities",x=>x)]);
- const er=R.find(r=>r.error);$("#msg").textContent=er?"Ba’zi ma’lumotlar yuklanmadi: "+er.error.message:"";
+ const er=R.find(r=>r.error),net=er&&/load failed|failed to fetch|network/i.test(er.error.message||"");
+ $("#msg").innerHTML=!er?"":net?`Serverga ulanib bo‘lmadi (internet yoki server muammosi). Ma’lumotlaringiz o‘chmagan. <button class="bt o" style="margin-left:6px" onclick="retry()">Qayta urinish</button>`:"Ba’zi ma’lumotlar yuklanmadi: "+esc(er.error.message);
+ if(net&&!window._rt){window._rt=1;setTimeout(retry,3000)}
  P=R[0].data;
- if(!P){P={id:U.id,email:U.email,full_name:U.user_metadata?.full_name||"",created_at:new Date().toISOString()};await sb.from("profiles").upsert({id:U.id,email:U.email,full_name:P.full_name})}
+ if(!P){P={id:U.id,email:U.email,full_name:U.user_metadata?.full_name||"",created_at:new Date().toISOString()};if(!R[0].error)await sb.from("profiles").upsert({id:U.id,email:U.email,full_name:P.full_name})}
  D={reg:R[1].data||[],ev:R[2].data||[],job:R[3].data||[],cert:R[4].data||[],pf:R[5].data||[],op:R[6].data||[]};
 }
 (async()=>{
