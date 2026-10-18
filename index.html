@@ -86,19 +86,21 @@ section.s{padding:60px 0}
 .faq summary::after{content:"+";color:var(--acc);font-size:1.3rem;line-height:1}
 .faq details[open] summary::after{content:"–"}
 .faq .a{padding:0 18px 16px;color:var(--mut);white-space:pre-line}
-#loginModal{background:radial-gradient(520px 380px at 88% 8%,rgba(99,102,241,.2),transparent 70%),radial-gradient(460px 340px at 8% 96%,rgba(99,102,241,.12),transparent 70%),radial-gradient(circle at 1px 1px,rgba(255,255,255,.07) 1px,transparent 0) 0 0/24px 24px,#0F0E26;overflow:hidden}
-#loginModal::before{content:"M";position:absolute;right:-4vw;bottom:-14vw;font-size:44vw;line-height:1;font-weight:800;color:rgba(99,102,241,.07);pointer-events:none;user-select:none}
-#loginModal .modal{background:rgba(21,20,51,.9);color:#fff;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:32px 28px;max-width:410px;box-shadow:none;max-height:92vh;overflow-y:auto}
-#loginModal .mlogo{font-weight:800;font-size:1.05rem;letter-spacing:.03em;margin-bottom:18px}
+.btn.done{background:#E7F7EF;color:#0f6b46;cursor:default}
+#loginModal{background:radial-gradient(620px 420px at 88% 0%,rgba(99,102,241,.1),transparent 70%),radial-gradient(520px 380px at 0% 100%,rgba(99,102,241,.07),transparent 70%),#F5F7FA}
+#loginModal .modal{max-width:400px;width:92%;background:#fff;border:1px solid #E3E8EF;border-radius:24px;padding:36px 28px 26px;box-shadow:0 18px 50px rgba(15,14,38,.1);max-height:94vh;overflow-y:auto;text-align:center}
+#loginModal .mlogo{font-weight:800;font-size:1.35rem;color:var(--navy);margin-bottom:16px}
 #loginModal .mlogo i{color:var(--acc);font-style:normal;margin-right:3px}
-#loginModal h3{font-size:1.4rem;letter-spacing:-.01em;color:#fff}
-#loginModal label{color:#b9bde6;font-weight:500}
-#loginModal input{background:rgba(15,14,38,.75);border:1px solid rgba(255,255,255,.14);color:#fff;border-radius:8px}
-#loginModal input:focus{outline:1px solid var(--acc);border-color:var(--acc)}
-#loginModal .err{color:#fca5a5}
-#loginModal #authSwap{color:#a5a8ff!important}
-#loginModal .btn.acc{border-radius:8px}
-#loginModal .modal-close{color:#8f93b8}
+#loginModal h3{font-size:1.6rem;color:var(--navy);margin-bottom:22px;letter-spacing:-.01em}
+#loginModal label{text-align:left;color:#4a5568;font-weight:600;font-size:.84rem}
+#loginModal input{background:#F6F7FB;border:1.5px solid #E3E6F0;border-radius:14px;padding:14px 16px;color:var(--ink)}
+#loginModal input:focus{outline:none;border-color:var(--acc);background:#fff}
+#loginModal .pw{position:relative}#loginModal .pw input{padding-right:50px;margin-top:6px}
+#loginModal .pw button{position:absolute;right:8px;top:12px;background:none;border:0;color:#7b8398;cursor:pointer;padding:8px;display:grid}
+#loginModal .pw svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#loginModal #authBtn{width:100%;margin-top:8px;padding:15px;font-size:1rem;background:linear-gradient(135deg,#6366F1,#2a2578);box-shadow:0 10px 24px rgba(99,102,241,.25)}
+#loginModal .fp{margin-top:16px;font-size:.9rem}#loginModal .fp a,#loginModal #authSwap{color:var(--acc);font-weight:700}
+#loginModal .modal-close{color:#7b8398}
 .empty{background:#fff;border:1px dashed #C7D0DB;border-radius:16px;padding:28px;text-align:center;color:var(--mut);grid-column:1/-1}
 .form{max-width:560px;margin:24px auto 0;background:#fff;border:1px solid var(--line);border-radius:20px;padding:28px}
 label{display:block;font-weight:600;font-size:.88rem;margin-bottom:14px}
@@ -128,7 +130,6 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
   <a id="tg1" target="_blank" rel="noopener">Telegram kanalimiz</a>
  </div>
  <div class="nr">
-  <a class="btn acc sm" href="#royxat">Ro‘yxatdan o‘tish</a>
   <button class="btn ghost sm" id="openLogin" type="button">Kirish</button>
  </div>
 </div></nav>
@@ -138,7 +139,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
  <h2>Fikrla. Muloqot qil. Yarat.</h2>
  <p>Fikr almashish, yangi insonlar bilan tanishish, foydali ko‘nikmalarni rivojlantirish va yangi imkoniyatlarni kashf etish maydoni.</p>
  <div class="cta-row">
-  <a class="btn acc" href="#royxat">Ro‘yxatdan o‘tish</a>
+  <a class="btn acc" href="#tadbirlar">Tadbirlarni ko‘rish</a>
   <a class="btn ghost" href="#haqimizda">Biz haqimizda</a>
  </div>
 </div></header>
@@ -151,32 +152,22 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
 
 <section class="s" id="faq" style="padding-top:0"><div class="wrap"><h2>Ko‘p so‘raladigan savollar</h2><div class="faq" id="faqg"></div></div></section>
 
-<section class="s" id="royxat" style="padding-top:0"><div class="wrap">
- <h2 style="text-align:center">Ro‘yxatdan o‘tish</h2>
- <div class="form" id="rf">
-  <form id="f" novalidate>
-   <label>Ism va familiya<input name="fullName" autocomplete="name" maxlength="80" required><div class="err" data-e="fullName"></div></label>
-   <label>Yosh<input name="age" type="number" inputmode="numeric" min="10" max="99" required><div class="err" data-e="age"></div></label>
-   <label>Telefon raqam<input name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+998 90 123 45 67" maxlength="20" required><div class="err" data-e="phone"></div></label>
-   <label>Telegram username<input name="telegram" placeholder="@username" maxlength="33" autocapitalize="none" autocorrect="off" spellcheck="false" required><div class="err" data-e="telegram"></div></label>
-   <label>Tadbir<select name="eventId" id="evsel"><option value="">Umumiy ariza</option></select></label>
-   <input name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
-   <button class="btn acc" style="width:100%" id="sbm" type="submit">Yuborish</button>
-   <div class="err" id="ge" style="text-align:center;margin-top:10px"></div>
-  </form>
- </div>
-</div></section>
-
 <div class="modal-backdrop" id="loginModal">
  <div class="modal">
   <button class="modal-close" id="closeLogin" type="button" aria-label="Yopish">✕</button>
   <div class="mlogo"><i>M</i>MINDOVA</div>
   <h3 id="authTitle" style="margin-bottom:18px">Kirish</h3>
   <form id="loginForm">
-   <label id="nameWrap" hidden>Ism va familiya<input name="fullName" maxlength="80" autocomplete="name"></label>
+   <div id="suFields" hidden>
+    <label>Ism va familiya<input name="fullName" maxlength="80" autocomplete="name"></label>
+    <label>Yosh<input name="age" type="number" inputmode="numeric" min="10" max="99"></label>
+    <label>Telefon raqam<input name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+998 90 123 45 67" maxlength="20"></label>
+    <label>Telegram username<input name="telegram" placeholder="@username" maxlength="33" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
+   </div>
    <label>Email<input type="email" name="email" required></label>
-   <label style="margin-top:10px">Parol<input type="password" name="password" required></label>
+   <label>Parol<div class="pw"><input type="password" name="password" placeholder="Parol" required><button type="button" id="pwEye" aria-label="Parolni ko‘rsatish"><svg viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div></label>
    <button class="btn acc" style="width:100%;margin-top:20px" id="authBtn" type="submit">Kirish</button>
+   <p class="fp" id="fpWrap"><a href="#" id="forgot">Parolni unutdingizmi?</a></p>
    <div class="err" id="loginErr" style="margin-top:10px;text-align:center"></div>
    <p style="text-align:center;margin-top:12px;font-size:.88rem"><a href="#" id="authSwap" style="color:var(--acc);font-weight:600">Hisobingiz yo‘qmi? Ro‘yxatdan o‘ting</a></p>
   </form>
@@ -213,7 +204,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
 </div></footer>
 
 <script>
-const CFG={URL:"https://zrebikqvjbvuwbzcunkw.supabase.co",KEY:"sb_publishable_DszdaPjNPM3i0UbGX3lLjQ_DTjdfLcW",TG:"https://t.me/Mindova_uz",ADMIN:"https://t.me/Mindova_admin"};
+const CFG={URL:"https://zrebikqvjbvuwbzcunkw.supabase.co",KEY:"sb_publishable_DszdaPjNPM3i0UbGX3lLjQ_DTjdfLcW",TG:"https://t.me/Mindova_uz",ADMIN:"https://t.me/Mindova_admin",GATE:true};
 const $=q=>document.querySelector(q);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const safe=u=>{try{const x=new URL(u);return /^https?:$/.test(x.protocol)?x.href:""}catch{return""}};
@@ -234,32 +225,73 @@ $("#closeLogin").onclick=()=>$("#loginModal").classList.remove("open");
 
 const sb=window.supabase?supabase.createClient(CFG.URL,CFG.KEY):null;
 
-/* Admin kirish */
-let signup=false;
-$("#authSwap").onclick=ev=>{ev.preventDefault();signup=!signup;$("#authTitle").textContent=signup?"Ro‘yxatdan o‘tish":"Kirish";$("#authBtn").textContent=signup?"Hisob yaratish":"Kirish";$("#nameWrap").hidden=!signup;$("#authSwap").textContent=signup?"Hisobingiz bormi? Kiring":"Hisobingiz yo‘qmi? Ro‘yxatdan o‘ting"};
-$("#loginForm").onsubmit=async ev=>{
+/* Kirish / ro‘yxatdan o‘tish paneli. Birinchi kirishda faqat shu panel ochiladi (CFG.GATE=false bo‘lsa, majburiy emas) */
+const ME={user:null,profile:null,regs:new Set()};
+let signup=true,EVD=null;
+const lf=$("#loginForm");
+function setMode(s){signup=s;$("#authTitle").textContent=s?"Ro‘yxatdan o‘tish":"Kirish";$("#authBtn").textContent=s?"Ro‘yxatdan o‘tish":"Kirish";$("#suFields").hidden=!s;$("#authSwap").textContent=s?"Hisobingiz bormi? Kiring":"Hisobingiz yo‘qmi? Ro‘yxatdan o‘ting";$("#fpWrap").hidden=s;$("#loginErr").style.color="";$("#loginErr").textContent=""}
+function openAuth(gate,s){setMode(s!==false);$("#closeLogin").hidden=!!gate;$("#loginModal").classList.add("open");if(gate)document.body.style.overflow="hidden"}
+$("#openLogin").onclick=()=>{$("#nav").classList.remove("open");if(ME.user)location.href="/kabinet";else openAuth(false,false)};
+$("#authSwap").onclick=ev=>{ev.preventDefault();setMode(!signup)};
+lf.telegram.oninput=()=>{lf.telegram.value=lf.telegram.value.toLowerCase().replace(/[^a-z0-9_@]/g,"")};
+$("#pwEye").onclick=()=>{lf.password.type=lf.password.type==="password"?"text":"password"};
+$("#forgot").onclick=async e=>{
+ e.preventDefault();
+ const out=$("#loginErr"),em=lf.email.value.trim();out.style.color="";out.textContent="";
+ if(!em){out.textContent="Avval email manzilingizni kiriting";return}
+ const {error}=await sb.auth.resetPasswordForEmail(em,{redirectTo:location.origin+"/kabinet#set"});
+ if(error){out.textContent=error.message;return}
+ out.style.color="#0f6b46";out.textContent="Parolni tiklash havolasi emailingizga yuborildi.";
+};
+async function enter(user,profile){
+ ME.user=user;
+ if(!profile){const r=await sb.from("profiles").select("*").eq("id",user.id).maybeSingle();profile=r.data}
+ ME.profile=profile||{};
+ const rg=await sb.from("registrations").select("event_id").eq("user_id",user.id);
+ ME.regs=new Set((rg.data||[]).map(x=>x.event_id));
+ $("#loginModal").classList.remove("open");document.body.style.overflow="";
+ $("#openLogin").textContent="Kabinetim";
+ drawEv();
+}
+lf.onsubmit=async ev=>{
  ev.preventDefault();
- const out=$("#loginErr");out.textContent="";
+ const out=$("#loginErr"),btn=$("#authBtn");out.textContent="";
  if(!sb){out.textContent="Ulanish xatosi. Sahifani yangilang.";return}
  const f=ev.target,email=f.email.value.trim();
  if(signup){
-  if(f.fullName.value.trim().length<3){out.textContent="Ismingizni kiriting";return}
-  const {data,error}=await sb.auth.signUp({email,password:f.password.value,options:{data:{full_name:f.fullName.value.trim()}}});
-  if(error){out.textContent=error.message;return}
-  if(data.session){location.href="/kabinet";return}
-  out.textContent="Emailingizga tasdiqlash xati yuborildi. Tasdiqlab, keyin kiring.";return;
+  const name=f.fullName.value.trim(),age=parseInt(f.age.value);
+  let d=f.phone.value.replace(/\D/g,"");if(d.length===9)d="998"+d;
+  const tg=f.telegram.value.trim().replace(/^@/,"").toLowerCase();
+  if(name.length<3){out.textContent="Ism va familiyangizni kiriting";return}
+  if(!(age>=10&&age<=99)){out.textContent="Yoshingizni to‘g‘ri kiriting";return}
+  if(!/^998\d{9}$/.test(d)){out.textContent="Telefon raqamni to‘g‘ri kiriting (masalan: 90 123 45 67)";return}
+  if(!/^[a-z][a-z0-9_]{4,31}$/.test(tg)){out.textContent="Telegram username noto‘g‘ri (lotin harflari, raqam va _, kamida 5 ta belgi)";return}
+  if(f.password.value.length<6){out.textContent="Parol kamida 6 ta belgi bo‘lsin";return}
+  btn.disabled=true;
+  const {data,error}=await sb.auth.signUp({email,password:f.password.value,options:{data:{full_name:name}}});
+  btn.disabled=false;
+  if(error){out.textContent=/already/i.test(error.message)?"Bu email bilan hisob bor. Kirish orqali kiring.":error.message;return}
+  if(!data.session){out.textContent="Emailingizga tasdiqlash xati yuborildi. Tasdiqlab, keyin kiring.";return}
+  const prof={id:data.user.id,email,full_name:name,age,phone:"+"+d,telegram_username:tg};
+  const up=await sb.from("profiles").upsert(prof);
+  if(up.error)console.error(up.error);
+  await enter(data.session.user,prof);
+  return;
  }
- const {error}=await sb.auth.signInWithPassword({email,password:f.password.value});
+ btn.disabled=true;
+ const {data,error}=await sb.auth.signInWithPassword({email,password:f.password.value});
+ btn.disabled=false;
  if(error){out.textContent="Email yoki parol xato!";return}
- const {data:ad}=await sb.rpc("is_admin");
- location.href=ad?"/admin":"/kabinet";
+ await enter(data.user);
 };
-if(sb)sb.auth.getSession().then(({data})=>{if(data.session){const b=$("#openLogin");b.textContent="Kabinetim";b.onclick=()=>location.href="/kabinet"}});
+if(sb)sb.auth.getSession().then(async({data})=>{if(data.session)await enter(data.session.user);else if(CFG.GATE)openAuth(true,false)});
 
 /* Kartochkalar */
+function regBtn(e){if(!canReg(e))return "";return ME.regs.has(e.id)?`<span class="btn sm done">Ro‘yxatdan o‘tgansiz ✓</span>`:`<button class="btn acc sm" type="button" data-ev="${esc(e.id)}">Ro‘yxatdan o‘tish</button>`}
+function drawEv(){if(EVD===null)return;$("#evg").innerHTML=EVD.length?EVD.map(evCard).join(""):empty("Hozircha tadbirlar yo‘q.")}
 function canReg(e){const n=new Date();return !!e.registration_open&&(!e.starts_at||new Date(e.starts_at)>=n)&&(!e.registration_deadline||new Date(e.registration_deadline)>=n)}
 const evCard=e=>`<article class="card">${safe(e.image_url)?`<img class="evimg" src="${esc(safe(e.image_url))}" alt="${esc(e.title)}" loading="lazy">`:""}<h3>${esc(e.title)}</h3><p>${esc((e.description||"").slice(0,140))}</p>
-<div class="meta">${e.starts_at?`<span>📅 ${fd(e.starts_at)}, ${ft(e.starts_at)}</span>`:""}${e.location?`<span>📍 ${esc(e.location)}</span>`:""}${e.format?`<span>🏷 ${esc(e.format)}</span>`:""}</div>${canReg(e)?`<a class="btn acc sm" href="#royxat" data-ev="${esc(e.id)}">Ro‘yxatdan o‘tish</a>`:""}</article>`;
+<div class="meta">${e.starts_at?`<span>📅 ${fd(e.starts_at)}, ${ft(e.starts_at)}</span>`:""}${e.location?`<span>📍 ${esc(e.location)}</span>`:""}${e.format?`<span>🏷 ${esc(e.format)}</span>`:""}</div>${regBtn(e)}</article>`;
 const opCard=o=>{const u=safe(o.source_url);return `<article class="card">${safe(o.image_url)?`<img class="evimg" src="${esc(safe(o.image_url))}" alt="${esc(o.title)}" loading="lazy">`:""}<span class="pill">${esc(o.category)}</span><h3>${esc(o.title)}</h3><p>${esc(o.description)}</p>${o.eligibility?`<p><b>Talablar:</b> ${esc(o.eligibility)}</p>`:""}${o.deadline?`<p><b>Muddat:</b> ${fd(o.deadline)}</p>`:""}<div class="acts">${u?`<a class="btn acc sm" href="${esc(u)}" target="_blank" rel="noopener">Rasmiy manba ↗</a>`:""}${/^ish$/i.test(o.category||"")?`<button class="btn acc sm" type="button" data-job="${esc(o.id)}" data-t="${esc(o.title)}">Ariza topshirish</button>`:""}</div></article>`};
 const tmCard=m=>{const p=safe(m.photo);return `<article class="card"><div class="photo"${p?` style="background-image:url('${esc(p)}')"`:""}></div><h3>${esc(m.name)}</h3><b style="color:var(--acc);font-size:.85rem">${esc(m.role)}</b><p>${esc(m.bio)}</p></article>`};
 
@@ -278,17 +310,12 @@ async function load(){
   sb.from("events").select("*").eq("status","published").order("starts_at",{ascending:true}),
   sb.from("opportunities").select("*").eq("status","published").order("created_at",{ascending:false}),
   sb.from("team").select("*").order("created_at",{ascending:true})]);
- $("#evg").innerHTML=ev.error?empty("Tadbirlarni yuklab bo‘lmadi."):ev.data.length?ev.data.map(evCard).join(""):empty("Hozircha tadbirlar yo‘q.");
+ if(ev.error)$("#evg").innerHTML=empty("Tadbirlarni yuklab bo‘lmadi.");else{EVD=ev.data;drawEv()}
  $("#opg").innerHTML=op.error?empty("Imkoniyatlarni yuklab bo‘lmadi."):op.data.length?op.data.map(opCard).join(""):empty("Hozircha e’lon qilingan imkoniyatlar yo‘q.");
  renderTeam(tm.error?[]:(tm.data||[]));
- if(!ev.error){
-  const now=new Date();
-  $("#evsel").insertAdjacentHTML("beforeend",ev.data.filter(canReg)
-   .map(e=>`<option value="${esc(e.id)}">${esc(e.title)}</option>`).join(""));
- }
 }
 load();
-const FAQ0=[["Qanday ro‘yxatdan o‘taman?", "Saytdagi “Kirish” tugmasini bosib, “Ro‘yxatdan o‘ting” orqali hisob yarating. Hisob kabinetingizni ochadi: arizalaringiz, tadbirlaringiz va sertifikatlaringiz shu yerda ko‘rinadi."], ["Tadbirga qanday yozilaman?", "“Tadbirlar” bo‘limidan kerakli tadbirni toping va “Ro‘yxatdan o‘tish” tugmasini bosing. Ism, yosh, telefon raqam va Telegram username’ingizni kiriting. Jamoa siz bilan Telegram orqali bog‘lanadi. Tadbirlaringizni kabinetda ko‘rish uchun avval tizimga kiring."], ["Ishga qanday ariza topshiraman?", "“Dolzarb imkoniyatlar” bo‘limidagi ish e’lonida “Ariza topshirish” tugmasini bosing, ma’lumotlarni to‘ldiring va xohlasangiz CV yuklang. Tizimga kirgan holda topshirsangiz, ariza holatini kabinetdagi “Mening arizalarim” bo‘limida kuzatasiz."], ["Sertifikatni qayerdan olaman?", "Sertifikat berilgach, kabinetingizdagi “Mening sertifikatlarim” bo‘limida paydo bo‘ladi. U yerda ko‘rib, kattalashtirib, PDF shaklida yuklab olishingiz mumkin."], ["Sertifikat haqiqiyligini qanday tekshiraman?", "Saytdagi “Sertifikatni tekshirish” sahifasida sertifikatdagi raqamni kiriting yoki sertifikatdagi QR kodni telefon kamerasi bilan skanerlang."], ["Savolim bo‘lsa kimga murojaat qilaman?", "Sayt pastidagi “Admin bilan bog‘lanish” tugmasi orqali Telegram’da yozing yoki Telegram kanalimizga qo‘shiling."]];
+const FAQ0=[["Qanday ro‘yxatdan o‘taman?", "Saytga birinchi kirganingizda ro‘yxatdan o‘tish oynasi ochiladi. Ism, yosh, telefon raqam, Telegram username, email va parolni kiriting. Ma’lumotlaringiz saqlanadi, keyingi safar faqat kirasiz."], ["Tadbirga qanday yozilaman?", "“Tadbirlar” bo‘limida kerakli tadbirning pastidagi “Ro‘yxatdan o‘tish” tugmasini bosing. Ma’lumotlaringizni qayta kiritish shart emas, ular profilingizdan olinadi. Jamoa siz bilan Telegram orqali bog‘lanadi."], ["Ishga qanday ariza topshiraman?", "“Dolzarb imkoniyatlar” bo‘limidagi ish e’lonida “Ariza topshirish” tugmasini bosing. Ma’lumotlaringiz avtomatik to‘ldiriladi, xohlasangiz CV yuklang. Ariza holatini kabinetdagi “Mening arizalarim” bo‘limida kuzatasiz."], ["Sertifikatni qayerdan olaman?", "Sertifikat berilgach, kabinetingizdagi “Mening sertifikatlarim” bo‘limida paydo bo‘ladi. U yerda ko‘rib, kattalashtirib, PDF shaklida yuklab olishingiz mumkin."], ["Sertifikat haqiqiyligini qanday tekshiraman?", "Saytdagi “Sertifikatni tekshirish” sahifasida sertifikatdagi raqamni kiriting yoki sertifikatdagi QR kodni telefon kamerasi bilan skanerlang."], ["Savolim bo‘lsa kimga murojaat qilaman?", "Sayt pastidagi “Admin bilan bog‘lanish” tugmasi orqali Telegram’da yozing yoki Telegram kanalimizga qo‘shiling."]];
 async function loadFaq(){
  let list=FAQ0;
  if(sb){const {data,error}=await sb.from("faqs").select("question,answer").order("position",{ascending:true}).order("created_at",{ascending:true});if(!error&&data&&data.length)list=data.map(x=>[x.question,x.answer])}
@@ -296,7 +323,16 @@ async function loadFaq(){
 }
 loadFaq();
 
-$("#evg").addEventListener("click",ev=>{const b=ev.target.closest("[data-ev]");if(b)$("#evsel").value=b.dataset.ev});
+$("#evg").addEventListener("click",async ev=>{
+ const b=ev.target.closest("[data-ev]");if(!b)return;
+ if(!ME.user){openAuth(false,false);return}
+ const p=ME.profile||{};
+ if(!(p.full_name&&p.age&&p.phone&&p.telegram_username)){alert("Avval profilingizni to‘ldiring: yosh, telefon va Telegram username kerak.");location.href="/kabinet#prof";return}
+ b.disabled=true;b.textContent="Yuborilmoqda…";
+ const {error}=await sb.from("registrations").insert([{full_name:p.full_name,age:p.age,phone:p.phone,telegram_username:p.telegram_username,event_id:b.dataset.ev,letter:""}]);
+ if(error){b.disabled=false;b.textContent="Ro‘yxatdan o‘tish";alert("Xatolik: "+error.message);return}
+ ME.regs.add(b.dataset.ev);drawEv();
+});
 
 /* Ish uchun ariza */
 let jobOpp=null;
@@ -308,6 +344,7 @@ $("#opg").addEventListener("click",ev=>{
  jobOpp={id:b.dataset.job,title:b.dataset.t};
  $("#jobSub").textContent=jobOpp.title;
  jf.reset();jf.hidden=false;$("#jobOk").hidden=true;
+ const pf=ME.profile;if(pf){jf.fullName.value=pf.full_name||"";jf.age.value=pf.age||"";jf.phone.value=pf.phone||"";jf.telegram.value=pf.telegram_username||""}
  $("#jobSbm").disabled=false;$("#jobSbm").textContent="Ariza yuborish";
  document.querySelectorAll("[data-j]").forEach(x=>x.textContent="");$("#jobErr").textContent="";
  $("#jobModal").classList.add("open");
@@ -361,39 +398,6 @@ jf.onsubmit=async ev=>{
  }
 };
 
-/* Ro'yxatdan o'tish formasi */
-const f=$("#f");
-f.telegram.oninput=()=>{f.telegram.value=f.telegram.value.toLowerCase().replace(/[^a-z0-9_@]/g,"")};
-f.onsubmit=async ev=>{
- ev.preventDefault();
- document.querySelectorAll(".err").forEach(x=>x.textContent="");
- if(f.website.value)return;
- if(f.fullName.value.trim().length<3){$('[data-e="fullName"]').textContent="Ismingizni kiriting";return}
- if(!f.age.value){$('[data-e="age"]').textContent="Yoshingizni kiriting";return}
- let d=f.phone.value.replace(/\D/g,"");if(d.length===9)d="998"+d;
- if(!/^998\d{9}$/.test(d)){$('[data-e="phone"]').textContent="Telefon raqamni to‘g‘ri kiriting (masalan: 90 123 45 67)";return}
- const ph="+"+d;
- const tg=f.telegram.value.trim().replace(/^@/,"").toLowerCase();
- if(!/^[a-z][a-z0-9_]{4,31}$/.test(tg)){$('[data-e="telegram"]').textContent="Username noto‘g‘ri: lotin harflari, raqam va _ (kamida 5 ta belgi)";return}
- const b=$("#sbm");
- b.disabled=true;b.textContent="Yuborilmoqda…";
- try{
-  const {error}=await sb.from("registrations").insert([{
-   full_name:f.fullName.value.trim(),
-   age:parseInt(f.age.value)||null,
-   phone:ph,
-   telegram_username:tg,
-   event_id:f.eventId.value||null,
-   letter:""
-  }]);
-  if(error)throw error;
-  $("#rf").innerHTML=`<div class="ok"><h2 style="font-size:1.5rem">Ro‘yxatdan o‘tish muvaffaqiyatli yakunlandi!</h2><p class="muted" style="margin:12px 0 22px">Arizangiz qabul qilindi. Jamoa siz bilan Telegram orqali bog‘lanadi.</p><a class="btn acc" href="${esc(CFG.TG)}" target="_blank" rel="noopener">Telegram kanalimizga qo‘shiling</a></div>`;
- }catch(err){
-  console.error(err);
-  $("#ge").textContent="Xatolik yuz berdi. Qayta urinib ko‘ring."+(err&&err.message?" ("+err.message+")":"");
-  b.disabled=false;b.textContent="Yuborish";
- }
-};
 </script>
 </body>
 </html>
