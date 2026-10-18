@@ -19,7 +19,8 @@ button,input,select,textarea{font:inherit}
 .muted{color:var(--mut)}
 h1,h2,h3{line-height:1.15;letter-spacing:-.02em}
 h2{font-size:clamp(1.6rem,4vw,2.3rem);font-weight:800}
-nav{position:sticky;top:0;z-index:30;background:var(--navy);color:#fff}
+nav{position:sticky;top:0;z-index:30;background:transparent;color:#fff;border-bottom:1px solid transparent;transition:background .3s,border-color .3s}
+nav.scrolled,nav.open{background:rgba(15,14,38,.92);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom-color:rgba(255,255,255,.08)}
 nav .wrap{display:flex;align-items:center;gap:22px;height:64px}
 .logo{font-weight:800;font-size:1.25rem}
 .logo i{color:var(--acc);font-style:normal}
@@ -40,7 +41,18 @@ nav .wrap{display:flex;align-items:center;gap:22px;height:64px}
  nav.open .wrap{flex-wrap:wrap;height:auto;padding-top:14px;padding-bottom:16px}
  nav.open .links,nav.open .nr{display:flex;flex-direction:column;align-items:stretch;width:100%;gap:12px}
 }
-.hero{background:var(--deep);color:#fff;padding:90px 0 110px}
+.hero{position:relative;overflow:hidden;background:var(--navy);color:#fff;margin-top:-64px;padding:160px 0 110px}
+.hero::before{content:"";position:absolute;inset:-30%;background:radial-gradient(40% 40% at 25% 32%,rgba(99,102,241,.3),transparent 70%),radial-gradient(34% 34% at 76% 64%,rgba(129,140,248,.18),transparent 70%);animation:drift 18s ease-in-out infinite alternate;will-change:transform}
+.hero::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 1px 1px,rgba(255,255,255,.09) 1px,transparent 0) 0 0/26px 26px;-webkit-mask-image:linear-gradient(180deg,#000 25%,transparent 100%);mask-image:linear-gradient(180deg,#000 25%,transparent 100%);animation:dots 40s linear infinite}
+.hero .wrap{position:relative;z-index:1}
+.hm{position:absolute;right:-3vw;bottom:-6vw;font-size:min(46vw,520px);line-height:1;font-weight:800;color:rgba(99,102,241,.08);pointer-events:none;user-select:none;animation:float 10s ease-in-out infinite alternate}
+.hero h1,.hero h2,.hero p,.hero .cta-row{opacity:0;transform:translateY(16px);animation:up .8s ease forwards}
+.hero h2{animation-delay:.15s}.hero p{animation-delay:.3s}.hero .cta-row{animation-delay:.45s}
+@keyframes drift{from{transform:translate3d(-4%,-3%,0) scale(1)}to{transform:translate3d(5%,4%,0) scale(1.12)}}
+@keyframes dots{to{background-position:260px 260px}}
+@keyframes float{from{transform:translateY(0) rotate(-2deg)}to{transform:translateY(-22px) rotate(2deg)}}
+@keyframes up{to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.hero::before,.hero::after,.hm{animation:none}.hero h1,.hero h2,.hero p,.hero .cta-row{opacity:1;transform:none;animation:none}}
 .hero h1{font-size:clamp(3.2rem,12vw,7rem);font-weight:800;margin:10px 0 6px}
 .hero h2{font-size:clamp(1.4rem,4.5vw,2.4rem);font-weight:700;margin-bottom:16px}
 .hero p{max-width:520px;color:#C9D3DF}
@@ -74,6 +86,19 @@ section.s{padding:60px 0}
 .faq summary::after{content:"+";color:var(--acc);font-size:1.3rem;line-height:1}
 .faq details[open] summary::after{content:"–"}
 .faq .a{padding:0 18px 16px;color:var(--mut);white-space:pre-line}
+#loginModal{background:radial-gradient(520px 380px at 88% 8%,rgba(99,102,241,.2),transparent 70%),radial-gradient(460px 340px at 8% 96%,rgba(99,102,241,.12),transparent 70%),radial-gradient(circle at 1px 1px,rgba(255,255,255,.07) 1px,transparent 0) 0 0/24px 24px,#0F0E26;overflow:hidden}
+#loginModal::before{content:"M";position:absolute;right:-4vw;bottom:-14vw;font-size:44vw;line-height:1;font-weight:800;color:rgba(99,102,241,.07);pointer-events:none;user-select:none}
+#loginModal .modal{background:rgba(21,20,51,.9);color:#fff;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:32px 28px;max-width:410px;box-shadow:none;max-height:92vh;overflow-y:auto}
+#loginModal .mlogo{font-weight:800;font-size:1.05rem;letter-spacing:.03em;margin-bottom:18px}
+#loginModal .mlogo i{color:var(--acc);font-style:normal;margin-right:3px}
+#loginModal h3{font-size:1.4rem;letter-spacing:-.01em;color:#fff}
+#loginModal label{color:#b9bde6;font-weight:500}
+#loginModal input{background:rgba(15,14,38,.75);border:1px solid rgba(255,255,255,.14);color:#fff;border-radius:8px}
+#loginModal input:focus{outline:1px solid var(--acc);border-color:var(--acc)}
+#loginModal .err{color:#fca5a5}
+#loginModal #authSwap{color:#a5a8ff!important}
+#loginModal .btn.acc{border-radius:8px}
+#loginModal .modal-close{color:#8f93b8}
 .empty{background:#fff;border:1px dashed #C7D0DB;border-radius:16px;padding:28px;text-align:center;color:var(--mut);grid-column:1/-1}
 .form{max-width:560px;margin:24px auto 0;background:#fff;border:1px solid var(--line);border-radius:20px;padding:28px}
 label{display:block;font-weight:600;font-size:.88rem;margin-bottom:14px}
@@ -108,7 +133,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
  </div>
 </div></nav>
 
-<header class="hero" id="top"><div class="wrap">
+<header class="hero" id="top"><div class="hm" aria-hidden="true">M</div><div class="wrap">
  <h1>MINDOVA</h1>
  <h2>Fikrla. Muloqot qil. Yarat.</h2>
  <p>Fikr almashish, yangi insonlar bilan tanishish, foydali ko‘nikmalarni rivojlantirish va yangi imkoniyatlarni kashf etish maydoni.</p>
@@ -145,7 +170,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
 <div class="modal-backdrop" id="loginModal">
  <div class="modal">
   <button class="modal-close" id="closeLogin" type="button" aria-label="Yopish">✕</button>
-  <h3 id="authTitle" style="margin-bottom:16px">Kirish</h3>
+  <div class="mlogo"><i>M</i>MINDOVA</div>
+  <h3 id="authTitle" style="margin-bottom:18px">Kirish</h3>
   <form id="loginForm">
    <label id="nameWrap" hidden>Ism va familiya<input name="fullName" maxlength="80" autocomplete="name"></label>
    <label>Email<input type="email" name="email" required></label>
@@ -198,6 +224,7 @@ const empty=t=>`<div class="empty">${t}</div>`;
 
 /* Interfeys: bu qism Supabase yuklanmasa ham ishlaydi */
 $("#yr").textContent=new Date().getFullYear();
+addEventListener("scroll",()=>$("#nav").classList.toggle("scrolled",scrollY>12),{passive:true});
 $("#tg1").href=$("#tg2").href=CFG.TG;
 if(!CFG.ADMIN.includes("ADMIN_USERNAME")){$("#adm").href=CFG.ADMIN;$("#adm").hidden=false}
 $("#burger").onclick=()=>$("#nav").classList.toggle("open");
