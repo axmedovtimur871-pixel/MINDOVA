@@ -34,6 +34,7 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
  <button class="tab-btn" data-tab="opps">Imkoniyatlar</button>
  <button class="tab-btn" data-tab="jobs">Ish arizalari</button>
  <button class="tab-btn" data-tab="certs">Sertifikatlar</button>
+ <button class="tab-btn" data-tab="staff">A'zolar paneli</button>
  <button class="tab-btn" data-tab="faqs">FAQ</button>
 </div>
 
@@ -58,7 +59,8 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
 <div id="certs" class="section">
  <h2>Sertifikat berish</h2>
  <form id="certForm">
-  <label>Foydalanuvchi<select id="cUser" required></select></label>
+  <label>Tadbirdan to'ldirish (ixtiyoriy)<select id="cEv"></select></label>
+  <label>Foydalanuvchilar (bir nechtasini tanlash mumkin)<select id="cUser" multiple size="6" required></select></label>
   <input type="text" id="cTitle" placeholder="Sertifikat nomi (masalan: Ishtirok sertifikati)" required>
   <input type="text" id="cEvent" placeholder="Tadbir nomi (masalan: Cohort III)">
   <label>Tadbir sanasi<input type="date" id="cEDate"></label>
@@ -82,6 +84,32 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
  </form>
  <h2 style="margin-top:28px">Savol-javoblar</h2>
  <div id="fList"></div>
+</div>
+
+<div id="staff" class="section">
+ <h2>A'zolar (volontyor va menejerlar)</h2>
+ <div id="sList"></div>
+ <h2 style="margin-top:28px">Yangi a'zo qo'shish</h2>
+ <form id="staffForm">
+  <input type="text" id="sName" placeholder="Ism familiya" required>
+  <select id="sRole"><option value="volunteer">Volontyor</option><option value="manager">Menejer</option></select>
+  <input type="text" id="sPos" placeholder="Lavozim (masalan: Debate manager)">
+  <input type="text" id="sNo" placeholder="A'zolik raqami (bo'sh qolsa avtomatik)">
+  <button type="submit" class="submit-btn">A'zoni qo'shish va kod yaratish</button>
+  <div class="msg" id="sMsg"></div>
+ </form>
+ <h2 style="margin-top:28px">Dars joylash</h2>
+ <form id="lessonForm">
+  <label>Kimga<select id="lStaff"></select></label>
+  <input type="text" id="lTitle" placeholder="Dars nomi" required>
+  <textarea id="lContent" placeholder="Dars mazmuni yoki topshiriq" rows="4"></textarea>
+  <input type="text" id="lLink" placeholder="Havola (video, Drive, Telegram), ixtiyoriy">
+  <label>Dars sanasi<input type="date" id="lDate"></label>
+  <button type="submit" class="submit-btn">Darsni joylash</button>
+  <div class="msg" id="lMsg"></div>
+ </form>
+ <h2 style="margin-top:28px">Joylangan darslar</h2>
+ <div id="lList"></div>
 </div>
 
 <div id="events" class="section">
@@ -259,6 +287,11 @@ async function loadCerts(){
  const [p,c]=await Promise.all([sb.from("profiles").select("id,full_name,email").order("created_at",{ascending:false}),sb.from("certificates").select("*").order("created_at",{ascending:false})]);
  PR=p.data||[];
  $("cUser").innerHTML="";
+ const ev=await sb.from("events").select("title,starts_at,location").order("starts_at",{ascending:false});
+ const E=ev.data||[],se=$("cEv");se.innerHTML="";
+ const o0=document.createElement("option");o0.value="";o0.textContent="—";se.appendChild(o0);
+ E.forEach((x,n)=>{const o=document.createElement("option");o.value=n;o.textContent=x.title;se.appendChild(o)});
+ se.onchange=()=>{const x=E[se.value];if(!x)return;$("cEvent").value=x.title;$("cPlace").value=x.location||"";if(x.starts_at)$("cEDate").value=x.starts_at.slice(0,10)};
  PR.forEach(x=>{const o=document.createElement("option");o.value=x.id;o.textContent=(x.full_name||"—")+" ("+(x.email||"")+")";$("cUser").appendChild(o)});
  const box=$("cList");box.innerHTML="";
  if(c.error){box.textContent="Yuklab bo'lmadi: "+c.error.message;return}
@@ -277,7 +310,7 @@ async function loadCerts(){
 }
 $("certForm").onsubmit=async e=>{
  e.preventDefault();
- const {error}=await sb.from("certificates").insert([{user_id:$("cUser").value,title:$("cTitle").value.trim(),event_title:$("cEvent").value.trim()||null,event_date:$("cEDate").value||null,event_place:$("cPlace").value.trim()||null,organization:$("cOrg").value.trim()||"Mindova",issued_at:$("cDate").value}]);
+ const {error}=await sb.from("certificates").insert(Array.from($("cUser").selectedOptions).map(o=>({user_id:o.value,title:$("cTitle").value.trim(),event_title:$("cEvent").value.trim()||null,event_date:$("cEDate").value||null,event_place:$("cPlace").value.trim()||null,organization:$("cOrg").value.trim()||"Mindova",issued_at:$("cDate").value})));
  $("cMsg").textContent=error?"Xato: "+error.message:"Sertifikat berildi ✓";
  if(!error){e.target.reset();loadCerts()}
 };
@@ -311,6 +344,43 @@ async function loadTeam(){
   acts.appendChild(del);row.append(l,acts);box.appendChild(row);
  });
 }
+
+const ROLEN={volunteer:"Volontyor",manager:"Menejer"};
+const genCode=()=>{const A="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let s="";crypto.getRandomValues(new Uint8Array(8)).forEach(b=>s+=A[b%A.length]);return "MND-"+s.slice(0,4)+"-"+s.slice(4)};
+let SMS=[];
+async function loadStaff(){
+ const [m,l]=await Promise.all([sb.from("staff_members").select("*").order("created_at",{ascending:false}),sb.from("staff_lessons").select("*").order("created_at",{ascending:false})]);
+ const box=$("sList"),lb=$("lList");box.innerHTML="";lb.innerHTML="";
+ if(m.error){box.textContent="Yuklab bo'lmadi: "+m.error.message;return}
+ SMS=m.data||[];
+ const sel=$("lStaff");sel.innerHTML="";
+ const o0=document.createElement("option");o0.value="";o0.textContent="Hammaga (barcha a'zolarga)";sel.appendChild(o0);
+ SMS.forEach(x=>{const o=document.createElement("option");o.value=x.id;o.textContent=x.full_name;sel.appendChild(o)});
+ if(!SMS.length)box.textContent="Hozircha a'zo yo'q.";
+ const row=(txt,btns)=>{const r=document.createElement("div");r.style.cssText="display:flex;gap:10px;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.1);padding:8px 0;flex-wrap:wrap";const t=document.createElement("span");t.textContent=txt;const b=document.createElement("div");b.style.cssText="display:flex;gap:8px;flex-wrap:wrap";btns.forEach(x=>b.appendChild(x));r.append(t,b);return r};
+ const btn=(t,f)=>{const b=document.createElement("button");b.type="button";b.className="tab-btn";b.textContent=t;b.onclick=f;return b};
+ SMS.forEach(x=>{
+  const bs=[btn("Kodni nusxalash",()=>{navigator.clipboard&&navigator.clipboard.writeText(x.code);alert("Kod: "+x.code)})];
+  if(x.user_id)bs.push(btn("Hisobdan ajratish",async()=>{if(!confirm("Kod hisobdan ajratilsinmi?"))return;const {error}=await sb.from("staff_members").update({user_id:null}).eq("id",x.id);if(error){alert(error.message);return}loadStaff()}));
+  bs.push(btn("O'chirish",async()=>{if(!confirm("A'zo va uning darslari o'chirilsinmi?"))return;const {error}=await sb.from("staff_members").delete().eq("id",x.id);if(error){alert(error.message);return}loadStaff()}));
+  box.appendChild(row(x.full_name+" · "+(ROLEN[x.role]||x.role)+(x.position?" · "+x.position:"")+" · "+(x.member_no||"")+" · Kod: "+x.code+" · "+(x.user_id?"Bog'langan":"Kutilmoqda"),bs));
+ });
+ const nm=Object.fromEntries(SMS.map(x=>[x.id,x.full_name]));
+ (l.data||[]).forEach(x=>lb.appendChild(row((x.staff_id?(nm[x.staff_id]||"—"):"Hammaga")+" · "+x.title,[btn("O'chirish",async()=>{if(!confirm("O'chirilsinmi?"))return;const {error}=await sb.from("staff_lessons").delete().eq("id",x.id);if(error){alert(error.message);return}loadStaff()})])));
+}
+$("staffForm").onsubmit=async e=>{
+ e.preventDefault();
+ const code=genCode(),no=$("sNo").value.trim()||("MND-"+new Date().getFullYear()+"-"+String(SMS.length+1).padStart(3,"0"));
+ const {error}=await sb.from("staff_members").insert([{code,full_name:$("sName").value.trim(),role:$("sRole").value,position:$("sPos").value.trim()||null,member_no:no}]);
+ $("sMsg").textContent=error?"Xato: "+error.message:"Saqlandi ✓ Shaxsiy kod: "+code;
+ if(!error){e.target.reset();loadStaff()}
+};
+$("lessonForm").onsubmit=async e=>{
+ e.preventDefault();
+ const {error}=await sb.from("staff_lessons").insert([{staff_id:$("lStaff").value||null,title:$("lTitle").value.trim(),content:$("lContent").value.trim()||null,link:$("lLink").value.trim()||null,lesson_date:$("lDate").value||null}]);
+ $("lMsg").textContent=error?"Xato: "+error.message:"Dars joylandi ✓";
+ if(!error){$("lTitle").value="";$("lContent").value="";$("lLink").value="";$("lDate").value="";loadStaff()}
+};
 
 let FQ=[];
 async function loadFaqs(){
@@ -388,6 +458,7 @@ $("addOppForm").onsubmit=async e=>{
  loadCerts();
  loadFaqs();
  loadTeam();
+ loadStaff();
 })();
 </script>
 </body>
