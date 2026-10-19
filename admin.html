@@ -116,13 +116,16 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
 </div>
 
 <div id="team" class="section">
- <h2>Jamoa a'zosini qo'shish</h2>
+ <h2>Jamoa a'zolari</h2>
+ <div id="tList"></div>
+ <h2 style="margin-top:28px">Jamoa a'zosini qo'shish</h2>
  <form id="addTeamForm">
   <input type="text" id="mName" placeholder="Ism Familiya" required>
   <input type="text" id="mRole" placeholder="Lavozimi (masalan: Asoschi)" required>
   <label>Rasm yuklash<input type="file" id="mFile" accept="image/*"></label>
   <input type="text" id="mPhoto" placeholder="yoki rasm havolasi (URL)">
   <textarea id="mBio" placeholder="Qisqacha bio" rows="3"></textarea>
+  <label>Poster rasmi (tayyor dizayn, ixtiyoriy). Yuklansa, saytda faqat poster ko'rinadi<input type="file" id="mPoster" accept="image/*"></label>
   <button type="submit" class="submit-btn">A'zoni saqlash</button>
   <div class="msg" id="tMsg"></div>
  </form>
@@ -139,16 +142,16 @@ document.querySelectorAll(".tab-btn[data-tab]").forEach(b=>b.onclick=()=>{
  b.classList.add("active");
 });
 
-async function prep(file){
+async function prep(file,mx){
  const img=await createImageBitmap(file);
- const s=Math.min(1,1400/Math.max(img.width,img.height));
+ const s=Math.min(1,(mx||1400)/Math.max(img.width,img.height));
  const c=document.createElement("canvas");
  c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);
  c.getContext("2d").drawImage(img,0,0,c.width,c.height);
  return new Promise(r=>c.toBlob(r,"image/jpeg",.85));
 }
-async function upImg(file,folder){
- const blob=await prep(file);
+async function upImg(file,folder,mx){
+ const blob=await prep(file,mx);
  const path=folder+"/"+Date.now()+"-"+Math.random().toString(36).slice(2,8)+".jpg";
  const {error}=await sb.storage.from("images").upload(path,blob,{contentType:"image/jpeg"});
  if(error)throw error;
@@ -201,12 +204,13 @@ $("addTeamForm").onsubmit=async e=>{
  e.preventDefault();
  $("tMsg").textContent="Saqlanmoqda…";
  let photo=$("mPhoto").value.trim()||null;
- try{const fl=$("mFile").files[0];if(fl)photo=await upImg(fl,"team")}
+ let poster_url=null;
+ try{const fl=$("mFile").files[0];if(fl)photo=await upImg(fl,"team");const pf=$("mPoster").files[0];if(pf)poster_url=await upImg(pf,"team",1600)}
  catch(err){$("tMsg").textContent="Rasm yuklanmadi: "+err.message;return}
- const row={name:$("mName").value.trim(),role:$("mRole").value.trim(),photo,bio:$("mBio").value.trim()};
+ const row={name:$("mName").value.trim(),role:$("mRole").value.trim(),photo,poster_url,bio:$("mBio").value.trim()};
  const {error}=await sb.from("team").insert([row]);
  $("tMsg").textContent=error?"Xato: "+error.message:"A'zo saqlandi ✓";
- if(!error)e.target.reset();
+ if(!error){e.target.reset();loadTeam()}
 };
 
 async function loadJobs(){
@@ -277,6 +281,36 @@ $("certForm").onsubmit=async e=>{
  $("cMsg").textContent=error?"Xato: "+error.message:"Sertifikat berildi ✓";
  if(!error){e.target.reset();loadCerts()}
 };
+
+async function loadTeam(){
+ const {data,error}=await sb.from("team").select("*").order("created_at",{ascending:true});
+ const box=$("tList");box.innerHTML="";
+ if(error){box.textContent="Yuklab bo'lmadi: "+error.message;return}
+ if(!data.length){box.textContent="Hozircha a'zo yo'q.";return}
+ data.forEach(m=>{
+  const row=document.createElement("div");
+  row.style.cssText="display:flex;gap:10px;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.1);padding:8px 0;flex-wrap:wrap";
+  const l=document.createElement("div");l.style.cssText="display:flex;gap:10px;align-items:center;min-width:0";
+  const th=document.createElement("img");th.src=m.poster_url||m.photo||"";th.alt="";th.style.cssText="width:44px;height:56px;object-fit:cover;border-radius:6px;background:#25234A";
+  const t=document.createElement("span");t.textContent=m.name+" — "+m.role+(m.poster_url?" (poster)":"");
+  l.append(th,t);
+  const acts=document.createElement("div");acts.style.cssText="display:flex;gap:8px;flex-wrap:wrap";
+  const up=document.createElement("button");up.type="button";up.className="tab-btn";up.textContent="Poster almashtirish";
+  const fi=document.createElement("input");fi.type="file";fi.accept="image/*";fi.hidden=true;
+  up.onclick=()=>fi.click();
+  fi.onchange=async()=>{
+   const f=fi.files[0];if(!f)return;up.textContent="Yuklanmoqda…";
+   try{const url=await upImg(f,"team",1600);const {error}=await sb.from("team").update({poster_url:url}).eq("id",m.id);if(error)throw error;loadTeam()}
+   catch(err){alert("Xato: "+err.message);up.textContent="Poster almashtirish"}
+  };
+  acts.append(up,fi);
+  if(m.poster_url){const rm=document.createElement("button");rm.type="button";rm.className="tab-btn";rm.textContent="Posterni olib tashlash";
+   rm.onclick=async()=>{const {error}=await sb.from("team").update({poster_url:null}).eq("id",m.id);if(error){alert(error.message);return}loadTeam()};acts.appendChild(rm)}
+  const del=document.createElement("button");del.type="button";del.className="tab-btn";del.textContent="O'chirish";
+  del.onclick=async()=>{if(!confirm("O'chirilsinmi?"))return;const {error}=await sb.from("team").delete().eq("id",m.id);if(error){alert(error.message);return}loadTeam()};
+  acts.appendChild(del);row.append(l,acts);box.appendChild(row);
+ });
+}
 
 let FQ=[];
 async function loadFaqs(){
@@ -353,6 +387,7 @@ $("addOppForm").onsubmit=async e=>{
  loadJobs();
  loadCerts();
  loadFaqs();
+ loadTeam();
 })();
 </script>
 </body>
