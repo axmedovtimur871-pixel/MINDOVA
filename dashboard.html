@@ -128,6 +128,51 @@ function fill(){document.querySelectorAll("img[data-ci]").forEach(im=>cert(D.cer
 const certCard=(c,i)=>`<div class="card"><img class="cc" data-ci="${i}" alt=""><b>${esc(c.title)}</b><p class="m">${esc(c.event_title||"")} · ${fd(c.issued_at)} <span class="b green">Tasdiqlangan</span></p><div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="bt o" onclick="zoom(${i})">Kattalashtirish</button><button class="bt" onclick="pdf(${i})">PDF yuklab olish</button></div></div>`;
 const NO_CERT="Sizda hozircha sertifikatlar yo‘q. Yangi sertifikatlar berilganda shu yerda paydo bo‘ladi.";
 
+/* ===== JAMOA PANELI (volontyor va menejerlar) ===== */
+const ROLE={volunteer:"Volontyor",manager:"Menejer"};
+const SP={ok:false,sm:null,lessons:[],idu:null};
+const loadImg=u=>new Promise(r=>{if(!u)return r(null);const i=new Image();i.crossOrigin="anonymous";i.onload=()=>r(i);i.onerror=()=>r(null);i.src=u});
+async function staffCard(){
+ await Promise.all([document.fonts.load("800 24px Inter"),document.fonts.load("500 24px Inter")]).catch(()=>{});
+ const sm=SP.sm,W=1011,H=638,k=document.createElement("canvas");k.width=W;k.height=H;const x=k.getContext("2d"),F="Inter,system-ui,sans-serif";
+ x.fillStyle="#0F0E26";x.fillRect(0,0,W,H);
+ const g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,"rgba(99,102,241,.3)");g.addColorStop(.6,"rgba(99,102,241,0)");x.fillStyle=g;x.fillRect(0,0,W,H);
+ x.strokeStyle="rgba(255,255,255,.14)";x.lineWidth=2;x.strokeRect(24,24,W-48,H-48);x.fillStyle="#6366F1";x.fillRect(24,24,8,H-48);
+ x.textAlign="left";x.font=`800 40px ${F}`;x.fillStyle="#6366F1";x.fillText("M",70,96);const mw=x.measureText("M ").width;x.fillStyle="#fff";x.fillText("MINDOVA",70+mw,96);
+ x.textAlign="right";x.fillStyle="#a5a8ff";x.font=`700 20px ${F}`;x.fillText("A’ZOLIK GUVOHNOMASI",W-70,90);
+ const cx=205,cy=350,r=120,im=await loadImg(P.avatar_url);
+ x.save();x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.clip();
+ if(im){const s=Math.max(2*r/im.width,2*r/im.height);x.drawImage(im,cx-im.width*s/2,cy-im.height*s/2,im.width*s,im.height*s)}
+ else{x.fillStyle="#2c2d7a";x.fillRect(cx-r,cy-r,2*r,2*r);x.fillStyle="#fff";x.textAlign="center";x.font=`800 80px ${F}`;x.fillText((sm.full_name||"?").slice(0,2).toUpperCase(),cx,cy+28)}
+ x.restore();x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.strokeStyle="#6366F1";x.lineWidth=6;x.stroke();
+ const fit=(t,w,s,max)=>{do{x.font=`${w} ${s}px ${F}`;s-=2}while(x.measureText(t).width>max&&s>16)};
+ x.textAlign="left";const rl=(ROLE[sm.role]||sm.role).toUpperCase();x.font=`700 22px ${F}`;const bw=x.measureText(rl).width+36;
+ x.fillStyle="rgba(99,102,241,.28)";x.fillRect(380,196,bw,40);x.fillStyle="#c7c9ff";x.fillText(rl,398,225);
+ x.fillStyle="#fff";fit(sm.full_name,800,56,580);x.fillText(sm.full_name,380,310);
+ if(sm.position){x.fillStyle="#c7cbf5";fit(sm.position,500,30,580);x.fillText(sm.position,380,360)}
+ x.fillStyle="#8f93b8";x.font=`500 20px ${F}`;x.fillText("A’zolik raqami",380,468);x.fillText("A’zo bo‘lgan sana",700,468);
+ x.fillStyle="#fff";x.font=`700 30px ${F}`;x.fillText(sm.member_no||"—",380,508);x.font=`700 26px ${F}`;x.fillText(fd(sm.joined_at)||"—",700,506);
+ x.textAlign="center";x.fillStyle="#6366F1";x.font=`500 20px ${F}`;x.fillText("Fikrla. Muloqot qil. Yarat.",W/2,596);
+ return k.toDataURL("image/jpeg",.93);
+}
+function fillId(){const im=$("#idimg");if(im)staffCard().then(u=>{SP.idu=u;im.src=u})}
+async function zoomId(){$("#mi").src=SP.idu||await staffCard();$("#md").classList.add("on")}
+async function pdfId(){const u=SP.idu||await staffCard(),p=new window.jspdf.jsPDF({orientation:"landscape",unit:"pt",format:[323.5,204]});p.addImage(u,"JPEG",0,0,323.5,204);p.save("MINDOVA-guvohnoma.pdf")}
+async function loadLessons(){const r=await sb.from("staff_lessons").select("*").order("created_at",{ascending:false});SP.lessons=r.data||[]}
+async function claim(e){
+ e.preventDefault();const f=e.target,m=$("#cm");m.textContent="";
+ const {data,error}=await sb.rpc("claim_staff_code",{p_code:f.cd.value.trim()});
+ if(error||!data||!data.length){m.textContent=error?error.message:"Kod noto‘g‘ri";return}
+ SP.sm=data[0];sessionStorage.setItem("smu","1");await loadLessons();SP.ok=true;go("team");
+}
+async function initTeam(){
+ if(sessionStorage.getItem("smu")!=="1")return;
+ const r=await sb.from("staff_members").select("*").eq("user_id",U.id).eq("active",true).order("created_at",{ascending:true}).limit(1);
+ if(r.error||!r.data||!r.data.length){sessionStorage.removeItem("smu");return}
+ SP.sm=r.data[0];await loadLessons();SP.ok=true;if(cur==="team")go("team");
+}
+const lessonHtml=L=>L.length?L.map(l=>`<div class="rw" style="display:block"><b>${esc(l.title)}</b> ${l.lesson_date?`<span class="b">${fd(l.lesson_date)}</span> `:""}${l.staff_id?"":`<span class="b">Hammaga</span>`}<p class="m" style="white-space:pre-line;margin:6px 0">${esc(l.content||"")}</p>${safe(l.link)?`<a class="bt o" href="${esc(safe(l.link))}" target="_blank" rel="noopener">Darsni ochish</a>`:""}</div>`).join(""):empty("Hozircha dars joylanmagan.");
+
 const V={
 home(){
  const now=new Date(),em=evM(),om=opM(),mine=new Set(D.reg.map(r=>r.event_id)),myEv=D.reg.filter(r=>r.event_id&&em[r.event_id]);
@@ -145,6 +190,12 @@ ${nx?`<div class="card nx" style="margin-top:14px"><span class="eb">Eng yaqin ta
 <div class="card"><h3>So‘nggi arizalarim</h3>${D.job.length?D.job.slice(0,3).map(j=>`<div class="rw"><b>${esc(om[j.opportunity_id]?.title||"E’lon")}</b>${badge(j.status)}</div>`).join(""):empty("Hozircha arizalar yo‘q.")}</div></div>
 <div class="g g2"><div class="card"><h3>So‘nggi sertifikatlar</h3>${D.cert.length?D.cert.slice(0,2).map((c,i)=>certCard(c,i)).join(""):empty(NO_CERT)}</div>
 <div class="card"><h3>So‘nggi faoliyatlar</h3>${act.length?act.map(a=>`<div class="rw"><span>${esc(a.t)}</span><span class="m">${fd(a.d)}</span></div>`).join(""):empty("Faoliyat hali yo‘q.")}<div style="margin-top:14px"><a class="bt o" href="/#imkoniyatlar">Imkoniyatlarni ko‘rish</a></div></div></div>`},
+team(){
+ if(!SP.ok)return `<h1>Jamoa paneli</h1><p class="m" style="margin-top:6px">Volontyor va menejerlar uchun. Sizga berilgan shaxsiy kodni kiriting.</p><form class="card" style="margin-top:16px;max-width:440px" onsubmit="claim(event)"><label>Shaxsiy kod<input name="cd" placeholder="MND-XXXX-XXXX" autocomplete="off" autocapitalize="characters" required></label><button class="bt">Kirish</button> <span id="cm" style="color:#fca5a5;font-size:.86rem"></span></form>`;
+ return `<h1>Jamoa paneli</h1><p class="m" style="margin-top:6px">${esc(SP.sm.full_name)} · ${esc(ROLE[SP.sm.role]||SP.sm.role)}</p>
+<div class="g g2"><div class="card"><h3>A’zolik guvohnomasi</h3><img class="cc" id="idimg" alt="" style="aspect-ratio:1.586"><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="bt o" onclick="zoomId()">Kattalashtirish</button><button class="bt" onclick="pdfId()">PDF yuklab olish</button></div></div>
+<div class="card"><h3>Darslar</h3>${lessonHtml(SP.lessons)}</div></div>
+<div class="g"><div class="card"><h3>Sertifikatlar</h3>${D.cert.length?`<div class="g g2" style="margin-top:0">${D.cert.map(certCard).join("")}</div>`:empty(NO_CERT)}</div></div>`},
 prof(){return `<h1>Profilim</h1><form class="card" style="margin-top:16px;max-width:640px" onsubmit="saveP(event)"><div class="pc" style="margin-bottom:14px">${av()}<div><label>Profil rasmi<input type="file" accept="image/*" onchange="upAv(this)" style="margin-bottom:0"></label></div></div>
 <label>Ism va familiya<input name="fn" maxlength="80" value="${esc(P.full_name)}" required></label><label>Email<input value="${esc(U.email)}" disabled></label>
 <label>Telefon raqami<input name="ph" type="tel" maxlength="20" value="${esc(P.phone)}"></label><label>Yosh<input name="ag" type="number" min="10" max="99" value="${esc(P.age)}"></label><label>Telegram username<input name="tg" maxlength="33" placeholder="username" value="${esc(P.telegram_username)}"></label><label>Shahar<input name="ct" maxlength="60" value="${esc(P.city)}"></label>
@@ -159,17 +210,17 @@ port(){const it=D.pf.find(x=>x.id===editId)||{};return `<h1>Portfolio</h1><div c
 set(){return `<h1>Sozlamalar</h1><div class="g g2"><form class="card" onsubmit="savePw(event)"><h3>Parolni o‘zgartirish</h3><label>Yangi parol (kamida 6 belgi)<input type="password" name="pw" minlength="6" required></label><button class="bt">Parolni yangilash</button> <span id="sm" class="ok"></span></form>
 <div class="card"><h3>Profil</h3><p class="m" style="margin-bottom:12px">Ma’lumotlaringizni “Profilim” bo‘limida tahrirlaysiz.</p><button class="bt o" onclick="go('prof')">Profilga o‘tish</button><h3 style="margin-top:22px">Bildirishnomalar</h3><p class="m">Yangiliklar hozircha Telegram kanalimiz orqali beriladi.</p><button class="bt" style="margin-top:22px" onclick="out()">Xavfsiz chiqish</button></div></div>`}};
 
-const IC={home:"M3 11 12 3l9 8v10h-6v-6H9v6H3z",prof:"M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c0-4 4-6 8-6s8 2 8 6",apps:"M3 8h18v12H3zM9 8V5h6v3",evs:"M4 6h16v14H4zM4 10h16M8 3v4M16 3v4",certs:"M12 14a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM8.5 13.5 7 22l5-3 5 3-1.5-8.5",port:"M3 6h6l2 2h10v12H3z",set:"M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M6 14v6",ver:"M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4",site:"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18",adm:"M12 3l8 4v5c0 4-3 7-8 9-5-2-8-5-8-9V7z",out:"M9 4H4v16h5M16 8l4 4-4 4M20 12H9"};
+const IC={home:"M3 11 12 3l9 8v10h-6v-6H9v6H3z",prof:"M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c0-4 4-6 8-6s8 2 8 6",apps:"M3 8h18v12H3zM9 8V5h6v3",evs:"M4 6h16v14H4zM4 10h16M8 3v4M16 3v4",certs:"M12 14a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM8.5 13.5 7 22l5-3 5 3-1.5-8.5",port:"M3 6h6l2 2h10v12H3z",set:"M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M6 14v6",ver:"M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4",site:"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18",adm:"M12 3l8 4v5c0 4-3 7-8 9-5-2-8-5-8-9V7z",team:"M16 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM2 20c0-3 3-5 6-5s6 2 6 5M16 15c3 0 6 2 6 5",out:"M9 4H4v16h5M16 8l4 4-4 4M20 12H9"};
 const ic=n=>`<svg class="ic" viewBox="0 0 24 24"><path d="${IC[n]}"/></svg>`;
 function buildNav(){
- const L=[["home","Bosh sahifa"],["prof","Profilim"],["apps","Mening arizalarim"],["evs","Mening tadbirlarim"],["certs","Mening sertifikatlarim"],["port","Portfolio"],["set","Sozlamalar"]];
+ const L=[["home","Bosh sahifa"],["prof","Profilim"],["apps","Mening arizalarim"],["evs","Mening tadbirlarim"],["certs","Mening sertifikatlarim"],["port","Portfolio"],["team","Jamoa paneli"],["set","Sozlamalar"]];
  $("#sb").innerHTML=`<div class="logo"><i>M</i>MINDOVA</div>`+L.map(([v,t])=>`<button class="nv" data-v="${v}">${ic(v)}${t}</button>`).join("")+`<div class="sp"></div><a class="nv" href="/verify">${ic("ver")}Sertifikatni tekshirish</a><a class="nv" href="/">${ic("site")}Saytga qaytish</a><a class="nv" id="adm" href="/admin" hidden>${ic("adm")}Admin panel</a><button class="nv" style="margin-top:auto" onclick="out()">${ic("out")}Chiqish</button>`;
  $("#bn").innerHTML=[["home","Bosh"],["apps","Arizalar"],["evs","Tadbirlar"],["certs","Sertifikat"],["prof","Profil"]].map(([v,t])=>`<button data-v="${v}">${ic(v)}${t}</button>`).join("");
  document.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>go(b.dataset.v));
 }
 const menu=o=>{$("#sb").classList.toggle("open",o);$("#ov").classList.toggle("on",o)};
-function go(n){cur=n;document.querySelectorAll("[data-v]").forEach(b=>b.classList.toggle("on",b.dataset.v===n));$("#tav").innerHTML=av();$("#view").innerHTML=V[n]();menu(false);scrollTo(0,0);fill()}
-async function out(){await sb.auth.signOut();location.href="/"}
+function go(n){cur=n;document.querySelectorAll("[data-v]").forEach(b=>b.classList.toggle("on",b.dataset.v===n));$("#tav").innerHTML=av();$("#view").innerHTML=V[n]();menu(false);scrollTo(0,0);fill();if(n==="team"){SP.ok?fillId():initTeam()}}
+async function out(){sessionStorage.removeItem("smu");await sb.auth.signOut();location.href="/"}
 async function saveP(e){e.preventDefault();const f=e.target,v={full_name:f.fn.value.trim(),phone:f.ph.value.trim(),city:f.ct.value.trim(),bio:f.bio.value.trim(),interests:f.it.value.trim(),age:parseInt(f.ag.value)||null,telegram_username:f.tg.value.trim().replace(/^@/,"").toLowerCase()||null,updated_at:new Date().toISOString()};
  if(v.telegram_username&&!/^[a-z][a-z0-9_]{4,31}$/.test(v.telegram_username)){$("#pm").textContent="Telegram username noto‘g‘ri";return}
  const {error}=await sb.from("profiles").update(v).eq("id",U.id);
