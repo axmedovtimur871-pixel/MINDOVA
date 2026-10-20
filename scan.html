@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="uz"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0F0E26">
+<title>Registrator paneli — MINDOVA</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0}
+body{font-family:Inter,system-ui,sans-serif;background:#0F0E26;color:#ECECF8;line-height:1.5;padding:16px;max-width:560px;margin:0 auto}
+h1{font-size:1.3rem;margin:6px 0 2px}.m{color:#9aa0c8;font-size:.88rem}
+.card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:16px;margin-top:14px}
+label{font-size:.82rem;color:#9aa0c8;display:block}
+select,input{width:100%;padding:12px;margin:5px 0 10px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;font:inherit}
+.bt{border:0;border-radius:10px;padding:12px 18px;background:#6366F1;color:#fff;font:inherit;font-weight:700;cursor:pointer;width:100%}
+.bt.o{background:none;border:1px solid rgba(255,255,255,.18)}
+video{width:100%;border-radius:12px;background:#000;display:none;aspect-ratio:1;object-fit:cover}
+.r{border-radius:14px;padding:16px;margin-top:14px}.ok{background:#0f3a2a;border:1px solid #1f7a55}.wn{background:#4a3a10;border:1px solid #a47b1a}.no{background:#4a1822;border:1px solid #8a2c3d}
+.r h2{font-size:1.1rem;margin-bottom:8px}.r b.n{font-size:1.25rem;display:block;margin-bottom:6px}.r p{font-size:.92rem;margin:3px 0}.r span{color:#c7cbe6}
+a{color:#a5b4fc}.row{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:.88rem}
+</style></head><body>
+<h1>Registrator paneli</h1><p class="m" id="who">Yuklanmoqda…</p>
+<div id="app" hidden>
+ <div class="card">
+  <label>Tadbir (ixtiyoriy: faqat shu tadbir chiptalari qabul qilinadi)<select id="ev"><option value="">Barcha tadbirlar</option></select></label>
+  <video id="v" playsinline muted></video>
+  <button class="bt" id="cam">Kamerani yoqish</button>
+  <p class="m" id="st" style="margin-top:8px"></p>
+ </div>
+ <div id="res"></div>
+ <div class="card"><label>Kodni qo‘lda kiritish<input id="man" placeholder="T-XXXXXXXXXX" autocapitalize="characters" autocomplete="off"></label><button class="bt o" id="go">Tekshirish</button></div>
+ <div class="card"><b>Bu qurilmada kelganlar: <span id="cnt">0</span></b><div id="log"></div></div>
+</div>
+<p class="m" style="margin-top:18px"><a href="/">← Saytga qaytish</a></p>
+<script>
+const sb=supabase.createClient("https://zrebikqvjbvuwbzcunkw.supabase.co","sb_publishable_DszdaPjNPM3i0UbGX3lLjQ_DTjdfLcW");
+const $=q=>document.querySelector(q);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let busy=false,count=0,stream=null;
+const tm=d=>{const x=new Date(d);return isNaN(x)?"":String(x.getHours()).padStart(2,"0")+":"+String(x.getMinutes()).padStart(2,"0")};
+(async()=>{
+ const {data:{session}}=await sb.auth.getSession();
+ if(!session){$("#who").innerHTML='Avval <a href="/">saytga kiring</a>, so‘ng bu sahifani qayta oching.';return}
+ const r=await sb.rpc("is_registrator");
+ if(!r.data){$("#who").textContent="Sizda registrator huquqi yo‘q. Admin sizga huquq berishi kerak.";return}
+ $("#who").textContent=session.user.email;$("#app").hidden=false;
+ const ev=await sb.from("events").select("id,title").order("starts_at",{ascending:false});
+ (ev.data||[]).forEach(x=>{const o=document.createElement("option");o.value=x.id;o.textContent=x.title;$("#ev").appendChild(o)});
+})();
+function show(cls,html){$("#res").innerHTML=`<div class="r ${cls}">${html}</div>`}
+async function handle(raw){
+ let code=String(raw||"").trim();try{const u=new URL(code);code=u.searchParams.get("t")||code}catch(e){}
+ if(!code)return;busy=true;$("#st").textContent="Tekshirilmoqda…";
+ const {data,error}=await sb.rpc("checkin_ticket",{p_code:code,p_event_id:$("#ev").value||null});
+ busy=false;$("#st").textContent="";
+ if(error){show("no",`<h2>❌ Xato</h2><p>${esc(error.message)}</p>`);return}
+ const r=data&&data[0];if(!r){show("no","<h2>❌ Chipta topilmadi</h2>");return}
+ const info=`<b class="n">${esc(r.full_name||"—")}</b><p><span>Tadbir:</span> ${esc(r.event_title||"—")}</p><p><span>Telefon:</span> ${r.phone?`<a href="tel:${esc(r.phone)}">${esc(r.phone)}</a>`:"—"}</p><p><span>Telegram:</span> ${r.telegram_username?"@"+esc(r.telegram_username):"—"}</p><p><span>Yosh:</span> ${esc(r.age??"—")}</p>`;
+ if(r.status==="ok"){show("ok",`<h2>✅ Keldi: qabul qilindi</h2>${info}${r.cert_issued?'<p>🎓 Sertifikat avtomatik berildi</p>':""}`);count++;$("#cnt").textContent=count;$("#log").insertAdjacentHTML("afterbegin",`<div class="row"><span>${esc(r.full_name)}</span><span class="m">${tm(r.checked_in_at)}</span></div>`);navigator.vibrate&&navigator.vibrate(120)}
+ else if(r.status==="already")show("wn",`<h2>⚠️ Bu chipta allaqachon ishlatilgan</h2>${info}<p><span>Kirgan vaqti:</span> ${tm(r.checked_in_at)}</p>`);
+ else show("no",`<h2>❌ Boshqa tadbir chiptasi</h2>${info}`);
+ setTimeout(()=>{},0);
+}
+$("#go").onclick=()=>{const v=$("#man").value;$("#man").value="";handle(v)};
+$("#cam").onclick=async()=>{
+ try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});}catch(e){$("#st").textContent="Kameraga ruxsat berilmadi: "+e.message;return}
+ const v=$("#v");v.srcObject=stream;v.style.display="block";await v.play();$("#cam").hidden=true;$("#st").textContent="QR kodni kameraga ko‘rsating";
+ const cv=document.createElement("canvas"),cx=cv.getContext("2d",{willReadFrequently:true});let last=0;
+ (function tick(t){
+  if(v.readyState===4&&!busy&&t-last>120){last=t;const sc=Math.min(1,640/v.videoWidth);cv.width=v.videoWidth*sc;cv.height=v.videoHeight*sc;cx.drawImage(v,0,0,cv.width,cv.height);
+   const im=cx.getImageData(0,0,cv.width,cv.height),c=jsQR(im.data,im.width,im.height,{inversionAttempts:"dontInvert"});
+   if(c&&c.data){busy=true;handle(c.data).then(()=>{busy=true;setTimeout(()=>busy=false,2500)})}}
+  requestAnimationFrame(tick)})(0);
+};
+</script></body></html>
