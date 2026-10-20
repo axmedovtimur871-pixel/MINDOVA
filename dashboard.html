@@ -163,6 +163,21 @@ async function initTeam(){
 }
 const lessonHtml=L=>L.length?L.map(l=>`<div class="rw" style="display:block"><b>${esc(l.title)}</b> ${l.lesson_date?`<span class="b">${fd(l.lesson_date)}</span> `:""}${l.staff_id?"":`<span class="b">Hammaga</span>`}<p class="m" style="white-space:pre-line;margin:6px 0">${esc(l.content||"")}</p>${safe(l.link)?`<a class="bt o" href="${esc(safe(l.link))}" target="_blank" rel="noopener">Darsni ochish</a>`:""}</div>`).join(""):empty("Hozircha dars joylanmagan.");
 
+function ticket(id){
+ const r=D.reg.find(x=>x.id===id);if(!r||!r.ticket_code||!window.qrcode){alert("Chipta hozircha mavjud emas.");return}
+ const e=evM()[r.event_id]||{},W=640,H=860,k=document.createElement("canvas");k.width=W;k.height=H;const x=k.getContext("2d"),F="Inter,system-ui,sans-serif";
+ x.fillStyle="#fff";x.fillRect(0,0,W,H);x.fillStyle="#0F0E26";x.fillRect(0,0,W,120);
+ x.textAlign="left";x.font=`800 40px ${F}`;x.fillStyle="#6366F1";x.fillText("M",36,76);const mw=x.measureText("M ").width;x.fillStyle="#fff";x.fillText("MINDOVA",36+mw,76);
+ x.textAlign="right";x.fillStyle="#a5a8ff";x.font=`700 20px ${F}`;x.fillText("TADBIR CHIPTASI",W-36,74);
+ x.textAlign="center";x.fillStyle="#0F0E26";let s=40;const t=e.title||"Tadbir";do{x.font=`800 ${s}px ${F}`;s-=2}while(x.measureText(t).width>W-80&&s>18);x.fillText(t,W/2,190);
+ x.fillStyle="#687386";x.font=`500 24px ${F}`;x.fillText((fd(e.starts_at)||"")+(e.location?" · "+e.location:""),W/2,232);
+ const q=qrcode(0,"M");q.addData(location.origin+"/scan?t="+r.ticket_code);q.make();const n=q.getModuleCount(),S=440,cs=S/n,ox=(W-S)/2,oy=270;
+ x.fillStyle="#0b0b24";for(let a=0;a<n;a++)for(let b=0;b<n;b++)if(q.isDark(a,b))x.fillRect(ox+b*cs,oy+a*cs,Math.ceil(cs),Math.ceil(cs));
+ x.fillStyle="#0F0E26";x.font=`800 34px ${F}`;x.fillText(r.ticket_code,W/2,760);
+ x.font=`600 26px ${F}`;x.fillText(r.full_name||nm(),W/2,805);
+ x.fillStyle=r.checked_in?"#0f6b46":"#687386";x.font=`600 22px ${F}`;x.fillText(r.checked_in?"Keldi ✓":"Tadbirda shu QR kodni ko‘rsating",W/2,840);
+ $("#mi").src=k.toDataURL("image/png");$("#md").classList.add("on");
+}
 const V={
 home(){
  const now=new Date(),em=evM(),om=opM(),mine=new Set(D.reg.map(r=>r.event_id)),myEv=D.reg.filter(r=>r.event_id&&em[r.event_id]);
@@ -193,7 +208,7 @@ prof(){return `<h1>Profilim</h1><form class="card" style="margin-top:16px;max-wi
 ${P.interests?`<p style="margin-bottom:12px">${P.interests.split(",").map(s=>s.trim()).filter(Boolean).map(s=>`<span class="b">${esc(s)}</span> `).join("")}</p>`:""}
 <button class="bt">Saqlash</button> <span id="pm" class="ok"></span></form>`},
 apps(){const om=opM();return `<h1>Mening arizalarim</h1><div class="card" style="margin-top:16px">${D.job.length?D.job.map(j=>`<div class="rw"><div><b>${esc(om[j.opportunity_id]?.title||"E’lon")}</b><p class="m">${esc(om[j.opportunity_id]?.category||"")} · ${fd(j.created_at)}</p></div>${badge(j.status)}</div>`).join(""):empty("Siz hali ishga ariza topshirmagansiz. Saytdagi “Dolzarb imkoniyatlar” bo‘limidan ariza topshiring.")}</div>`},
-evs(){const em=evM(),now=new Date(),L=D.reg.filter(r=>r.event_id&&em[r.event_id]);return `<h1>Mening tadbirlarim</h1><div class="card" style="margin-top:16px">${L.length?L.map(r=>{const e=em[r.event_id],past=e.starts_at&&new Date(e.starts_at)<now;return `<div class="rw"><div><b>${esc(e.title)}</b><p class="m">${fd(e.starts_at)} ${e.location?"· "+esc(e.location):""}</p></div><div><span class="b ${past?"":"green"}">${past?"Yakunlangan":"Ro‘yxatdan o‘tgansiz"}</span> <button class="bt o" onclick="this.parentNode.parentNode.nextElementSibling.hidden=!this.parentNode.parentNode.nextElementSibling.hidden">Tafsilotlar</button></div></div><p class="m" hidden style="padding:8px 0">${esc(e.description||"Tavsif yo‘q.")}</p>`}).join(""):empty("Siz hali tadbirga ro‘yxatdan o‘tmagansiz. Tizimga kirgan holda tadbirga yoziling.")}</div>`},
+evs(){const em=evM(),now=new Date(),L=D.reg.filter(r=>r.event_id&&em[r.event_id]);return `<h1>Mening tadbirlarim</h1><div class="card" style="margin-top:16px">${L.length?L.map(r=>{const e=em[r.event_id],past=e.starts_at&&new Date(e.starts_at)<now;return `<div class="rw"><div><b>${esc(e.title)}</b><p class="m">${fd(e.starts_at)} ${e.location?"· "+esc(e.location):""}</p></div><div><span class="b ${r.checked_in?"green":past?"":"green"}">${r.checked_in?"Keldi ✓":past?"Yakunlangan":"Ro‘yxatdan o‘tgansiz"}</span> ${r.ticket_code?`<button class="bt" onclick="ticket('${r.id}')">Chipta (QR)</button> `:""}<button class="bt o" onclick="this.parentNode.parentNode.nextElementSibling.hidden=!this.parentNode.parentNode.nextElementSibling.hidden">Tafsilotlar</button></div></div><p class="m" hidden style="padding:8px 0">${esc(e.description||"Tavsif yo‘q.")}</p>`}).join(""):empty("Siz hali tadbirga ro‘yxatdan o‘tmagansiz. Tizimga kirgan holda tadbirga yoziling.")}</div>`},
 certs(){return `<h1>Mening sertifikatlarim</h1>${D.cert.length?`<div class="g g2">${D.cert.map(certCard).join("")}</div>`:`<div class="card" style="margin-top:16px">${empty(NO_CERT)}</div>`}`},
 port(){const it=D.pf.find(x=>x.id===editId)||{};return `<h1>Portfolio</h1><div class="g g2"><form class="card" onsubmit="savePf(event)"><h3>${editId?"Tahrirlash":"Yangi qo‘shish"}</h3><label>Turi<select name="k">${["loyiha","ko‘nikma","yutuq"].map(k=>`<option ${it.kind===k?"selected":""}>${k}</option>`).join("")}</select></label><label>Nomi<input name="t" maxlength="100" value="${esc(it.title)}" required></label><label>Tavsif<textarea name="d" maxlength="500">${esc(it.description)}</textarea></label><label>Havola (ixtiyoriy)<input name="l" maxlength="300" placeholder="https://" value="${esc(it.link)}"></label><button class="bt">Saqlash</button>${editId?` <button type="button" class="bt o" onclick="editId=null;go('port')">Bekor</button>`:""}</form>
 <div class="card"><h3>Mening ishlarim</h3>${D.pf.length?D.pf.map(p=>`<div class="rw"><div><span class="b">${esc(p.kind)}</span> <b>${esc(p.title)}</b><p class="m">${esc(p.description||"")} ${safe(p.link)?`<a href="${esc(safe(p.link))}" target="_blank" rel="noopener" style="color:#a5b4fc">havola ↗</a>`:""}</p></div><div><button class="bt o" onclick="editId='${p.id}';go('port')">Tahrirlash</button> <button class="bt r" onclick="delPf('${p.id}')">O‘chirish</button></div></div>`).join(""):empty("Portfolio hozircha bo‘sh.")}</div></div>`},
@@ -204,7 +219,7 @@ const IC={home:"M3 11 12 3l9 8v10h-6v-6H9v6H3z",prof:"M12 12a4 4 0 1 0 0-8 4 4 0
 const ic=n=>`<svg class="ic" viewBox="0 0 24 24"><path d="${IC[n]}"/></svg>`;
 function buildNav(){
  const L=[["home","Bosh sahifa"],["prof","Profilim"],["apps","Mening arizalarim"],["evs","Mening tadbirlarim"],["certs","Mening sertifikatlarim"],["port","Portfolio"],["team","Jamoa paneli"],["set","Sozlamalar"]];
- $("#sb").innerHTML=`<div class="logo"><i>M</i>MINDOVA</div>`+L.map(([v,t])=>`<button class="nv" data-v="${v}">${ic(v)}${t}</button>`).join("")+`<div class="sp"></div><a class="nv" href="/verify">${ic("ver")}Sertifikatni tekshirish</a><a class="nv" href="/">${ic("site")}Saytga qaytish</a><a class="nv" id="adm" href="/admin" hidden>${ic("adm")}Admin panel</a><button class="nv" style="margin-top:auto" onclick="out()">${ic("out")}Chiqish</button>`;
+ $("#sb").innerHTML=`<div class="logo"><i>M</i>MINDOVA</div>`+L.map(([v,t])=>`<button class="nv" data-v="${v}">${ic(v)}${t}</button>`).join("")+`<div class="sp"></div><a class="nv" href="/verify">${ic("ver")}Sertifikatni tekshirish</a><a class="nv" href="/">${ic("site")}Saytga qaytish</a><a class="nv" id="adm" href="/admin" hidden>${ic("adm")}Admin panel</a><a class="nv" id="scn" href="/scan" hidden>${ic("ver")}Skaner paneli</a><button class="nv" style="margin-top:auto" onclick="out()">${ic("out")}Chiqish</button>`;
  $("#bn").innerHTML=[["home","Bosh"],["apps","Arizalar"],["evs","Tadbirlar"],["certs","Sertifikat"],["prof","Profil"]].map(([v,t])=>`<button data-v="${v}">${ic(v)}${t}</button>`).join("");
  document.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>go(b.dataset.v));
 }
@@ -248,7 +263,7 @@ async function load(){
  U=session.user;
  sb.auth.onAuthStateChange(ev=>{if(ev==="SIGNED_OUT")location.href="/"});
  buildNav();
- const a=await sb.rpc("is_admin");ADMIN=!!a.data;$("#adm").hidden=!ADMIN;
+ const a=await sb.rpc("is_admin");ADMIN=!!a.data;$("#adm").hidden=!ADMIN;const rg=await sb.rpc("is_registrator");$("#scn").hidden=!rg.data;
  await load();const h=location.hash.slice(1);go(REC?"set":V[h]?h:"home");
 })();
 
