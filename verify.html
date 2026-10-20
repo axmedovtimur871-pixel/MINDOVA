@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="uz"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Sertifikatni tekshirish — MINDOVA</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=Great+Vibes&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0}
 body{font-family:Inter,system-ui,sans-serif;background:#0b0b24;color:#e8eaff;min-height:100vh;display:grid;place-items:center;padding:20px;line-height:1.5}
-.box{width:100%;max-width:480px;background:linear-gradient(160deg,#16163f,#101033);border:1px solid rgba(255,255,255,.09);border-radius:18px;padding:28px;box-shadow:0 10px 40px rgba(0,0,0,.4)}
+.box{width:100%;max-width:600px;background:linear-gradient(160deg,#16163f,#101033);border:1px solid rgba(255,255,255,.09);border-radius:18px;padding:28px;box-shadow:0 10px 40px rgba(0,0,0,.4)}
 .logo{font-weight:800;font-size:1.3rem;margin-bottom:6px}.logo i{color:#6366F1;font-style:normal}
 h1{font-size:1.4rem;margin-bottom:6px}.m{color:#9aa0d0;font-size:.92rem;margin-bottom:18px}
 input{width:100%;padding:13px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0b0b24;color:#fff;font:inherit;text-transform:uppercase;margin-bottom:12px}
@@ -15,6 +16,8 @@ button:disabled{opacity:.6}
 .r{margin-top:20px;border-radius:14px;padding:18px}
 .ok{background:#0f3a2a;border:1px solid #1f7a55}.no{background:#4a1822;border:1px solid #8a2c3d}
 .r h2{font-size:1.1rem;margin-bottom:10px}.r p{font-size:.95rem;margin:4px 0}.r span{color:#9aa0d0}
+.pv{width:100%;border-radius:10px;margin-top:16px;display:block;cursor:zoom-in;background:#16163f;aspect-ratio:1.5}
+.md{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;place-items:center;z-index:50;padding:12px}.md.on{display:grid}.md img{max-width:100%;max-height:90vh;border-radius:8px}
 a{color:#a5b4fc;display:block;text-align:center;margin-top:18px;font-size:.9rem;text-decoration:none}
 </style></head><body>
 <div class="box">
@@ -25,21 +28,71 @@ a{color:#a5b4fc;display:block;text-align:center;margin-top:18px;font-size:.9rem;
  <div id="out"></div>
  <a href="/">← Saytga qaytish</a>
 </div>
+<div class="md" id="md" onclick="this.classList.remove('on')"><img id="mi" alt=""></div>
 <script>
 const sb=supabase.createClient("https://zrebikqvjbvuwbzcunkw.supabase.co","sb_publishable_DszdaPjNPM3i0UbGX3lLjQ_DTjdfLcW");
 const $=q=>document.querySelector(q);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const ML=["yanvar","fevral","mart","aprel","may","iyun","iyul","avgust","sentabr","oktabr","noyabr","dekabr"];
 const fd=d=>{const x=new Date(d);return !d||isNaN(x)?"":`${x.getDate()}-${ML[x.getMonth()]} ${x.getFullYear()}`};
+/* ===== SERTIFIKAT SHABLONI — keyinchalik shu yerda tahrirlanadi =====
+   bg: shablon rasmi (1536x1024). Yangi dizayn bo‘lsa, certificate-bg.jpg ni almashtiring.
+   Har bir maydon: x, y — joylashuv (piksel), size — shrift o‘lchami, max — eng katta kenglik, color — rang. */
+const CT={bg:"/certificate-bg.jpg",W:1536,H:1024,font:"Inter,system-ui,sans-serif",script:'"Great Vibes",cursive',
+ ink:"#1a1a4a",accent:"#3b2fe0",
+ name:{x:768,y:482,size:120,max:760,color:"#14124a"},
+ line1:{x:768,y:556,size:27},line2:{x:768,y:596,size:27,max:780},line3:{x:768,y:634,size:27},
+ date:{x:426,y:716,size:21,max:190},place:{x:755,y:716,size:21,max:180},org:{x:1073,y:716,size:21,max:115},
+ code:{x:276,y:880,size:25,max:215},
+ qr:{x:120,y:810,size:100,color:"#0b0b24"}};
+const bgImg=new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=CT.bg});
+const tDate=d=>{const x=new Date(d);return !d||isNaN(x)?"—":`${x.getFullYear()}-yil ${x.getDate()}-${ML[x.getMonth()]}`};
+async function cert(c){
+ await Promise.all([document.fonts.load("800 24px Inter"),document.fonts.load("500 24px Inter"),document.fonts.load('100px "Great Vibes"')]).catch(()=>{});
+ const bg=await bgImg,k=document.createElement("canvas");k.width=CT.W;k.height=CT.H;const x=k.getContext("2d");
+ if(bg)x.drawImage(bg,0,0,CT.W,CT.H);else{x.fillStyle="#eef0ff";x.fillRect(0,0,CT.W,CT.H)}
+ const put=(t,o,font,weight,color,align)=>{let s=o.size;x.textAlign=align||"left";x.fillStyle=color||CT.ink;
+  do{x.font=`${weight} ${s}px ${font}`;s-=2}while(o.max&&x.measureText(t).width>o.max&&s>12);x.fillText(t,o.x,o.y)};
+ put(c.full_name,CT.name,CT.script,400,CT.name.color,"center");
+ x.textAlign="center";x.fillStyle=CT.ink;x.font=`500 ${CT.line1.size}px ${CT.font}`;x.fillText("Mindova tomonidan tashkil etilgan",CT.line1.x,CT.line1.y);
+ const ev="“"+(c.event_title||c.title)+"”",tail=" tadbirida faol ishtirok etgani uchun";let s=CT.line2.size,w1,w2;
+ do{x.font=`800 ${s}px ${CT.font}`;w1=x.measureText(ev).width;x.font=`500 ${s}px ${CT.font}`;w2=x.measureText(tail).width;s-=2}while(w1+w2>CT.line2.max&&s>14);
+ s+=2;const x0=CT.line2.x-(w1+w2)/2;x.textAlign="left";x.fillStyle=CT.accent;x.font=`800 ${s}px ${CT.font}`;x.fillText(ev,x0,CT.line2.y);
+ x.fillStyle=CT.ink;x.font=`500 ${s}px ${CT.font}`;x.fillText(tail,x0+w1,CT.line2.y);
+ x.textAlign="center";x.font=`500 ${CT.line3.size}px ${CT.font}`;x.fillText("ushbu sertifikat bilan taqdirlanadi.",CT.line3.x,CT.line3.y);
+ put(tDate(c.event_date||c.issued_at),CT.date,CT.font,500);
+ put(c.event_place||"—",CT.place,CT.font,500);
+ put(c.organization||"Mindova",CT.org,CT.font,500);
+ put(c.code||"",CT.code,CT.font,800);
+ if(window.qrcode){const q=qrcode(0,"M");q.addData(location.origin+"/verify?code="+c.code);q.make();const n=q.getModuleCount(),cs=CT.qr.size/(n+2);
+  x.fillStyle=CT.qr.color;for(let r=0;r<n;r++)for(let cc=0;cc<n;cc++)if(q.isDark(r,cc))x.fillRect(CT.qr.x+cs*(cc+1),CT.qr.y+cs*(r+1),Math.ceil(cs),Math.ceil(cs))}
+ return k.toDataURL("image/jpeg",.93);
+}
+
+const memBg=new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src="/membership-bg.jpg"});
+const dmy=v=>{const x=new Date(v);return !v||isNaN(x)?"—":String(x.getDate()).padStart(2,"0")+"."+String(x.getMonth()+1).padStart(2,"0")+"."+x.getFullYear()};
+async function staffCard(sm){
+ await document.fonts.load("500 24px Inter").catch(()=>{});
+ const W=1536,H=1024,k=document.createElement("canvas");k.width=W;k.height=H;const x=k.getContext("2d"),bg=await memBg,SER='Georgia,"Times New Roman",serif';
+ if(bg)x.drawImage(bg,0,0,W,H);else{x.fillStyle="#0B0B1E";x.fillRect(0,0,W,H)}
+ x.textAlign="center";x.fillStyle="#fff";let s=96;do{x.font=`700 ${s}px ${SER}`;s-=2}while(x.measureText(sm.full_name).width>740&&s>30);x.fillText(sm.full_name,768,556);
+ x.textAlign="left";x.font=`600 36px ${SER}`;x.fillText(dmy(sm.joined_at),101,822);
+ x.fillStyle="#d7d9f2";x.font="500 24px Inter,system-ui,sans-serif";if("letterSpacing" in x)x.letterSpacing="4px";x.fillText(sm.member_no||"—",101,886);if("letterSpacing" in x)x.letterSpacing="0px";
+ if(window.qrcode&&sm.member_no){const q=qrcode(0,"M");q.addData(location.origin+"/verify?code="+encodeURIComponent(sm.member_no));q.make();const n=q.getModuleCount(),cs=80/n;
+  x.fillStyle="#fff";x.fillRect(1342,766,96,96);x.fillStyle="#0b0b24";for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))x.fillRect(1350+c*cs,774+r*cs,Math.ceil(cs),Math.ceil(cs))}
+ return k.toDataURL("image/jpeg",.93);
+}
+
+function show(p){p.then(u=>{const im=$("#pv");if(im){im.src=u;im.onclick=()=>{$("#mi").src=u;$("#md").classList.add("on")}}}).catch(()=>{})}
 async function check(code){
- const b=$("#b"),out=$("#out");
+ const b=$("#b"),out=$("#out"),c0=code.trim();
  b.disabled=true;b.textContent="Tekshirilmoqda…";out.innerHTML="";
- const {data,error}=await sb.rpc("verify_certificate",{p_code:code.trim()});
+ const [c,m]=await Promise.all([sb.rpc("verify_certificate",{p_code:c0}),sb.rpc("verify_member",{p_no:c0})]);
  b.disabled=false;b.textContent="Tekshirish";
- if(error){out.innerHTML=`<div class="r no"><h2>Xatolik yuz berdi</h2><p>Qayta urinib ko‘ring.</p></div>`;return}
- const r=data&&data[0];
- out.innerHTML=r?`<div class="r ok"><h2>✅ Sertifikat haqiqiy</h2><p><span>Egasi:</span> <b>${esc(r.full_name||"—")}</b></p><p><span>Sertifikat:</span> ${esc(r.title)}</p>${r.event_title?`<p><span>Tadbir:</span> ${esc(r.event_title)}</p>`:""}<p><span>Berilgan sana:</span> ${fd(r.issued_at)}</p></div>`
- :`<div class="r no"><h2>❌ Sertifikat topilmadi</h2><p>Raqamni tekshirib, qayta kiriting.</p></div>`;
+ const r=c.data&&c.data[0],s=m.data&&m.data[0];
+ if(r){out.innerHTML=`<div class="r ok"><h2>✅ Sertifikat haqiqiy</h2><p><span>Egasi:</span> <b>${esc(r.full_name||"—")}</b></p><p><span>Sertifikat:</span> ${esc(r.title)}</p>${r.event_title?`<p><span>Tadbir:</span> ${esc(r.event_title)}</p>`:""}<p><span>Berilgan sana:</span> ${fd(r.issued_at)}</p></div><img class="pv" id="pv" alt="Sertifikat">`;show(cert(r));return}
+ if(s){out.innerHTML=`<div class="r ok"><h2>✅ A’zolik haqiqiy</h2><p><span>Egasi:</span> <b>${esc(s.full_name)}</b></p><p><span>A’zo bo‘lgan sana:</span> ${fd(s.joined_at)}</p><p><span>Jamoa:</span> MINDOVA</p></div><img class="pv" id="pv" alt="A’zolik guvohnomasi">`;show(staffCard(s));return}
+ out.innerHTML=(c.error&&m.error)?`<div class="r no"><h2>Xatolik yuz berdi</h2><p>Qayta urinib ko‘ring.</p></div>`:`<div class="r no"><h2>❌ Topilmadi</h2><p>Raqamni tekshirib, qayta kiriting.</p></div>`;
 }
 $("#f").onsubmit=e=>{e.preventDefault();check($("#c").value)};
 const q=new URLSearchParams(location.search).get("code");
