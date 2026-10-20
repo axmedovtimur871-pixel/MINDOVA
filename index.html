@@ -294,7 +294,7 @@ lf.onsubmit=async ev=>{
 if(sb)sb.auth.getSession().then(async({data})=>{if(data.session)await enter(data.session.user);else if(CFG.GATE)openAuth(true,false)});
 
 /* Kartochkalar */
-function regBtn(e){if(!canReg(e))return "";return ME.regs.has(e.id)?`<span class="btn sm done">Ro‘yxatdan o‘tgansiz ✓</span>`:`<button class="btn acc sm" type="button" data-ev="${esc(e.id)}">Ro‘yxatdan o‘tish</button>`}
+function regBtn(e){if(!canReg(e))return "";return ME.regs.has(e.id)?`<a class="btn sm done" href="/kabinet#evs" style="cursor:pointer">Chiptani ko‘rish (QR)</a>`:`<button class="btn acc sm" type="button" data-ev="${esc(e.id)}">Ro‘yxatdan o‘tish</button>`}
 function drawEv(){if(EVD===null)return;$("#evg").innerHTML=EVD.length?EVD.map(evCard).join(""):empty("Hozircha tadbirlar yo‘q.")}
 function canReg(e){const n=new Date();return !!e.registration_open&&(!e.starts_at||new Date(e.starts_at)>=n)&&(!e.registration_deadline||new Date(e.registration_deadline)>=n)}
 const evCard=e=>`<article class="card">${safe(e.image_url)?`<img class="evimg" src="${esc(safe(e.image_url))}" alt="${esc(e.title)}" loading="lazy">`:""}<h3>${esc(e.title)}</h3><p>${esc((e.description||"").slice(0,140))}</p>
@@ -338,7 +338,7 @@ $("#evg").addEventListener("click",async ev=>{
  b.disabled=true;b.textContent="Yuborilmoqda…";
  const {error}=await sb.from("registrations").insert([{full_name:p.full_name,age:p.age,phone:p.phone,telegram_username:p.telegram_username,event_id:b.dataset.ev,letter:""}]);
  if(error){b.disabled=false;b.textContent="Ro‘yxatdan o‘tish";alert("Xatolik: "+error.message);return}
- ME.regs.add(b.dataset.ev);drawEv();
+ ME.regs.add(b.dataset.ev);drawEv();location.href="/kabinet#evs";
 });
 
 /* Jamoa posterini kattalashtirib ko‘rish */
