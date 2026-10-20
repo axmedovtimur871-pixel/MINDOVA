@@ -35,13 +35,22 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
  <button class="tab-btn" data-tab="jobs">Ish arizalari</button>
  <button class="tab-btn" data-tab="certs">Sertifikatlar</button>
  <button class="tab-btn" data-tab="staff">A'zolar paneli</button>
+ <button class="tab-btn" data-tab="att">Davomat</button>
+ <a class="tab-btn" href="/scan" style="text-decoration:none;display:inline-block">Skaner paneli</a>
  <button class="tab-btn" data-tab="faqs">FAQ</button>
 </div>
 
 <div id="users" class="section active">
- <h2>Ro'yxatdan o'tgan foydalanuvchilar</h2>
+ <h2 id="pH">Foydalanuvchilar (hisob yaratganlar)</h2>
+ <input type="text" id="pSearch" placeholder="Qidirish: ism, telefon, email yoki username">
  <div class="scroll"><table>
-  <thead><tr><th>Ism Familiya</th><th>Yosh</th><th>Telefon</th><th>Telegram</th><th>Tadbir</th><th>Sana</th></tr></thead>
+  <thead><tr><th>Ism Familiya</th><th>Yosh</th><th>Telefon</th><th>Telegram</th><th>Email</th><th>Sana</th></tr></thead>
+  <tbody id="profList"></tbody>
+ </table></div>
+ <div class="msg" id="pMsg"></div>
+ <h2 style="margin-top:28px">Tadbirga yozilganlar</h2>
+ <div class="scroll"><table>
+  <thead><tr><th>Ism Familiya</th><th>Yosh</th><th>Telefon</th><th>Telegram</th><th>Tadbir</th><th>Keldi</th><th>Sana</th></tr></thead>
   <tbody id="userList"></tbody>
  </table></div>
  <div class="msg" id="uMsg"></div>
@@ -108,6 +117,18 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
  </form>
  <h2 style="margin-top:28px">Joylangan darslar</h2>
  <div id="lList"></div>
+</div>
+
+<div id="att" class="section">
+ <h2>Davomat (QR orqali kelganlar)</h2>
+ <label>Tadbir<select id="aEv"></select></label>
+ <div class="msg" id="aSum"></div>
+ <div class="scroll"><table>
+  <thead><tr><th>Ism Familiya</th><th>Telefon</th><th>Telegram</th><th>Holat</th><th>Vaqt</th><th></th></tr></thead>
+  <tbody id="aList"></tbody>
+ </table></div>
+ <button type="button" class="submit-btn" id="aCert">Kelganlarga sertifikat berish</button>
+ <div class="msg" id="aMsg"></div>
 </div>
 
 <div id="events" class="section">
@@ -186,6 +207,52 @@ async function upImg(file,folder,mx){
 
 $("out").onclick=async()=>{await sb.auth.signOut();location.href="/"};
 
+async function loadAtt(){
+ const ev=await sb.from("events").select("id,title,starts_at").order("starts_at",{ascending:false});
+ const se=$("aEv"),keep=se.value;se.innerHTML="";
+ (ev.data||[]).forEach(x=>{const o=document.createElement("option");o.value=x.id;o.textContent=x.title;se.appendChild(o)});
+ if(keep)se.value=keep;drawAtt();
+}
+async function drawAtt(){
+ const id=$("aEv").value,tb=$("aList");tb.innerHTML="";
+ if(!id){$("aSum").textContent="Tadbir yo'q.";return}
+ const {data,error}=await sb.from("registrations").select("*").eq("event_id",id).order("created_at",{ascending:true});
+ if(error){$("aSum").textContent="Xato: "+error.message;return}
+ const R=data||[];$("aSum").textContent="Ro'yxatdan o'tgan: "+R.length+" · Kelgan: "+R.filter(x=>x.checked_in).length;
+ R.forEach(u=>{
+  const tr=document.createElement("tr");
+  [u.full_name,u.phone,u.telegram_username?"@"+u.telegram_username:"",u.checked_in?"Keldi ✓":"Kutilmoqda",u.checked_in_at?new Date(u.checked_in_at).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}):""].forEach(v=>{const td=document.createElement("td");td.textContent=v??"";tr.appendChild(td)});
+  const tb2=document.createElement("td");
+  if(!u.checked_in&&u.ticket_code){const b=document.createElement("button");b.type="button";b.className="tab-btn";b.textContent="Belgilash";b.onclick=async()=>{const {error}=await sb.rpc("checkin_ticket",{p_code:u.ticket_code,p_event_id:id});if(error){alert(error.message);return}drawAtt()};tb2.appendChild(b)}
+  tr.appendChild(tb2);tb.appendChild(tr);
+ });
+}
+$("aEv").onchange=drawAtt;
+$("aCert").onclick=async()=>{
+ const {data,error}=await sb.rpc("issue_event_certificates",{p_event_id:$("aEv").value});
+ $("aMsg").textContent=error?"Xato: "+error.message:"Yangi berilgan sertifikatlar: "+data+" ta";
+ if(!error)loadCerts();
+};
+
+let PRF=[];
+async function loadProfiles(){
+ const {data,error}=await sb.from("profiles").select("*").order("created_at",{ascending:false});
+ if(error){$("pMsg").textContent="Yuklab bo'lmadi: "+error.message;return}
+ PRF=data||[];drawProfiles();
+}
+function drawProfiles(){
+ const q=$("pSearch").value.trim().toLowerCase(),tb=$("profList");tb.innerHTML="";
+ const L=PRF.filter(p=>!q||[p.full_name,p.phone,p.email,p.telegram_username].join(" ").toLowerCase().includes(q));
+ $("pH").textContent="Foydalanuvchilar (hisob yaratganlar): "+PRF.length;
+ $("pMsg").textContent=L.length?"":"Hech narsa topilmadi.";
+ L.forEach(p=>{
+  const tr=document.createElement("tr");
+  [p.full_name,p.age,p.phone,p.telegram_username?"@"+p.telegram_username:"",p.email,p.created_at?new Date(p.created_at).toLocaleDateString():""].forEach(v=>{const td=document.createElement("td");td.textContent=v??"";tr.appendChild(td)});
+  tb.appendChild(tr);
+ });
+}
+$("pSearch").oninput=drawProfiles;
+
 async function loadUsers(){
  const [{data,error},evr]=await Promise.all([sb.from("registrations").select("*").order("created_at",{ascending:false}),sb.from("events").select("id,title")]);
  const evm={};(evr.data||[]).forEach(x=>evm[x.id]=x.title);
@@ -196,7 +263,7 @@ async function loadUsers(){
  $("uMsg").textContent="";
  data.forEach(u=>{
   const tr=document.createElement("tr");
-  [u.full_name,u.age,u.phone,u.telegram_username?"@"+u.telegram_username:u.telegram,u.event_id?(evm[u.event_id]||"—"):"Umumiy",u.created_at?new Date(u.created_at).toLocaleDateString():""].forEach(v=>{
+  [u.full_name,u.age,u.phone,u.telegram_username?"@"+u.telegram_username:u.telegram,u.event_id?(evm[u.event_id]||"—"):"Umumiy",u.checked_in?"Keldi ✓":"—",u.created_at?new Date(u.created_at).toLocaleDateString():""].forEach(v=>{
    const td=document.createElement("td");
    td.textContent=v??"";
    tr.appendChild(td);
@@ -360,8 +427,9 @@ async function loadStaff(){
  SMS.forEach(x=>{
   const bs=[btn("Kodni nusxalash",()=>{navigator.clipboard&&navigator.clipboard.writeText(x.code);alert("Kod: "+x.code)})];
   if(x.user_id)bs.push(btn("Hisobdan ajratish",async()=>{if(!confirm("Kod hisobdan ajratilsinmi?"))return;const {error}=await sb.from("staff_members").update({user_id:null}).eq("id",x.id);if(error){alert(error.message);return}loadStaff()}));
+  bs.push(btn(x.is_registrator?"Registratorlikni olib tashlash":"Registrator qilish",async()=>{const {error}=await sb.from("staff_members").update({is_registrator:!x.is_registrator}).eq("id",x.id);if(error){alert(error.message);return}loadStaff()}));
   bs.push(btn("O'chirish",async()=>{if(!confirm("A'zo va uning darslari o'chirilsinmi?"))return;const {error}=await sb.from("staff_members").delete().eq("id",x.id);if(error){alert(error.message);return}loadStaff()}));
-  box.appendChild(row(x.full_name+" · "+(x.member_no||"")+" · Kod: "+x.code+" · "+(x.user_id?"Bog'langan":"Kutilmoqda"),bs));
+  box.appendChild(row(x.full_name+" · "+(x.member_no||"")+" · Kod: "+x.code+" · "+(x.user_id?"Bog'langan":"Kutilmoqda")+(x.is_registrator?" · REGISTRATOR":""),bs));
  });
  const nm=Object.fromEntries(SMS.map(x=>[x.id,x.full_name]));
  (l.data||[]).forEach(x=>lb.appendChild(row((x.staff_id?(nm[x.staff_id]||"—"):"Hammaga")+" · "+x.title,[btn("O'chirish",async()=>{if(!confirm("O'chirilsinmi?"))return;const {error}=await sb.from("staff_lessons").delete().eq("id",x.id);if(error){alert(error.message);return}loadStaff()})])));
@@ -451,12 +519,14 @@ $("addOppForm").onsubmit=async e=>{
  const ad=await sb.rpc("is_admin");
  if(!ad.data){location.href="/kabinet";return}
  loadUsers();
+ loadProfiles();
  loadOpps();
  loadJobs();
  loadCerts();
  loadFaqs();
  loadTeam();
  loadStaff();
+ loadAtt();
 })();
 </script>
 </body>
