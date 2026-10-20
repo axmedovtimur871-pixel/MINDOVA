@@ -87,13 +87,11 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
 </div>
 
 <div id="staff" class="section">
- <h2>A'zolar (volontyor va menejerlar)</h2>
+ <h2>Jamoa a'zolari</h2>
  <div id="sList"></div>
  <h2 style="margin-top:28px">Yangi a'zo qo'shish</h2>
  <form id="staffForm">
   <input type="text" id="sName" placeholder="Ism familiya" required>
-  <select id="sRole"><option value="volunteer">Volontyor</option><option value="manager">Menejer</option></select>
-  <input type="text" id="sPos" placeholder="Lavozim (masalan: Debate manager)">
   <input type="text" id="sNo" placeholder="A'zolik raqami (bo'sh qolsa avtomatik)">
   <button type="submit" class="submit-btn">A'zoni qo'shish va kod yaratish</button>
   <div class="msg" id="sMsg"></div>
@@ -363,7 +361,7 @@ async function loadStaff(){
   const bs=[btn("Kodni nusxalash",()=>{navigator.clipboard&&navigator.clipboard.writeText(x.code);alert("Kod: "+x.code)})];
   if(x.user_id)bs.push(btn("Hisobdan ajratish",async()=>{if(!confirm("Kod hisobdan ajratilsinmi?"))return;const {error}=await sb.from("staff_members").update({user_id:null}).eq("id",x.id);if(error){alert(error.message);return}loadStaff()}));
   bs.push(btn("O'chirish",async()=>{if(!confirm("A'zo va uning darslari o'chirilsinmi?"))return;const {error}=await sb.from("staff_members").delete().eq("id",x.id);if(error){alert(error.message);return}loadStaff()}));
-  box.appendChild(row(x.full_name+" · "+(ROLEN[x.role]||x.role)+(x.position?" · "+x.position:"")+" · "+(x.member_no||"")+" · Kod: "+x.code+" · "+(x.user_id?"Bog'langan":"Kutilmoqda"),bs));
+  box.appendChild(row(x.full_name+" · "+(x.member_no||"")+" · Kod: "+x.code+" · "+(x.user_id?"Bog'langan":"Kutilmoqda"),bs));
  });
  const nm=Object.fromEntries(SMS.map(x=>[x.id,x.full_name]));
  (l.data||[]).forEach(x=>lb.appendChild(row((x.staff_id?(nm[x.staff_id]||"—"):"Hammaga")+" · "+x.title,[btn("O'chirish",async()=>{if(!confirm("O'chirilsinmi?"))return;const {error}=await sb.from("staff_lessons").delete().eq("id",x.id);if(error){alert(error.message);return}loadStaff()})])));
@@ -371,7 +369,7 @@ async function loadStaff(){
 $("staffForm").onsubmit=async e=>{
  e.preventDefault();
  const code=genCode(),no=$("sNo").value.trim()||("MND-"+new Date().getFullYear()+"-"+String(SMS.length+1).padStart(3,"0"));
- const {error}=await sb.from("staff_members").insert([{code,full_name:$("sName").value.trim(),role:$("sRole").value,position:$("sPos").value.trim()||null,member_no:no}]);
+ const {error}=await sb.from("staff_members").insert([{code,full_name:$("sName").value.trim(),member_no:no}]);
  $("sMsg").textContent=error?"Xato: "+error.message:"Saqlandi ✓ Shaxsiy kod: "+code;
  if(!error){e.target.reset();loadStaff()}
 };
