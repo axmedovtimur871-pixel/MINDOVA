@@ -132,32 +132,22 @@ const NO_CERT="Sizda hozircha sertifikatlar yo‘q. Yangi sertifikatlar berilgan
 const ROLE={volunteer:"Volontyor",manager:"Menejer"};
 const SP={ok:false,sm:null,lessons:[],idu:null};
 const loadImg=u=>new Promise(r=>{if(!u)return r(null);const i=new Image();i.crossOrigin="anonymous";i.onload=()=>r(i);i.onerror=()=>r(null);i.src=u});
+const memBg=new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src="/membership-bg.jpg"});
+const dmy=v=>{const x=new Date(v);return !v||isNaN(x)?"—":String(x.getDate()).padStart(2,"0")+"."+String(x.getMonth()+1).padStart(2,"0")+"."+x.getFullYear()};
 async function staffCard(){
- await Promise.all([document.fonts.load("800 24px Inter"),document.fonts.load("500 24px Inter")]).catch(()=>{});
- const sm=SP.sm,W=1011,H=638,k=document.createElement("canvas");k.width=W;k.height=H;const x=k.getContext("2d"),F="Inter,system-ui,sans-serif";
- x.fillStyle="#0F0E26";x.fillRect(0,0,W,H);
- const g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,"rgba(99,102,241,.3)");g.addColorStop(.6,"rgba(99,102,241,0)");x.fillStyle=g;x.fillRect(0,0,W,H);
- x.strokeStyle="rgba(255,255,255,.14)";x.lineWidth=2;x.strokeRect(24,24,W-48,H-48);x.fillStyle="#6366F1";x.fillRect(24,24,8,H-48);
- x.textAlign="left";x.font=`800 40px ${F}`;x.fillStyle="#6366F1";x.fillText("M",70,96);const mw=x.measureText("M ").width;x.fillStyle="#fff";x.fillText("MINDOVA",70+mw,96);
- x.textAlign="right";x.fillStyle="#a5a8ff";x.font=`700 20px ${F}`;x.fillText("A’ZOLIK GUVOHNOMASI",W-70,90);
- const cx=205,cy=350,r=120,im=await loadImg(P.avatar_url);
- x.save();x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.clip();
- if(im){const s=Math.max(2*r/im.width,2*r/im.height);x.drawImage(im,cx-im.width*s/2,cy-im.height*s/2,im.width*s,im.height*s)}
- else{x.fillStyle="#2c2d7a";x.fillRect(cx-r,cy-r,2*r,2*r);x.fillStyle="#fff";x.textAlign="center";x.font=`800 80px ${F}`;x.fillText((sm.full_name||"?").slice(0,2).toUpperCase(),cx,cy+28)}
- x.restore();x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.strokeStyle="#6366F1";x.lineWidth=6;x.stroke();
- const fit=(t,w,s,max)=>{do{x.font=`${w} ${s}px ${F}`;s-=2}while(x.measureText(t).width>max&&s>16)};
- x.textAlign="left";const rl=(ROLE[sm.role]||sm.role).toUpperCase();x.font=`700 22px ${F}`;const bw=x.measureText(rl).width+36;
- x.fillStyle="rgba(99,102,241,.28)";x.fillRect(380,196,bw,40);x.fillStyle="#c7c9ff";x.fillText(rl,398,225);
- x.fillStyle="#fff";fit(sm.full_name,800,56,580);x.fillText(sm.full_name,380,310);
- if(sm.position){x.fillStyle="#c7cbf5";fit(sm.position,500,30,580);x.fillText(sm.position,380,360)}
- x.fillStyle="#8f93b8";x.font=`500 20px ${F}`;x.fillText("A’zolik raqami",380,468);x.fillText("A’zo bo‘lgan sana",700,468);
- x.fillStyle="#fff";x.font=`700 30px ${F}`;x.fillText(sm.member_no||"—",380,508);x.font=`700 26px ${F}`;x.fillText(fd(sm.joined_at)||"—",700,506);
- x.textAlign="center";x.fillStyle="#6366F1";x.font=`500 20px ${F}`;x.fillText("Fikrla. Muloqot qil. Yarat.",W/2,596);
+ await document.fonts.load("500 24px Inter").catch(()=>{});
+ const sm=SP.sm,W=1536,H=1024,k=document.createElement("canvas");k.width=W;k.height=H;const x=k.getContext("2d"),bg=await memBg,SER='Georgia,"Times New Roman",serif';
+ if(bg)x.drawImage(bg,0,0,W,H);else{x.fillStyle="#0B0B1E";x.fillRect(0,0,W,H)}
+ x.textAlign="center";x.fillStyle="#fff";let s=96;do{x.font=`700 ${s}px ${SER}`;s-=2}while(x.measureText(sm.full_name).width>740&&s>30);x.fillText(sm.full_name,768,556);
+ x.textAlign="left";x.font=`600 36px ${SER}`;x.fillText(dmy(sm.joined_at),101,822);
+ x.fillStyle="#d7d9f2";x.font="500 24px Inter,system-ui,sans-serif";if("letterSpacing" in x)x.letterSpacing="4px";x.fillText(sm.member_no||"—",101,886);if("letterSpacing" in x)x.letterSpacing="0px";
+ if(window.qrcode&&sm.member_no){const q=qrcode(0,"M");q.addData(location.origin+"/verify?code="+encodeURIComponent(sm.member_no));q.make();const n=q.getModuleCount(),cs=80/n;
+  x.fillStyle="#fff";x.fillRect(1342,766,96,96);x.fillStyle="#0b0b24";for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))x.fillRect(1350+c*cs,774+r*cs,Math.ceil(cs),Math.ceil(cs))}
  return k.toDataURL("image/jpeg",.93);
 }
 function fillId(){const im=$("#idimg");if(im)staffCard().then(u=>{SP.idu=u;im.src=u})}
 async function zoomId(){$("#mi").src=SP.idu||await staffCard();$("#md").classList.add("on")}
-async function pdfId(){const u=SP.idu||await staffCard(),p=new window.jspdf.jsPDF({orientation:"landscape",unit:"pt",format:[323.5,204]});p.addImage(u,"JPEG",0,0,323.5,204);p.save("MINDOVA-guvohnoma.pdf")}
+async function pdfId(){const u=SP.idu||await staffCard(),p=new window.jspdf.jsPDF({orientation:"landscape",unit:"pt",format:[841.89,561.26]});p.addImage(u,"JPEG",0,0,841.89,561.26);p.save("MINDOVA-guvohnoma.pdf")}
 async function loadLessons(){const r=await sb.from("staff_lessons").select("*").order("created_at",{ascending:false});SP.lessons=r.data||[]}
 async function claim(e){
  e.preventDefault();const f=e.target,m=$("#cm");m.textContent="";
@@ -191,9 +181,9 @@ ${nx?`<div class="card nx" style="margin-top:14px"><span class="eb">Eng yaqin ta
 <div class="g g2"><div class="card"><h3>So‘nggi sertifikatlar</h3>${D.cert.length?D.cert.slice(0,2).map((c,i)=>certCard(c,i)).join(""):empty(NO_CERT)}</div>
 <div class="card"><h3>So‘nggi faoliyatlar</h3>${act.length?act.map(a=>`<div class="rw"><span>${esc(a.t)}</span><span class="m">${fd(a.d)}</span></div>`).join(""):empty("Faoliyat hali yo‘q.")}<div style="margin-top:14px"><a class="bt o" href="/#imkoniyatlar">Imkoniyatlarni ko‘rish</a></div></div></div>`},
 team(){
- if(!SP.ok)return `<h1>Jamoa paneli</h1><p class="m" style="margin-top:6px">Volontyor va menejerlar uchun. Sizga berilgan shaxsiy kodni kiriting.</p><form class="card" style="margin-top:16px;max-width:440px" onsubmit="claim(event)"><label>Shaxsiy kod<input name="cd" placeholder="MND-XXXX-XXXX" autocomplete="off" autocapitalize="characters" required></label><button class="bt">Kirish</button> <span id="cm" style="color:#fca5a5;font-size:.86rem"></span></form>`;
- return `<h1>Jamoa paneli</h1><p class="m" style="margin-top:6px">${esc(SP.sm.full_name)} · ${esc(ROLE[SP.sm.role]||SP.sm.role)}</p>
-<div class="g g2"><div class="card"><h3>A’zolik guvohnomasi</h3><img class="cc" id="idimg" alt="" style="aspect-ratio:1.586"><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="bt o" onclick="zoomId()">Kattalashtirish</button><button class="bt" onclick="pdfId()">PDF yuklab olish</button></div></div>
+ if(!SP.ok)return `<h1>Jamoa paneli</h1><p class="m" style="margin-top:6px">Jamoa a’zolari uchun. Sizga berilgan shaxsiy kodni kiriting.</p><form class="card" style="margin-top:16px;max-width:440px" onsubmit="claim(event)"><label>Shaxsiy kod<input name="cd" placeholder="MND-XXXX-XXXX" autocomplete="off" autocapitalize="characters" required></label><button class="bt">Kirish</button> <span id="cm" style="color:#fca5a5;font-size:.86rem"></span></form>`;
+ return `<h1>Jamoa paneli</h1><p class="m" style="margin-top:6px">${esc(SP.sm.full_name)} · Jamoa a’zosi</p>
+<div class="g g2"><div class="card"><h3>A’zolik guvohnomasi</h3><img class="cc" id="idimg" alt=""><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="bt o" onclick="zoomId()">Kattalashtirish</button><button class="bt" onclick="pdfId()">PDF yuklab olish</button></div></div>
 <div class="card"><h3>Darslar</h3>${lessonHtml(SP.lessons)}</div></div>
 <div class="g"><div class="card"><h3>Sertifikatlar</h3>${D.cert.length?`<div class="g g2" style="margin-top:0">${D.cert.map(certCard).join("")}</div>`:empty(NO_CERT)}</div></div>`},
 prof(){return `<h1>Profilim</h1><form class="card" style="margin-top:16px;max-width:640px" onsubmit="saveP(event)"><div class="pc" style="margin-bottom:14px">${av()}<div><label>Profil rasmi<input type="file" accept="image/*" onchange="upAv(this)" style="margin-bottom:0"></label></div></div>
