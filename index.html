@@ -364,8 +364,15 @@ async function registerEvent(id,b){
   ME.regs.add(id);drawEv();toast("Ro‘yxatdan o‘tdingiz! Chiptangiz kabinetda ko‘rinadi.","ok");
   setTimeout(()=>{location.href="/kabinet#evs"},1300);
  }catch(err){
-  console.error(err);if(b){b.disabled=false;b.textContent="Ro‘yxatdan o‘tish"}
-  toast("Xatolik: "+(err&&err.message?err.message:err),"err");
+  console.error(err);const msg=(err&&err.message)||String(err);
+  if(/idx_regs_event_username|duplicate key/i.test(msg)){
+   const c=await sb.rpc("claim_my_registration",{p_event_id:id});
+   if(!c.error&&c.data&&c.data.length){ME.regs.add(id);drawEv();toast("Siz bu tadbirga allaqachon yozilgansiz. Chiptangiz kabinetda.","ok");setTimeout(()=>{location.href="/kabinet#evs"},1500);return}
+   if(b){b.disabled=false;b.textContent="Ro‘yxatdan o‘tish"}
+   toast(c.error?c.error.message:"Siz bu tadbirga allaqachon yozilgansiz.","err");return;
+  }
+  if(b){b.disabled=false;b.textContent="Ro‘yxatdan o‘tish"}
+  toast("Xatolik: "+msg,"err");
  }
 }
 $("#evg").addEventListener("click",async ev=>{
