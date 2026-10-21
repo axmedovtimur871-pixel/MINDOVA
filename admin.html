@@ -129,6 +129,14 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
  </table></div>
  <button type="button" class="submit-btn" id="aCert">Kelganlarga sertifikat berish</button>
  <div class="msg" id="aMsg"></div>
+ <h2 style="margin-top:28px">Skaner ruxsati</h2>
+ <div class="msg">QR skanerlash faqat adminlarga va siz tanlagan odamlarga ochiq. Boshqa hech kim skanerlay olmaydi.</div>
+ <form id="scanForm">
+  <label>Foydalanuvchi<select id="scUser"></select></label>
+  <button type="submit" class="submit-btn">Skaner ruxsatini berish</button>
+  <div class="msg" id="scMsg"></div>
+ </form>
+ <div id="scList"></div>
 </div>
 
 <div id="events" class="section">
@@ -232,6 +240,30 @@ $("aCert").onclick=async()=>{
  const {data,error}=await sb.rpc("issue_event_certificates",{p_event_id:$("aEv").value});
  $("aMsg").textContent=error?"Xato: "+error.message:"Yangi berilgan sertifikatlar: "+data+" ta";
  if(!error)loadCerts();
+};
+
+async function loadScan(){
+ const [p,s]=await Promise.all([sb.from("profiles").select("id,full_name,email").order("full_name",{ascending:true}),sb.from("scanner_access").select("*").order("created_at",{ascending:false})]);
+ const box=$("scList"),sel=$("scUser");box.innerHTML="";sel.innerHTML="";
+ if(s.error){box.textContent="Yuklab bo'lmadi: "+s.error.message;return}
+ const P=p.data||[],has=new Set((s.data||[]).map(x=>x.user_id)),pm=Object.fromEntries(P.map(x=>[x.id,x]));
+ P.filter(x=>!has.has(x.id)).forEach(x=>{const o=document.createElement("option");o.value=x.id;o.textContent=(x.full_name||"—")+" ("+(x.email||"")+")";sel.appendChild(o)});
+ if(!(s.data||[]).length){box.textContent="Hozircha hech kimga ruxsat berilmagan (faqat adminlar skanerlay oladi).";return}
+ (s.data||[]).forEach(x=>{
+  const row=document.createElement("div");
+  row.style.cssText="display:flex;gap:10px;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.1);padding:8px 0";
+  const t=document.createElement("span");const u=pm[x.user_id]||{};t.textContent=(u.full_name||"—")+" ("+(u.email||x.user_id)+")";
+  const d=document.createElement("button");d.type="button";d.className="tab-btn";d.textContent="Ruxsatni olib tashlash";
+  d.onclick=async()=>{const {error}=await sb.from("scanner_access").delete().eq("user_id",x.user_id);if(error){alert(error.message);return}loadScan()};
+  row.append(t,d);box.appendChild(row);
+ });
+}
+$("scanForm").onsubmit=async e=>{
+ e.preventDefault();
+ if(!$("scUser").value){$("scMsg").textContent="Foydalanuvchi tanlang.";return}
+ const {error}=await sb.from("scanner_access").insert([{user_id:$("scUser").value}]);
+ $("scMsg").textContent=error?"Xato: "+error.message:"Ruxsat berildi ✓";
+ if(!error)loadScan();
 };
 
 let PRF=[];
@@ -427,9 +459,8 @@ async function loadStaff(){
  SMS.forEach(x=>{
   const bs=[btn("Kodni nusxalash",()=>{navigator.clipboard&&navigator.clipboard.writeText(x.code);alert("Kod: "+x.code)})];
   if(x.user_id)bs.push(btn("Hisobdan ajratish",async()=>{if(!confirm("Kod hisobdan ajratilsinmi?"))return;const {error}=await sb.from("staff_members").update({user_id:null}).eq("id",x.id);if(error){alert(error.message);return}loadStaff()}));
-  bs.push(btn(x.is_registrator?"Registratorlikni olib tashlash":"Registrator qilish",async()=>{const {error}=await sb.from("staff_members").update({is_registrator:!x.is_registrator}).eq("id",x.id);if(error){alert(error.message);return}loadStaff()}));
   bs.push(btn("O'chirish",async()=>{if(!confirm("A'zo va uning darslari o'chirilsinmi?"))return;const {error}=await sb.from("staff_members").delete().eq("id",x.id);if(error){alert(error.message);return}loadStaff()}));
-  box.appendChild(row(x.full_name+" · "+(x.member_no||"")+" · Kod: "+x.code+" · "+(x.user_id?"Bog'langan":"Kutilmoqda")+(x.is_registrator?" · REGISTRATOR":""),bs));
+  box.appendChild(row(x.full_name+" · "+(x.member_no||"")+" · Kod: "+x.code+" · "+(x.user_id?"Bog'langan":"Kutilmoqda"),bs));
  });
  const nm=Object.fromEntries(SMS.map(x=>[x.id,x.full_name]));
  (l.data||[]).forEach(x=>lb.appendChild(row((x.staff_id?(nm[x.staff_id]||"—"):"Hammaga")+" · "+x.title,[btn("O'chirish",async()=>{if(!confirm("O'chirilsinmi?"))return;const {error}=await sb.from("staff_lessons").delete().eq("id",x.id);if(error){alert(error.message);return}loadStaff()})])));
@@ -527,6 +558,7 @@ $("addOppForm").onsubmit=async e=>{
  loadTeam();
  loadStaff();
  loadAtt();
+ loadScan();
 })();
 </script>
 </body>
