@@ -109,6 +109,8 @@ section.s{padding:60px 0}
 #loginModal .modal-close{color:#9aa0c8}
 .logo img{height:30px;width:auto;display:block}
 #loginModal .mlogo img{height:70px;width:auto;margin:0 auto}
+#toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);max-width:90%;padding:12px 18px;border-radius:12px;background:#171640;border:1px solid rgba(255,255,255,.18);color:#fff;font-weight:600;font-size:.92rem;z-index:300;display:none;text-align:center}
+#toast.err{border-color:#8a2c3d;background:#4a1822}#toast.ok{border-color:#1f7a55;background:#0f3a2a}
 .empty{background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.18);border-radius:16px;padding:28px;text-align:center;color:var(--mut);grid-column:1/-1}
 .form{max-width:560px;margin:24px auto 0;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:20px;padding:28px}
 label{display:block;font-weight:600;font-size:.88rem;margin-bottom:14px}
@@ -202,6 +204,20 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
  </div>
 </div>
 
+<div id="toast" role="status"></div>
+<div class="modal-backdrop" id="pfModal"><div class="modal">
+ <button class="modal-close" id="closePf" type="button" aria-label="Yopish">✕</button>
+ <h3 style="margin-bottom:6px">Ma’lumotlaringizni to‘ldiring</h3>
+ <p class="muted" style="font-size:.88rem;margin-bottom:14px">Tadbirga yozilish uchun kerak. Bir marta kiritasiz, keyin avtomatik olinadi.</p>
+ <form id="pfForm" novalidate>
+  <label>Ism va familiya<input name="fullName" maxlength="80" autocomplete="name"></label>
+  <label>Yosh<input name="age" type="number" inputmode="numeric" min="10" max="99"></label>
+  <label>Telefon raqam<input name="phone" type="tel" inputmode="tel" placeholder="+998 90 123 45 67" maxlength="20"></label>
+  <label>Telegram username<input name="telegram" placeholder="@username" maxlength="33" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
+  <button class="btn acc" style="width:100%" type="submit">Saqlash va ro‘yxatdan o‘tish</button>
+  <div class="err" id="pfErr" style="margin-top:10px;text-align:center"></div>
+ </form>
+</div></div>
 <div class="modal-backdrop" id="lb" style="background:rgba(5,5,20,.92)"><img id="lbi" alt="" style="max-width:94%;max-height:92vh;border-radius:12px"></div>
 
 <footer><div class="wrap">
@@ -236,7 +252,7 @@ $("#closeLogin").onclick=()=>$("#loginModal").classList.remove("open");
 const sb=window.supabase?supabase.createClient(CFG.URL,CFG.KEY):null;
 
 /* Kirish / ro‘yxatdan o‘tish paneli. Birinchi kirishda faqat shu panel ochiladi (CFG.GATE=false bo‘lsa, majburiy emas) */
-const ME={user:null,profile:null,regs:new Set()};
+const ME={user:null,profile:null,regs:new Set(),ready:Promise.resolve()};
 let signup=true,EVD=null;
 const lf=$("#loginForm");
 function setMode(s){signup=s;$("#authTitle").textContent=s?"Ro‘yxatdan o‘tish":"Kirish";$("#authBtn").textContent=s?"Ro‘yxatdan o‘tish":"Kirish";$("#suFields").hidden=!s;$("#authSwap").textContent=s?"Hisobingiz bormi? Kiring":"Hisobingiz yo‘qmi? Ro‘yxatdan o‘ting";$("#fpWrap").hidden=s;$("#loginErr").style.color="";$("#loginErr").textContent=""}
@@ -294,7 +310,7 @@ lf.onsubmit=async ev=>{
  if(error){out.textContent="Email yoki parol xato!";return}
  await enter(data.user);
 };
-if(sb)sb.auth.getSession().then(async({data})=>{if(data.session)await enter(data.session.user);else if(CFG.GATE)openAuth(true,false)});
+if(sb)ME.ready=sb.auth.getSession().then(async({data})=>{if(data.session)await enter(data.session.user);else if(CFG.GATE)openAuth(true,false)}).catch(e=>console.error(e));
 
 /* Kartochkalar */
 function regBtn(e){if(!canReg(e))return "";return ME.regs.has(e.id)?`<a class="btn sm done" href="/kabinet#evs" style="cursor:pointer">Chiptani ko‘rish (QR)</a>`:`<button class="btn acc sm" type="button" data-ev="${esc(e.id)}">Ro‘yxatdan o‘tish</button>`}
@@ -333,16 +349,48 @@ async function loadFaq(){
 }
 loadFaq();
 
+function toast(m,t){const x=$("#toast");x.textContent=m;x.className=t||"";x.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>x.style.display="none",6000)}
+let pendingEv=null;
+const pfm=$("#pfForm");
+pfm.telegram.oninput=()=>{pfm.telegram.value=pfm.telegram.value.toLowerCase().replace(/[^a-z0-9_@]/g,"")};
+$("#closePf").onclick=()=>$("#pfModal").classList.remove("open");
+function fillPf(){const p=ME.profile||{};pfm.fullName.value=p.full_name||"";pfm.age.value=p.age||"";pfm.phone.value=p.phone||"";pfm.telegram.value=p.telegram_username||"";$("#pfErr").textContent=""}
+async function registerEvent(id,b){
+ const p=ME.profile||{};
+ if(b){b.disabled=true;b.textContent="Yuborilmoqda…"}
+ try{
+  const r=await Promise.race([sb.from("registrations").insert([{full_name:p.full_name,age:p.age,phone:p.phone,telegram_username:p.telegram_username,event_id:id,letter:""}]),new Promise((_,j)=>setTimeout(()=>j(new Error("Server javob bermadi. Internetni tekshiring.")),15000))]);
+  if(r.error)throw r.error;
+  ME.regs.add(id);drawEv();toast("Ro‘yxatdan o‘tdingiz! Chiptangiz kabinetda ko‘rinadi.","ok");
+  setTimeout(()=>{location.href="/kabinet#evs"},1300);
+ }catch(err){
+  console.error(err);if(b){b.disabled=false;b.textContent="Ro‘yxatdan o‘tish"}
+  toast("Xatolik: "+(err&&err.message?err.message:err),"err");
+ }
+}
 $("#evg").addEventListener("click",async ev=>{
- const b=ev.target.closest("[data-ev]");if(!b)return;
+ const b=ev.target.closest("[data-ev]");if(!b||b.disabled)return;
+ if(!ME.user)await ME.ready;
  if(!ME.user){openAuth(false,false);return}
  const p=ME.profile||{};
- if(!(p.full_name&&p.age&&p.phone&&p.telegram_username)){alert("Avval profilingizni to‘ldiring: yosh, telefon va Telegram username kerak.");location.href="/kabinet#prof";return}
- b.disabled=true;b.textContent="Yuborilmoqda…";
- const {error}=await sb.from("registrations").insert([{full_name:p.full_name,age:p.age,phone:p.phone,telegram_username:p.telegram_username,event_id:b.dataset.ev,letter:""}]);
- if(error){b.disabled=false;b.textContent="Ro‘yxatdan o‘tish";alert("Xatolik: "+error.message);return}
- ME.regs.add(b.dataset.ev);drawEv();location.href="/kabinet#evs";
+ if(!(p.full_name&&p.age&&p.phone&&p.telegram_username)){pendingEv=b.dataset.ev;fillPf();$("#pfModal").classList.add("open");return}
+ registerEvent(b.dataset.ev,b);
 });
+pfm.onsubmit=async e=>{
+ e.preventDefault();const out=$("#pfErr");out.textContent="";
+ const name=pfm.fullName.value.trim(),age=parseInt(pfm.age.value);
+ let d=pfm.phone.value.replace(/\D/g,"");if(d.length===9)d="998"+d;
+ const tg=pfm.telegram.value.trim().replace(/^@/,"").toLowerCase();
+ if(name.length<3){out.textContent="Ism va familiyangizni kiriting";return}
+ if(!(age>=10&&age<=99)){out.textContent="Yoshingizni to‘g‘ri kiriting";return}
+ if(!/^998\d{9}$/.test(d)){out.textContent="Telefon raqamni to‘g‘ri kiriting (masalan: 90 123 45 67)";return}
+ if(!/^[a-z][a-z0-9_]{4,31}$/.test(tg)){out.textContent="Telegram username noto‘g‘ri (lotin harflari, raqam va _, kamida 5 ta belgi)";return}
+ const prof={id:ME.user.id,full_name:name,age,phone:"+"+d,telegram_username:tg};
+ const {error}=await sb.from("profiles").upsert(prof);
+ if(error){out.textContent="Saqlanmadi: "+error.message;return}
+ ME.profile={...ME.profile,...prof};$("#pfModal").classList.remove("open");
+ if(pendingEv){const id=pendingEv;pendingEv=null;registerEvent(id,$('[data-ev="'+id+'"]'))}
+};
 
 /* Jamoa posterini kattalashtirib ko‘rish */
 $("#teamg").addEventListener("click",ev=>{const im=ev.target.closest("img[data-zoom]");if(im){$("#lbi").src=im.src;$("#lb").classList.add("open")}});
