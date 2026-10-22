@@ -403,11 +403,20 @@ async function loadEvents(){
   const b=document.createElement("div");b.style.cssText="display:flex;gap:8px;flex-wrap:wrap";
   const mk=(txt,f)=>{const k=document.createElement("button");k.type="button";k.className="tab-btn";k.textContent=txt;k.onclick=f;b.appendChild(k)};
   mk("Tahrirlash",()=>editEvent(x));
-  mk("O'chirish",async()=>{
-   if(!confirm("Tadbir o'chirilsinmi? Unga yozilganlar bo'lsa, o'chirish o'rniga tahrirlab 'Qoralama' qiling."))return;
-   const {error}=await sb.from("events").delete().eq("id",x.id);
-   if(error){alert("Xato: "+error.message+"\nO'chirish o'rniga tahrirlab 'Qoralama' qiling.");return}
+  mk(x.status==="published"?"Yashirish":"Ko'rsatish",async()=>{
+   const {error}=await sb.from("events").update({status:x.status==="published"?"draft":"published"}).eq("id",x.id);
+   if(error){alert("Xato: "+error.message);return}
    loadEvents();
+  });
+  mk("O'chirish",async()=>{
+   const c=await sb.from("registrations").select("id",{count:"exact",head:true}).eq("event_id",x.id);
+   const n=c.count||0;
+   const msg=n?"Bu tadbirga "+n+" ta odam ro'yxatdan o'tgan. O'chirsangiz, ularning yozilish yozuvlari va chiptalari ham o'chadi (berilgan sertifikatlar saqlanadi). Xavfsizrog'i: 'Yashirish' tugmasi. Baribir o'chirilsinmi?":"Tadbir o'chirilsinmi?";
+   if(!confirm(msg))return;
+   if(n){const d=await sb.from("registrations").delete().eq("event_id",x.id);if(d.error){alert("Yozilganlarni o'chirib bo'lmadi: "+d.error.message);return}}
+   const {error}=await sb.from("events").delete().eq("id",x.id);
+   if(error){alert("Xato: "+error.message);return}
+   loadEvents();loadUsers();loadAtt();
   });
   row.append(t,b);box.appendChild(row);
  });
