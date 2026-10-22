@@ -4,7 +4,7 @@
 <title>Registrator paneli — MINDOVA</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <style>
 *{box-sizing:border-box;margin:0}
 body{font-family:Inter,system-ui,sans-serif;background:#0F0E26;color:#ECECF8;line-height:1.5;padding:16px;max-width:560px;margin:0 auto}
@@ -62,14 +62,30 @@ async function handle(raw){
  setTimeout(()=>{},0);
 }
 $("#go").onclick=()=>{const v=$("#man").value;$("#man").value="";handle(v)};
+let bd=null;try{if("BarcodeDetector" in window)bd=new BarcodeDetector({formats:["qr_code"]})}catch(e){bd=null}
 $("#cam").onclick=async()=>{
- try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});}catch(e){$("#st").textContent="Kameraga ruxsat berilmadi: "+e.message;return}
- const v=$("#v");v.srcObject=stream;v.style.display="block";await v.play();$("#cam").hidden=true;$("#st").textContent="QR kodni kameraga ko‘rsating";
- const cv=document.createElement("canvas"),cx=cv.getContext("2d",{willReadFrequently:true});let last=0;
- (function tick(t){
-  if(v.readyState===4&&!busy&&t-last>120){last=t;const sc=Math.min(1,640/v.videoWidth);cv.width=v.videoWidth*sc;cv.height=v.videoHeight*sc;cx.drawImage(v,0,0,cv.width,cv.height);
-   const im=cx.getImageData(0,0,cv.width,cv.height),c=jsQR(im.data,im.width,im.height,{inversionAttempts:"dontInvert"});
-   if(c&&c.data){busy=true;handle(c.data).then(()=>{busy=true;setTimeout(()=>busy=false,2500)})}}
-  requestAnimationFrame(tick)})(0);
+ if(!bd&&typeof jsQR==="undefined"){$("#st").textContent="Skaner kutubxonasi yuklanmadi. Sahifani yangilang yoki kodni qo‘lda kiriting.";return}
+ try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1280},height:{ideal:720}}})}
+ catch(e){$("#st").textContent="Kameraga ruxsat berilmadi: "+e.message;return}
+ const v=$("#v");v.srcObject=stream;v.setAttribute("playsinline","");v.style.display="block";try{await v.play()}catch(e){}
+ $("#cam").hidden=true;$("#st").textContent="QR kodni kameraga ko‘rsating (ekran yorqin, kamera yaqinroq bo‘lsin)";
+ const cv=document.createElement("canvas"),cx=cv.getContext("2d",{willReadFrequently:true});
+ async function scan(){
+  try{
+   if(!busy&&v.readyState>=2&&v.videoWidth){
+    let data=null;
+    if(bd){try{const r=await bd.detect(v);if(r.length)data=r[0].rawValue}catch(e){bd=null}}
+    if(!bd&&!data&&typeof jsQR!=="undefined"){
+     const sc=Math.min(1,720/v.videoWidth);cv.width=Math.round(v.videoWidth*sc);cv.height=Math.round(v.videoHeight*sc);
+     cx.drawImage(v,0,0,cv.width,cv.height);
+     const im=cx.getImageData(0,0,cv.width,cv.height),c=jsQR(im.data,im.width,im.height,{inversionAttempts:"attemptBoth"});
+     if(c)data=c.data;
+    }
+    if(data){busy=true;await handle(data);busy=true;setTimeout(()=>{busy=false},2500)}
+   }
+  }catch(e){console.error(e);$("#st").textContent="Skaner xatosi: "+e.message}
+  setTimeout(scan,150);
+ }
+ scan();
 };
 </script></body></html>
