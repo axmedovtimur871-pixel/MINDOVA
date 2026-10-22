@@ -170,15 +170,21 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
 </div>
 
 <div id="events" class="section">
- <h2>Yangi tadbir qo'shish</h2>
+ <h2>Tadbirlar ro'yxati</h2>
+ <div id="evList"></div>
+ <h2 style="margin-top:28px" id="evH">Yangi tadbir qo'shish</h2>
  <form id="addEventForm">
   <input type="text" id="evTitle" placeholder="Tadbir nomi" required>
   <input type="date" id="evDate" required>
   <input type="time" id="evTime" required>
   <input type="text" id="evPlace" placeholder="O'tkazilish joyi" required>
   <textarea id="evDesc" placeholder="Tadbir haqida batafsil" rows="3"></textarea>
+  <input type="text" id="evFormat" placeholder="Format (masalan: Offline, Online)">
+  <select id="evOpen"><option value="1">Ro'yxatdan o'tish ochiq</option><option value="0">Ro'yxatdan o'tish yopiq</option></select>
+  <select id="evStatus"><option value="published">Saytda ko'rinadi</option><option value="draft">Qoralama (saytda yashirin)</option></select>
   <label>Tadbir rasmi<input type="file" id="evImg" accept="image/*"></label>
-  <button type="submit" class="submit-btn">Tadbirni saqlash</button>
+  <button type="submit" class="submit-btn" id="evBtn">Tadbirni saqlash</button>
+  <button type="button" class="submit-btn" id="evCancel" style="background:#25234A" hidden>Bekor qilish</button>
   <div class="msg" id="eMsg"></div>
  </form>
 </div>
@@ -381,25 +387,69 @@ async function loadUsers(){
  });
 }
 
+let EVS=[],evEdit=null;
+const p2=n=>String(n).padStart(2,"0");
+async function loadEvents(){
+ const {data,error}=await sb.from("events").select("*").order("starts_at",{ascending:false});
+ const box=$("evList");box.innerHTML="";
+ if(error){box.textContent="Yuklab bo'lmadi: "+error.message;return}
+ EVS=data||[];
+ if(!EVS.length){box.textContent="Hozircha tadbir yo'q.";return}
+ EVS.forEach(x=>{
+  const row=document.createElement("div");
+  row.style.cssText="display:flex;gap:10px;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.1);padding:8px 0;flex-wrap:wrap";
+  const t=document.createElement("span");
+  t.textContent=x.title+" · "+(x.starts_at?new Date(x.starts_at).toLocaleDateString():"")+" · "+(x.status==="published"?"Saytda":"Yashirin")+(x.registration_open===false?" · Ro'yxat yopiq":"");
+  const b=document.createElement("div");b.style.cssText="display:flex;gap:8px;flex-wrap:wrap";
+  const mk=(txt,f)=>{const k=document.createElement("button");k.type="button";k.className="tab-btn";k.textContent=txt;k.onclick=f;b.appendChild(k)};
+  mk("Tahrirlash",()=>editEvent(x));
+  mk("O'chirish",async()=>{
+   if(!confirm("Tadbir o'chirilsinmi? Unga yozilganlar bo'lsa, o'chirish o'rniga tahrirlab 'Qoralama' qiling."))return;
+   const {error}=await sb.from("events").delete().eq("id",x.id);
+   if(error){alert("Xato: "+error.message+"\nO'chirish o'rniga tahrirlab 'Qoralama' qiling.");return}
+   loadEvents();
+  });
+  row.append(t,b);box.appendChild(row);
+ });
+}
+function editEvent(x){
+ evEdit=x.id;
+ $("evTitle").value=x.title||"";
+ const d=x.starts_at?new Date(x.starts_at):null;
+ $("evDate").value=d?d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate()):"";
+ $("evTime").value=d?p2(d.getHours())+":"+p2(d.getMinutes()):"";
+ $("evPlace").value=x.location||"";$("evFormat").value=x.format||"";$("evDesc").value=x.description||"";
+ $("evStatus").value=x.status==="published"?"published":"draft";$("evOpen").value=x.registration_open===false?"0":"1";
+ $("evImg").value="";$("evH").textContent="Tadbirni tahrirlash";$("evBtn").textContent="O'zgarishlarni saqlash";$("evCancel").hidden=false;
+ $("eMsg").textContent=x.image_url?"Rasm joyida qoladi. Yangi rasm tanlasangiz, almashtiriladi.":"";
+ $("evH").scrollIntoView({behavior:"smooth"});
+}
+function resetEvForm(){evEdit=null;$("addEventForm").reset();$("evH").textContent="Yangi tadbir qo'shish";$("evBtn").textContent="Tadbirni saqlash";$("evCancel").hidden=true}
+$("evCancel").onclick=()=>{resetEvForm();$("eMsg").textContent=""};
 $("addEventForm").onsubmit=async e=>{
  e.preventDefault();
  $("eMsg").textContent="Saqlanmoqda…";
- let image_url=null;
+ let image_url;
  try{const fl=$("evImg").files[0];if(fl)image_url=await upImg(fl,"events")}
  catch(err){$("eMsg").textContent="Rasm yuklanmadi: "+err.message;return}
  const row={
-  image_url,
   title:$("evTitle").value.trim(),
-  slug:($("evTitle").value.trim().toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")||"event")+"-"+Date.now().toString(36),
   description:$("evDesc").value.trim(),
   starts_at:new Date($("evDate").value+"T"+$("evTime").value).toISOString(),
   location:$("evPlace").value.trim(),
-  status:"published",
-  registration_open:true
+  format:$("evFormat").value.trim()||null,
+  status:$("evStatus").value,
+  registration_open:$("evOpen").value==="1"
  };
- const {error}=await sb.from("events").insert([row]);
- $("eMsg").textContent=error?"Xato: "+error.message:"Tadbir saqlandi ✓";
- if(!error)e.target.reset();
+ if(image_url)row.image_url=image_url;
+ let r;
+ if(evEdit)r=await sb.from("events").update(row).eq("id",evEdit);
+ else{
+  row.slug=(row.title.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")||"event")+"-"+Date.now().toString(36);
+  r=await sb.from("events").insert([row]);
+ }
+ $("eMsg").textContent=r.error?"Xato: "+r.error.message:"Tadbir saqlandi ✓";
+ if(!r.error){resetEvForm();loadEvents();loadAtt()}
 };
 
 $("addTeamForm").onsubmit=async e=>{
@@ -628,6 +678,7 @@ $("addOppForm").onsubmit=async e=>{
  if(!ad.data){location.href="/kabinet";return}
  loadUsers();
  loadProfiles();
+ loadEvents();
  loadOpps();
  loadJobs();
  loadCerts();
