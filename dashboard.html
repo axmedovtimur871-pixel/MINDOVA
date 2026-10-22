@@ -172,7 +172,7 @@ function ticket(id){
  x.textAlign="right";x.fillStyle="#a5a8ff";x.font=`700 20px ${F}`;x.fillText("TADBIR CHIPTASI",W-36,74);
  x.textAlign="center";x.fillStyle="#0F0E26";let s=40;const t=e.title||"Tadbir";do{x.font=`800 ${s}px ${F}`;s-=2}while(x.measureText(t).width>W-80&&s>18);x.fillText(t,W/2,190);
  x.fillStyle="#687386";x.font=`500 24px ${F}`;x.fillText((fd(e.starts_at)||"")+(e.location?" · "+e.location:""),W/2,232);
- const q=qrcode(0,"M");q.addData(location.origin+"/scan?t="+r.ticket_code);q.make();const n=q.getModuleCount(),S=440,cs=S/n,ox=(W-S)/2,oy=270;
+ const q=qrcode(0,"M");q.addData(location.origin+"/scan?t="+r.ticket_code);q.make();const n=q.getModuleCount(),cs=Math.floor(440/n),S=cs*n,ox=Math.round((W-S)/2),oy=270;
  x.fillStyle="#0b0b24";for(let a=0;a<n;a++)for(let b=0;b<n;b++)if(q.isDark(a,b))x.fillRect(ox+b*cs,oy+a*cs,Math.ceil(cs),Math.ceil(cs));
  x.fillStyle="#0F0E26";x.font=`800 34px ${F}`;x.fillText(r.ticket_code,W/2,760);
  x.font=`600 26px ${F}`;x.fillText(r.full_name||nm(),W/2,805);
