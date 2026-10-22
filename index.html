@@ -126,6 +126,8 @@ section.s{padding:60px 0}
 .js .rv.in{opacity:1;transform:none}
 @media(max-width:860px){.about{grid-template-columns:1fr;gap:22px}}
 @media(prefers-reduced-motion:reduce){.js .rv{opacity:1;transform:none;transition:none}}
+.fam{margin:48px 0 0;display:flex;align-items:center;gap:16px;font-size:clamp(1.3rem,4vw,1.8rem);font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.fam::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(99,102,241,.6),transparent)}
 .empty{background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.18);border-radius:16px;padding:28px;text-align:center;color:var(--mut);grid-column:1/-1}
 .form{max-width:560px;margin:24px auto 0;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:20px;padding:28px}
 label{display:block;font-weight:600;font-size:.88rem;margin-bottom:14px}
@@ -185,6 +187,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
   </aside>
  </div>
  <p class="ab-tag rv">MINDOVA — <em id="abTag">Fikrla. Muloqot qil. Yarat.</em></p>
+ <h3 class="fam rv" id="famH" hidden>MINDOVA OILASI</h3>
  <div class="marquee" id="teamg"></div></div></section>
 
 <section class="s" id="faq" style="padding-top:0"><div class="wrap"><h2>Ko‘p so‘raladigan savollar</h2><div class="faq" id="faqg"></div></div></section>
@@ -357,7 +360,7 @@ const tmCard=m=>{const z=safe(m.poster_url);if(z)return `<article class="card pc
 
 function renderTeam(list){
  const box=$("#teamg");
- if(!list.length){box.innerHTML="";return}
+ $("#famH").hidden=!list.length;if(!list.length){box.innerHTML="";return}
  const k=Math.max(1,Math.ceil(6/list.length));
  const half=Array.from({length:k},()=>list.map(tmCard).join("")).join("");
  box.innerHTML=`<div class="track" style="--d:${Math.max(30,k*list.length*7)}s">${half}<div class="dup" aria-hidden="true">${half}</div></div>`;
