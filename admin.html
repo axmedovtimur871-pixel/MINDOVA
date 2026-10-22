@@ -37,6 +37,7 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
  <button class="tab-btn" data-tab="staff">A'zolar paneli</button>
  <button class="tab-btn" data-tab="att">Davomat</button>
  <button class="tab-btn" data-tab="about">Biz haqimizda</button>
+ <button class="tab-btn" data-tab="social">Ijtimoiy tarmoqlar</button>
  <a class="tab-btn" href="/scan" style="text-decoration:none;display:inline-block">Skaner paneli</a>
  <button class="tab-btn" data-tab="faqs">FAQ</button>
 </div>
@@ -151,6 +152,20 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
   <button type="submit" class="submit-btn">Saqlash</button>
   <button type="button" class="submit-btn" id="abReset" style="background:#25234A">Asl holatiga qaytarish</button>
   <div class="msg" id="abMsg"></div>
+ </form>
+</div>
+
+<div id="social" class="section">
+ <h2>Ijtimoiy tarmoqlar</h2>
+ <div class="msg">Bu havolalar saytning pastidagi "Ijtimoiy tarmoqlar" ustunida ko'rinadi.</div>
+ <div id="soList"></div>
+ <h2 style="margin-top:28px" id="soH">Yangi havola qo'shish</h2>
+ <form id="socialForm">
+  <input type="text" id="soName" list="soNames" placeholder="Nomi (masalan: Instagram)" required>
+  <datalist id="soNames"><option value="Telegram"><option value="Instagram"><option value="Facebook"><option value="YouTube"><option value="TikTok"><option value="LinkedIn"><option value="X (Twitter)"></datalist>
+  <input type="text" id="soUrl" placeholder="Havola: https://..." required>
+  <button type="submit" class="submit-btn" id="soBtn">Qo'shish</button>
+  <div class="msg" id="soMsg"></div>
  </form>
 </div>
 
@@ -297,6 +312,35 @@ $("abReset").onclick=async()=>{
  const {error}=await sb.from("site_about").delete().eq("id",1);
  $("abMsg").textContent=error?"Xato: "+error.message:"Asl holatiga qaytarildi ✓";
  if(!error)loadAbout();
+};
+
+let SOC=[],soEdit=null;
+async function loadSocial(){
+ const {data,error}=await sb.from("social_links").select("*").order("position",{ascending:true}).order("created_at",{ascending:true});
+ const box=$("soList");box.innerHTML="";
+ if(error){box.textContent="Yuklab bo'lmadi: "+error.message;return}
+ SOC=data||[];
+ if(!SOC.length){box.textContent="Hozircha havola yo'q. Saytda faqat Telegram ko'rinadi.";return}
+ SOC.forEach((x,n)=>{
+  const row=document.createElement("div");
+  row.style.cssText="display:flex;gap:10px;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.1);padding:8px 0;flex-wrap:wrap";
+  const t=document.createElement("span");t.textContent=x.name+" — "+x.url;t.style.wordBreak="break-all";
+  const b=document.createElement("div");b.style.cssText="display:flex;gap:8px;flex-wrap:wrap";
+  const mk=(txt,f)=>{const k=document.createElement("button");k.type="button";k.className="tab-btn";k.textContent=txt;k.onclick=f;b.appendChild(k)};
+  if(n>0)mk("Yuqoriga",async()=>{const p=SOC[n-1];const r1=await sb.from("social_links").update({position:p.position}).eq("id",x.id);const r2=await sb.from("social_links").update({position:x.position}).eq("id",p.id);if(r1.error||r2.error){alert((r1.error||r2.error).message);return}loadSocial()});
+  mk("Tahrirlash",()=>{soEdit=x.id;$("soName").value=x.name;$("soUrl").value=x.url;$("soBtn").textContent="Saqlash";$("soH").textContent="Havolani tahrirlash";window.scrollTo(0,document.body.scrollHeight)});
+  mk("O'chirish",async()=>{if(!confirm("O'chirilsinmi?"))return;const {error}=await sb.from("social_links").delete().eq("id",x.id);if(error){alert(error.message);return}loadSocial()});
+  row.append(t,b);box.appendChild(row);
+ });
+}
+$("socialForm").onsubmit=async e=>{
+ e.preventDefault();
+ let u=$("soUrl").value.trim();if(!/^https?:\/\//i.test(u))u="https://"+u;
+ try{new URL(u)}catch(err){$("soMsg").textContent="Havola noto'g'ri.";return}
+ const name=$("soName").value.trim();
+ const r=soEdit?await sb.from("social_links").update({name,url:u}).eq("id",soEdit):await sb.from("social_links").insert([{name,url:u,position:(SOC.length?Math.max(...SOC.map(x=>x.position||0)):0)+10}]);
+ $("soMsg").textContent=r.error?"Xato: "+r.error.message:"Saqlandi ✓";
+ if(!r.error){soEdit=null;$("soBtn").textContent="Qo'shish";$("soH").textContent="Yangi havola qo'shish";e.target.reset();loadSocial()}
 };
 
 let PRF=[];
@@ -593,6 +637,7 @@ $("addOppForm").onsubmit=async e=>{
  loadAtt();
  loadScan();
  loadAbout();
+ loadSocial();
 })();
 </script>
 </body>
