@@ -283,8 +283,7 @@ textarea{min-height:110px;resize:vertical}
   </div>
   <div>
    <h4>Ijtimoiy tarmoqlar</h4>
-   <a class="l" id="tg2" target="_blank" rel="noopener">Telegram</a>
-   <a class="l" id="igf" target="_blank" rel="noopener" hidden>Instagram</a>
+   <div id="socials"><a class="l" id="tg2" target="_blank" rel="noopener">Telegram</a></div>
   </div>
  </div>
  <div class="ft-bot">
@@ -301,7 +300,7 @@ textarea{min-height:110px;resize:vertical}
 })();
 </script>
 <script>
-const CFG={URL:"https://zrebikqvjbvuwbzcunkw.supabase.co",KEY:"sb_publishable_DszdaPjNPM3i0UbGX3lLjQ_DTjdfLcW",TG:"https://t.me/Mindova_uz",ADMIN:"https://t.me/Mindova_admin",GATE:true,IG:""};
+const CFG={URL:"https://zrebikqvjbvuwbzcunkw.supabase.co",KEY:"sb_publishable_DszdaPjNPM3i0UbGX3lLjQ_DTjdfLcW",TG:"https://t.me/Mindova_uz",ADMIN:"https://t.me/Mindova_admin",GATE:true};
 const $=q=>document.querySelector(q);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const safe=u=>{try{const x=new URL(u);return /^https?:$/.test(x.protocol)?x.href:""}catch{return""}};
@@ -314,7 +313,6 @@ const empty=t=>`<div class="empty">${t}</div>`;
 $("#yr").textContent=new Date().getFullYear();
 addEventListener("scroll",()=>$("#nav").classList.toggle("scrolled",scrollY>12),{passive:true});
 $("#tg1").href=$("#tg2").href=CFG.TG;
-if(CFG.IG){$("#igf").href=CFG.IG;$("#igf").hidden=false}
 if(!CFG.ADMIN.includes("ADMIN_USERNAME")){$("#adm").href=CFG.ADMIN;$("#adm").hidden=false}
 $("#burger").onclick=()=>$("#nav").classList.toggle("open");
 document.querySelectorAll(".links a,.nr a").forEach(a=>a.addEventListener("click",()=>$("#nav").classList.remove("open")));
@@ -431,6 +429,16 @@ async function loadAbout(){
  if(data.tagline)$("#abTag").textContent=data.tagline;
 }
 loadAbout();
+async function loadSocials(){
+ if(!sb)return;
+ const {data,error}=await sb.from("social_links").select("name,url").order("position",{ascending:true}).order("created_at",{ascending:true});
+ if(error||!data||!data.length)return;
+ const box=$("#socials");let n=0;box.innerHTML="";
+ data.forEach(x=>{const u=safe(x.url);if(!u)return;const a=document.createElement("a");a.className="l";a.textContent=x.name;a.href=u;a.target="_blank";a.rel="noopener";box.appendChild(a);n++});
+ if(!n){box.innerHTML='<a class="l" id="tg2" target="_blank" rel="noopener" href="'+CFG.TG+'">Telegram</a>';return}
+ const t=data.find(x=>/telegram/i.test(x.name)&&safe(x.url));if(t)$("#tg1").href=safe(t.url);
+}
+loadSocials();
 
 function toast(m,t){const x=$("#toast");x.textContent=m;x.className=t||"";x.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>x.style.display="none",6000)}
 let pendingEv=null;
