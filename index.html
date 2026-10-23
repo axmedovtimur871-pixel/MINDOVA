@@ -141,6 +141,9 @@ footer{border-top:1px solid var(--line);background:var(--navy);color:var(--ink);
 .ft-founder{display:flex;align-items:center;gap:10px}.ft-founder img{height:22px;width:auto}.ft-founder b{color:var(--ink);letter-spacing:.08em;font-size:.82rem}
 @media(max-width:860px){.ft-grid{grid-template-columns:1fr 1fr}.ft-brand{grid-column:1/-1}}
 .btn.out{background:transparent;border:1px solid rgba(255,255,255,.25)}
+.evimg.opimg{height:auto;aspect-ratio:16/9;object-fit:cover;object-position:top;cursor:zoom-in}
+.opmeta{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.dl{font-size:.8rem;color:var(--mut)}
 .empty{background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.18);border-radius:16px;padding:28px;text-align:center;color:var(--mut);grid-column:1/-1}
 .form{max-width:560px;margin:24px auto 0;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:20px;padding:28px}
 label{display:block;font-weight:600;font-size:.88rem;margin-bottom:14px}
@@ -249,6 +252,10 @@ textarea{min-height:110px;resize:vertical}
  <button class="modal-close" id="closeEv" type="button" aria-label="Yopish">✕</button>
  <div id="evmBody"></div>
 </div></div>
+<div class="modal-backdrop" id="opModal"><div class="modal" id="opm" style="max-width:560px;max-height:92vh;overflow-y:auto">
+ <button class="modal-close" id="closeOp" type="button" aria-label="Yopish">✕</button>
+ <div id="opmBody"></div>
+</div></div>
 <div id="toast" role="status"></div>
 <div class="modal-backdrop" id="pfModal"><div class="modal">
  <button class="modal-close" id="closePf" type="button" aria-label="Yopish">✕</button>
@@ -328,7 +335,7 @@ const sb=window.supabase?supabase.createClient(CFG.URL,CFG.KEY):null;
 
 /* Kirish / ro‘yxatdan o‘tish paneli. Birinchi kirishda faqat shu panel ochiladi (CFG.GATE=false bo‘lsa, majburiy emas) */
 const ME={user:null,profile:null,regs:new Set(),ready:Promise.resolve()};
-let signup=true,EVD=null;
+let signup=true,EVD=null,OPD=[];
 const lf=$("#loginForm");
 function setMode(s){signup=s;$("#authTitle").textContent=s?"Ro‘yxatdan o‘tish":"Kirish";$("#authBtn").textContent=s?"Ro‘yxatdan o‘tish":"Kirish";$("#suFields").hidden=!s;$("#authSwap").textContent=s?"Hisobingiz bormi? Kiring":"Hisobingiz yo‘qmi? Ro‘yxatdan o‘ting";$("#fpWrap").hidden=s;$("#loginErr").style.color="";$("#loginErr").textContent=""}
 function openAuth(gate,s){setMode(s!==false);$("#closeLogin").hidden=!!gate;$("#loginModal").classList.add("open");if(gate)document.body.style.overflow="hidden"}
@@ -399,7 +406,14 @@ function openEv(id){
 function canReg(e){const n=new Date();return !!e.registration_open&&(!e.starts_at||new Date(e.starts_at)>=n)&&(!e.registration_deadline||new Date(e.registration_deadline)>=n)}
 const evCard=e=>`<article class="card">${safe(e.image_url)?`<img class="evimg" src="${esc(safe(e.image_url))}" alt="${esc(e.title)}" loading="lazy">`:""}<h3>${esc(e.title)}</h3><p>${esc((e.description||"").slice(0,140))}${(e.description||"").length>140?"…":""}</p>
 <div class="meta">${e.starts_at?`<span>📅 ${fd(e.starts_at)}, ${ft(e.starts_at)}</span>`:""}${e.location?`<span>📍 ${esc(e.location)}</span>`:""}${e.format?`<span>🏷 ${esc(e.format)}</span>`:""}</div><div class="acts"><button class="btn out sm" type="button" data-more="${esc(e.id)}">Batafsil</button>${regBtn(e)}</div></article>`;
-const opCard=o=>{const u=safe(o.source_url);return `<article class="card">${safe(o.image_url)?`<img class="evimg" src="${esc(safe(o.image_url))}" alt="${esc(o.title)}" loading="lazy">`:""}<span class="pill">${esc(o.category)}</span><h3>${esc(o.title)}</h3><p>${esc(o.description)}</p>${o.eligibility?`<p><b>Talablar:</b> ${esc(o.eligibility)}</p>`:""}${o.deadline?`<p><b>Muddat:</b> ${fd(o.deadline)}</p>`:""}<div class="acts">${u?`<a class="btn acc sm" href="${esc(u)}" target="_blank" rel="noopener">Rasmiy manba ↗</a>`:""}${/^ish$/i.test(o.category||"")?`<button class="btn acc sm" type="button" data-job="${esc(o.id)}" data-t="${esc(o.title)}">Ariza topshirish</button>`:""}</div></article>`};
+const isJob=o=>/^ish$/i.test(o.category||"");
+const short=(t,n)=>{t=(t||"").replace(/\s+/g," ").trim();return t.length>n?t.slice(0,n).trim()+"…":t};
+const opCard=o=>{const z=safe(o.image_url);return `<article class="card">${z?`<img class="evimg opimg" src="${esc(z)}" alt="${esc(o.title)}" loading="lazy" data-opmore="${esc(o.id)}">`:""}<div class="opmeta"><span class="pill">${esc(o.category)}</span>${o.deadline?`<span class="dl">Muddat: ${fd(o.deadline)}</span>`:""}</div><h3>${esc(o.title)}</h3><p>${esc(short(o.description,150))}</p><div class="acts"><button class="btn out sm" type="button" data-opmore="${esc(o.id)}">Batafsil</button>${isJob(o)?`<button class="btn acc sm" type="button" data-job="${esc(o.id)}" data-t="${esc(o.title)}">Ariza topshirish</button>`:""}</div></article>`};
+function openOp(id){
+ const o=OPD.find(x=>x.id===id);if(!o)return;const z=safe(o.image_url),u=safe(o.source_url);
+ $("#opmBody").innerHTML=`${z?`<img class="evimg" src="${esc(z)}" alt="">`:""}<div class="opmeta" style="margin-top:14px"><span class="pill">${esc(o.category)}</span>${o.deadline?`<span class="dl">Muddat: ${fd(o.deadline)}</span>`:""}</div><h3 style="margin:10px 0">${esc(o.title)}</h3>${o.eligibility?`<p style="margin-bottom:10px"><b>Talablar:</b> ${esc(o.eligibility)}</p>`:""}<p style="white-space:pre-line">${esc(o.description||"")}</p><div class="acts" style="margin-top:16px">${isJob(o)?`<button class="btn acc sm" type="button" data-job="${esc(o.id)}" data-t="${esc(o.title)}">Ariza topshirish</button>`:""}${u?`<a class="btn out sm" href="${esc(u)}" target="_blank" rel="noopener">Rasmiy manba ↗</a>`:""}</div>`;
+ $("#opModal").classList.add("open");
+}
 const tmCard=m=>{const z=safe(m.poster_url);if(z)return `<article class="card pcard"><img src="${esc(z)}" alt="${esc(m.name)} — ${esc(m.role)}" data-zoom loading="lazy"></article>`;const p=safe(m.photo);return `<article class="card"><div class="photo"${p?` style="background-image:url('${esc(p)}')"`:""}></div><h3>${esc(m.name)}</h3><b style="color:var(--acc);font-size:.85rem">${esc(m.role)}</b><p>${esc(m.bio)}</p></article>`};
 
 function renderTeam(list){
@@ -418,6 +432,7 @@ async function load(){
   sb.from("opportunities").select("*").eq("status","published").order("created_at",{ascending:false}),
   sb.from("team").select("*").order("created_at",{ascending:true})]);
  if(ev.error)$("#evg").innerHTML=empty("Tadbirlarni yuklab bo‘lmadi.");else{EVD=ev.data;drawEv()}
+ OPD=op.error?[]:(op.data||[]);
  $("#opg").innerHTML=op.error?empty("Imkoniyatlarni yuklab bo‘lmadi."):op.data.length?op.data.map(opCard).join(""):empty("Hozircha e’lon qilingan imkoniyatlar yo‘q.");
  renderTeam(tm.error?[]:(tm.data||[]));
 }
@@ -515,7 +530,7 @@ $("#lb").onclick=()=>$("#lb").classList.remove("open");
 let jobOpp=null;
 const jf=$("#jobForm");
 const closeJob=()=>$("#jobModal").classList.remove("open");
-$("#opg").addEventListener("click",ev=>{
+function onJobClick(ev){
  const b=ev.target.closest("[data-job]");
  if(!b)return;
  jobOpp={id:b.dataset.job,title:b.dataset.t};
@@ -524,8 +539,14 @@ $("#opg").addEventListener("click",ev=>{
  const pf=ME.profile;if(pf){jf.fullName.value=pf.full_name||"";jf.age.value=pf.age||"";jf.phone.value=pf.phone||"";jf.telegram.value=pf.telegram_username||""}
  $("#jobSbm").disabled=false;$("#jobSbm").textContent="Ariza yuborish";
  document.querySelectorAll("[data-j]").forEach(x=>x.textContent="");$("#jobErr").textContent="";
+ $("#opModal").classList.remove("open");
  $("#jobModal").classList.add("open");
-});
+}
+$("#opg").addEventListener("click",onJobClick);
+$("#opm").addEventListener("click",onJobClick);
+$("#opg").addEventListener("click",ev=>{const m=ev.target.closest("[data-opmore]");if(m)openOp(m.dataset.opmore)});
+$("#closeOp").onclick=()=>$("#opModal").classList.remove("open");
+$("#opModal").addEventListener("click",ev=>{if(ev.target.id==="opModal")$("#opModal").classList.remove("open")});
 $("#closeJob").onclick=closeJob;
 $("#jobDone").onclick=closeJob;
 jf.telegram.oninput=()=>{jf.telegram.value=jf.telegram.value.toLowerCase().replace(/[^a-z0-9_@]/g,"")};
