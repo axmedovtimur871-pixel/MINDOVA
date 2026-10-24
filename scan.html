@@ -48,18 +48,20 @@ const tm=d=>{const x=new Date(d);return isNaN(x)?"":String(x.getHours()).padStar
  (ev.data||[]).forEach(x=>{const o=document.createElement("option");o.value=x.id;o.textContent=x.title;$("#ev").appendChild(o)});
 })();
 function show(cls,html){$("#res").innerHTML=`<div class="r ${cls}">${html}</div>`}
-async function handle(raw){
+let lastCode="";
+async function handle(raw,cash){
  let code=String(raw||"").trim();try{const u=new URL(code);code=u.searchParams.get("t")||code}catch(e){}
- if(!code)return;busy=true;$("#st").textContent="Tekshirilmoqda…";
- const {data,error}=await sb.rpc("checkin_ticket",{p_code:code,p_event_id:$("#ev").value||null});
+ if(!code)return;lastCode=code;busy=true;$("#st").textContent="Tekshirilmoqda…";
+ const {data,error}=await sb.rpc("checkin_ticket",{p_code:code,p_event_id:$("#ev").value||null,p_cash:!!cash});
  busy=false;$("#st").textContent="";
  if(error){show("no",`<h2>❌ Xato</h2><p>${esc(error.message)}</p>`);return}
  const r=data&&data[0];if(!r){show("no","<h2>❌ Chipta topilmadi</h2>");return}
- const info=`<b class="n">${esc(r.full_name||"—")}</b><p><span>Tadbir:</span> ${esc(r.event_title||"—")}</p><p><span>Telefon:</span> ${r.phone?`<a href="tel:${esc(r.phone)}">${esc(r.phone)}</a>`:"—"}</p><p><span>Telegram:</span> ${r.telegram_username?"@"+esc(r.telegram_username):"—"}</p><p><span>Yosh:</span> ${esc(r.age??"—")}</p>`;
+ const pay=r.payment_status==="free"?"Bepul":r.payment_status==="paid"?"To‘langan":"To‘lanmagan";
+ const info=`<b class="n">${esc(r.full_name||"—")}</b><p><span>Tadbir:</span> ${esc(r.event_title||"—")}</p><p><span>Telefon:</span> ${r.phone?`<a href="tel:${esc(r.phone)}">${esc(r.phone)}</a>`:"—"}</p><p><span>Telegram:</span> ${r.telegram_username?"@"+esc(r.telegram_username):"—"}</p><p><span>Yosh:</span> ${esc(r.age??"—")}</p><p><span>To‘lov:</span> ${pay}${r.amount?" ("+esc(r.amount)+" so‘m)":""}</p>`;
  if(r.status==="ok"){show("ok",`<h2>✅ Keldi: qabul qilindi</h2>${info}${r.cert_issued?'<p>🎓 Sertifikat avtomatik berildi</p>':""}`);count++;$("#cnt").textContent=count;$("#log").insertAdjacentHTML("afterbegin",`<div class="row"><span>${esc(r.full_name)}</span><span class="m">${tm(r.checked_in_at)}</span></div>`);navigator.vibrate&&navigator.vibrate(120)}
+ else if(r.status==="unpaid"){show("wn",`<h2>⚠️ To‘lov tasdiqlanmagan</h2>${info}<button class="bt" id="cashBtn" style="margin-top:10px">Naqd to‘landi, kirgizish</button>`);$("#cashBtn").onclick=()=>handle(lastCode,true)}
  else if(r.status==="already")show("wn",`<h2>⚠️ Bu chipta allaqachon ishlatilgan</h2>${info}<p><span>Kirgan vaqti:</span> ${tm(r.checked_in_at)}</p>`);
  else show("no",`<h2>❌ Boshqa tadbir chiptasi</h2>${info}`);
- setTimeout(()=>{},0);
 }
 $("#go").onclick=()=>{const v=$("#man").value;$("#man").value="";handle(v)};
 let bd=null;try{if("BarcodeDetector" in window)bd=new BarcodeDetector({formats:["qr_code"]})}catch(e){bd=null}
