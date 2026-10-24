@@ -144,6 +144,16 @@ footer{border-top:1px solid var(--line);background:var(--navy);color:var(--ink);
 .evimg.opimg{height:auto;aspect-ratio:16/9;object-fit:cover;object-position:top;cursor:zoom-in}
 .opmeta{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .dl{font-size:.8rem;color:var(--mut)}
+.eb{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:#a5a8ff;font-weight:700}
+.pay-sum{border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:12px}
+.pay-sum>div{display:flex;justify-content:space-between;padding:4px 0;color:var(--mut)}.pay-sum b{color:var(--ink)}
+.pay-sum .pay-total{border-top:1px dashed var(--line);margin-top:6px;padding-top:8px}.pay-total b{font-size:1.25rem;color:#fff}
+.pay-promo{display:flex;gap:8px;align-items:center}.pay-promo input{margin:0}.pay-promo .btn{flex:none}
+.pay-card{background:linear-gradient(135deg,#1c1b52,#0F0E26);border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:16px;margin:12px 0}
+.pay-num{font-size:1.4rem;font-weight:800;letter-spacing:.08em;margin:8px 0;word-break:break-all}
+.pay-meta{display:flex;justify-content:space-between;gap:8px;color:var(--mut);font-size:.88rem;margin-bottom:12px;flex-wrap:wrap}
+.pay-steps{margin:0 0 12px 18px;color:var(--mut);font-size:.9rem}.pay-steps li{margin:3px 0}
+#payPrev{width:100%;max-height:220px;object-fit:contain;border-radius:10px;margin-top:8px;background:#0F0E26}
 .empty{background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.18);border-radius:16px;padding:28px;text-align:center;color:var(--mut);grid-column:1/-1}
 .form{max-width:560px;margin:24px auto 0;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:20px;padding:28px}
 label{display:block;font-weight:600;font-size:.88rem;margin-bottom:14px}
@@ -256,6 +266,31 @@ textarea{min-height:110px;resize:vertical}
  <button class="modal-close" id="closeOp" type="button" aria-label="Yopish">✕</button>
  <div id="opmBody"></div>
 </div></div>
+<div class="modal-backdrop" id="payModal"><div class="modal" style="max-width:480px;max-height:94vh;overflow-y:auto">
+ <button class="modal-close" id="closePay" type="button" aria-label="Yopish">✕</button>
+ <span class="eb">To‘lov</span>
+ <h3 id="payTitle" style="margin:6px 0 14px"></h3>
+ <div class="pay-sum">
+  <div><span>Tadbir narxi</span><b id="payBase"></b></div>
+  <div id="payDiscRow" hidden><span>Chegirma</span><b id="payDisc"></b></div>
+  <div class="pay-total"><span>To‘lash kerak</span><b id="payFinal"></b></div>
+ </div>
+ <div class="pay-promo"><input id="payPromo" placeholder="Promokod (ixtiyoriy)" autocapitalize="characters" autocomplete="off"><button type="button" class="btn out sm" id="payApply">Qo‘llash</button></div>
+ <div class="err" id="payPromoMsg" style="text-align:left"></div>
+ <div id="payCardBox">
+  <div class="pay-card">
+   <span class="eb">Karta raqami</span>
+   <div class="pay-num" id="payNum"></div>
+   <div class="pay-meta"><span id="payHolder"></span><span id="payBank"></span></div>
+   <button type="button" class="btn out sm" id="payCopy">Raqamni nusxalash</button>
+  </div>
+  <ol class="pay-steps"><li>Summani yuqoridagi kartaga o‘tkazing.</li><li>To‘lov chekining skrinshotini yuklang.</li><li>Admin tasdiqlagach chiptangiz (QR) ochiladi.</li></ol>
+  <label>Chek (skrinshot)<input type="file" id="payFile" accept="image/*"></label>
+  <img id="payPrev" alt="" hidden>
+ </div>
+ <button class="btn acc" id="paySubmit" style="width:100%;margin-top:14px" type="button">Chekni yuborish</button>
+ <div class="err" id="payErr" style="text-align:center;margin-top:10px"></div>
+</div></div>
 <div id="toast" role="status"></div>
 <div class="modal-backdrop" id="pfModal"><div class="modal">
  <button class="modal-close" id="closePf" type="button" aria-label="Yopish">✕</button>
@@ -319,6 +354,7 @@ const safe=u=>{try{const x=new URL(u);return /^https?:$/.test(x.protocol)?x.href
 const ML=["yanvar","fevral","mart","aprel","may","iyun","iyul","avgust","sentabr","oktabr","noyabr","dekabr"];
 const fd=d=>{if(!d)return"";const x=new Date(d);return isNaN(x)?"":`${x.getDate()}-${ML[x.getMonth()]} ${x.getFullYear()}`};
 const ft=d=>{const x=new Date(d);return `${String(x.getHours()).padStart(2,"0")}:${String(x.getMinutes()).padStart(2,"0")}`};
+const money=n=>String(n||0).replace(/\B(?=(\d{3})+(?!\d))/g," ")+" so‘m";
 const empty=t=>`<div class="empty">${t}</div>`;
 
 /* Interfeys: bu qism Supabase yuklanmasa ham ishlaydi */
@@ -400,12 +436,12 @@ function drawEv(){if(EVD===null)return;$("#evg").innerHTML=EVD.length?EVD.map(ev
 function openEv(id){
  const e=(EVD||[]).find(x=>x.id===id);if(!e)return;
  const z=safe(e.image_url);
- $("#evmBody").innerHTML=`${z?`<img class="evimg" src="${esc(z)}" alt="">`:""}<h3 style="margin:14px 0 8px">${esc(e.title)}</h3><div class="meta" style="margin-bottom:12px">${e.starts_at?`<span>${fd(e.starts_at)}, ${ft(e.starts_at)}</span>`:""}${e.location?`<span>${esc(e.location)}</span>`:""}${e.format?`<span>${esc(e.format)}</span>`:""}</div><p style="white-space:pre-line">${esc(e.description||"Tavsif kiritilmagan.")}</p><div class="acts" style="margin-top:16px">${regBtn(e)}</div>`;
+ $("#evmBody").innerHTML=`${z?`<img class="evimg" src="${esc(z)}" alt="">`:""}<h3 style="margin:14px 0 8px">${esc(e.title)}</h3><div class="meta" style="margin-bottom:12px">${e.starts_at?`<span>${fd(e.starts_at)}, ${ft(e.starts_at)}</span>`:""}${e.location?`<span>${esc(e.location)}</span>`:""}${e.format?`<span>${esc(e.format)}</span>`:""}<span>${e.price>0?"Narx: <b>"+money(e.price)+"</b>":"Bepul"}</span></div><p style="white-space:pre-line">${esc(e.description||"Tavsif kiritilmagan.")}</p><div class="acts" style="margin-top:16px">${regBtn(e)}</div>`;
  $("#evModal").classList.add("open");
 }
 function canReg(e){const n=new Date();return !!e.registration_open&&(!e.starts_at||new Date(e.starts_at)>=n)&&(!e.registration_deadline||new Date(e.registration_deadline)>=n)}
 const evCard=e=>`<article class="card">${safe(e.image_url)?`<img class="evimg" src="${esc(safe(e.image_url))}" alt="${esc(e.title)}" loading="lazy">`:""}<h3>${esc(e.title)}</h3><p>${esc((e.description||"").slice(0,140))}${(e.description||"").length>140?"…":""}</p>
-<div class="meta">${e.starts_at?`<span>📅 ${fd(e.starts_at)}, ${ft(e.starts_at)}</span>`:""}${e.location?`<span>📍 ${esc(e.location)}</span>`:""}${e.format?`<span>🏷 ${esc(e.format)}</span>`:""}</div><div class="acts"><button class="btn out sm" type="button" data-more="${esc(e.id)}">Batafsil</button>${regBtn(e)}</div></article>`;
+<div class="meta">${e.starts_at?`<span>📅 ${fd(e.starts_at)}, ${ft(e.starts_at)}</span>`:""}${e.location?`<span>📍 ${esc(e.location)}</span>`:""}${e.format?`<span>🏷 ${esc(e.format)}</span>`:""}<span>${e.price>0?"Narx: <b>"+money(e.price)+"</b>":"Bepul"}</span></div><div class="acts"><button class="btn out sm" type="button" data-more="${esc(e.id)}">Batafsil</button>${regBtn(e)}</div></article>`;
 const isJob=o=>/^ish$/i.test(o.category||"");
 const short=(t,n)=>{t=(t||"").replace(/\s+/g," ").trim();return t.length>n?t.slice(0,n).trim()+"…":t};
 const opCard=o=>{const z=safe(o.image_url);return `<article class="card">${z?`<img class="evimg opimg" src="${esc(z)}" alt="${esc(o.title)}" loading="lazy" data-opmore="${esc(o.id)}">`:""}<div class="opmeta"><span class="pill">${esc(o.category)}</span>${o.deadline?`<span class="dl">Muddat: ${fd(o.deadline)}</span>`:""}</div><h3>${esc(o.title)}</h3><p>${esc(short(o.description,150))}</p><div class="acts"><button class="btn out sm" type="button" data-opmore="${esc(o.id)}">Batafsil</button>${isJob(o)?`<button class="btn acc sm" type="button" data-job="${esc(o.id)}" data-t="${esc(o.title)}">Ariza topshirish</button>`:""}</div></article>`};
@@ -466,31 +502,77 @@ async function loadSocials(){
 }
 loadSocials();
 
+let PAY={e:null,promo:null,final:0,cfg:null};
+async function openPay(e){
+ PAY={e,promo:null,final:e.price,cfg:PAY.cfg};
+ $("#payTitle").textContent=e.title;$("#payBase").textContent=money(e.price);$("#payDiscRow").hidden=true;$("#payFinal").textContent=money(e.price);
+ $("#payPromo").value="";$("#payPromoMsg").textContent="";$("#payErr").textContent="";$("#payFile").value="";$("#payPrev").hidden=true;
+ $("#payCardBox").hidden=false;$("#paySubmit").disabled=false;$("#paySubmit").textContent="Chekni yuborish";
+ if(!PAY.cfg){const r=await sb.from("payment_settings").select("*").eq("id",1).maybeSingle();PAY.cfg=r.data||{}}
+ const c=PAY.cfg;$("#payNum").textContent=c.card_number||"Karta raqami hali kiritilmagan";$("#payHolder").textContent=c.card_holder||"";$("#payBank").textContent=c.bank||"";
+ $("#payModal").classList.add("open");
+}
+function recalc(base,disc){const f=Math.max(0,base-disc);PAY.final=f;$("#payBase").textContent=money(base);$("#payDiscRow").hidden=!disc;$("#payDisc").textContent="− "+money(disc);$("#payFinal").textContent=money(f);$("#payCardBox").hidden=f===0;$("#paySubmit").textContent=f===0?"Bepul ro‘yxatdan o‘tish":"Chekni yuborish"}
+$("#payApply").onclick=async()=>{
+ const code=$("#payPromo").value.trim(),m=$("#payPromoMsg");m.style.color="";m.textContent="";
+ if(!code){PAY.promo=null;recalc(PAY.e.price,0);return}
+ const {data,error}=await sb.rpc("calc_price",{p_event_id:PAY.e.id,p_code:code});
+ const r=data&&data[0];
+ if(error||!r||!r.valid){PAY.promo=null;recalc(PAY.e.price,0);m.textContent=error?error.message:(r?r.message:"Xato");return}
+ PAY.promo=r.promo||code;recalc(r.base_price,r.discount);m.style.color="#6ee7b7";m.textContent=r.message||"";
+};
+$("#payFile").onchange=()=>{const f=$("#payFile").files[0],p=$("#payPrev");if(!f){p.hidden=true;return}p.src=URL.createObjectURL(f);p.hidden=false};
+$("#payCopy").onclick=()=>{const n=((PAY.cfg&&PAY.cfg.card_number)||"").replace(/\s/g,"");if(!n)return;(navigator.clipboard?navigator.clipboard.writeText(n):Promise.reject()).then(()=>toast("Karta raqami nusxalandi","ok")).catch(()=>toast("Nusxalab bo‘lmadi, raqamni qo‘lda ko‘chiring","err"))};
+$("#closePay").onclick=()=>$("#payModal").classList.remove("open");
+async function upReceipt(file){
+ const im=await createImageBitmap(file),s=Math.min(1,1400/Math.max(im.width,im.height)),c=document.createElement("canvas");
+ c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+ const b=await new Promise(r=>c.toBlob(r,"image/jpeg",.85)),p=ME.user.id+"/"+Date.now()+"-"+Math.random().toString(36).slice(2,8)+".jpg";
+ const u=await sb.storage.from("receipts").upload(p,b,{contentType:"image/jpeg"});if(u.error)throw u.error;return p;
+}
+$("#paySubmit").onclick=async()=>{
+ const err=$("#payErr"),btn=$("#paySubmit");err.textContent="";let path=null;
+ if(PAY.final>0){
+  const f=$("#payFile").files[0];
+  if(!f){err.textContent="To‘lov chekining skrinshotini yuklang";return}
+  btn.disabled=true;btn.textContent="Yuklanmoqda…";
+  try{path=await upReceipt(f)}catch(e){err.textContent="Chek yuklanmadi: "+e.message;btn.disabled=false;btn.textContent="Chekni yuborish";return}
+ }
+ const ok=await registerEvent(PAY.e.id,null,PAY.promo,path);
+ btn.disabled=false;
+ if(ok)$("#payModal").classList.remove("open");else btn.textContent=PAY.final===0?"Bepul ro‘yxatdan o‘tish":"Chekni yuborish";
+};
 function toast(m,t){const x=$("#toast");x.textContent=m;x.className=t||"";x.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>x.style.display="none",6000)}
 let pendingEv=null;
 const pfm=$("#pfForm");
 pfm.telegram.oninput=()=>{pfm.telegram.value=pfm.telegram.value.toLowerCase().replace(/[^a-z0-9_@]/g,"")};
 $("#closePf").onclick=()=>$("#pfModal").classList.remove("open");
 function fillPf(){const p=ME.profile||{};pfm.fullName.value=p.full_name||"";pfm.age.value=p.age||"";pfm.phone.value=p.phone||"";pfm.telegram.value=p.telegram_username||"";$("#pfErr").textContent=""}
-async function registerEvent(id,b){
- const p=ME.profile||{};
+async function registerEvent(id,b,promo,receipt){
  if(b){b.disabled=true;b.textContent="Yuborilmoqda…"}
  try{
-  const r=await Promise.race([sb.from("registrations").insert([{full_name:p.full_name,age:p.age,phone:p.phone,telegram_username:p.telegram_username,event_id:id,letter:""}]),new Promise((_,j)=>setTimeout(()=>j(new Error("Server javob bermadi. Internetni tekshiring.")),15000))]);
+  const r=await Promise.race([sb.rpc("register_event",{p_event_id:id,p_promo:promo||null,p_receipt:receipt||null}),new Promise((_,j)=>setTimeout(()=>j(new Error("Server javob bermadi. Internetni tekshiring.")),15000))]);
   if(r.error)throw r.error;
-  ME.regs.add(id);drawEv();toast("Ro‘yxatdan o‘tdingiz! Chiptangiz kabinetda ko‘rinadi.","ok");
-  setTimeout(()=>{location.href="/kabinet#evs"},1300);
+  ME.regs.add(id);drawEv();
+  toast(receipt?"Chek yuborildi. Admin tasdiqlagach chiptangiz ochiladi.":"Ro‘yxatdan o‘tdingiz! Chiptangiz kabinetda ko‘rinadi.","ok");
+  setTimeout(()=>{location.href="/kabinet#evs"},1500);
+  return true;
  }catch(err){
   console.error(err);const msg=(err&&err.message)||String(err);
   if(/idx_regs_event_username|duplicate key/i.test(msg)){
    const c=await sb.rpc("claim_my_registration",{p_event_id:id});
-   if(!c.error&&c.data&&c.data.length){ME.regs.add(id);drawEv();toast("Siz bu tadbirga allaqachon yozilgansiz. Chiptangiz kabinetda.","ok");setTimeout(()=>{location.href="/kabinet#evs"},1500);return}
+   if(!c.error&&c.data&&c.data.length){ME.regs.add(id);drawEv();toast("Siz bu tadbirga allaqachon yozilgansiz. Chiptangiz kabinetda.","ok");setTimeout(()=>{location.href="/kabinet#evs"},1500);return true}
    if(b){b.disabled=false;b.textContent="Ro‘yxatdan o‘tish"}
-   toast(c.error?c.error.message:"Siz bu tadbirga allaqachon yozilgansiz.","err");return;
+   toast(c.error?c.error.message:"Siz bu tadbirga allaqachon yozilgansiz.","err");return false;
   }
   if(b){b.disabled=false;b.textContent="Ro‘yxatdan o‘tish"}
-  toast("Xatolik: "+msg,"err");
+  toast("Xatolik: "+msg,"err");return false;
  }
+}
+function startReg(id,b){
+ const e=(EVD||[]).find(x=>x.id===id);
+ if(e&&e.price>0){openPay(e);return}
+ registerEvent(id,b,null,null);
 }
 async function onEvClick(ev){
  const b=ev.target.closest("[data-ev]");if(!b||b.disabled)return;
@@ -499,7 +581,7 @@ async function onEvClick(ev){
  const p=ME.profile||{};
  if(!(p.full_name&&p.age&&p.phone&&p.telegram_username)){pendingEv=b.dataset.ev;fillPf();$("#pfModal").classList.add("open");return}
  $("#evModal").classList.remove("open");
- registerEvent(b.dataset.ev,b);
+ startReg(b.dataset.ev,b);
 }
 $("#evg").addEventListener("click",ev=>{const m=ev.target.closest("[data-more]");if(m)openEv(m.dataset.more)});
 $("#evg").addEventListener("click",onEvClick);
@@ -519,7 +601,7 @@ pfm.onsubmit=async e=>{
  const {error}=await sb.from("profiles").upsert(prof);
  if(error){out.textContent="Saqlanmadi: "+error.message;return}
  ME.profile={...ME.profile,...prof};$("#pfModal").classList.remove("open");
- if(pendingEv){const id=pendingEv;pendingEv=null;registerEvent(id,$('[data-ev="'+id+'"]'))}
+ if(pendingEv){const id=pendingEv;pendingEv=null;startReg(id,$('[data-ev="'+id+'"]'))}
 };
 
 /* Jamoa posterini kattalashtirib ko‘rish */
