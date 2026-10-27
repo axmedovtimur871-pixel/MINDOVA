@@ -24,6 +24,7 @@ button.submit-btn{background:#6366F1;cursor:pointer;font-weight:bold}
 label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
 .msg{min-height:1.2em;font-size:.9rem;color:#9FB0FF}
 </style>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
 <div class="top"><h1>MINDOVA Admin Panel</h1><button id="out" class="tab-btn" type="button">Chiqish</button></div>
@@ -248,17 +249,22 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
 </div>
 
 <div id="team" class="section">
- <h2>Jamoa a'zolari</h2>
+ <h2>Jamoa va mentorlar</h2>
+ <div class="msg">Foto va ma'lumotni kiriting, poster hammasi uchun bir xil fonda avtomatik yasaladi.</div>
+ <button type="button" class="submit-btn" id="tRegen" style="margin:8px 0">Barcha avtomatik posterlarni qayta yaratish</button>
+ <div class="msg" id="tRegenMsg"></div>
  <div id="tList"></div>
- <h2 style="margin-top:28px">Jamoa a'zosini qo'shish</h2>
+ <h2 style="margin-top:28px" id="tH">Yangi a'zo qo'shish</h2>
  <form id="addTeamForm">
+  <select id="mGrp"><option value="team">Jamoa a'zosi (MINDOVA oilasi)</option><option value="mentor">Mentor</option></select>
   <input type="text" id="mName" placeholder="Ism Familiya" required>
-  <input type="text" id="mRole" placeholder="Lavozimi (masalan: Asoschi)" required>
-  <label>Rasm yuklash<input type="file" id="mFile" accept="image/*"></label>
-  <input type="text" id="mPhoto" placeholder="yoki rasm havolasi (URL)">
-  <textarea id="mBio" placeholder="Qisqacha bio" rows="3"></textarea>
-  <label>Poster rasmi (tayyor dizayn, ixtiyoriy). Yuklansa, saytda faqat poster ko'rinadi<input type="file" id="mPoster" accept="image/*"></label>
-  <button type="submit" class="submit-btn">A'zoni saqlash</button>
+  <input type="text" id="mRole" placeholder="Lavozimi (masalan: Debate Manager)" required>
+  <textarea id="mBio" placeholder="Qisqacha ma'lumot (2-3 gap)" rows="3"></textarea>
+  <label>Foto (yuzi aniq ko'ringan rasm)<input type="file" id="mFile" accept="image/*"></label>
+  <select id="mCut"><option value="0">Foto oddiy (doira ichida ko'rsatiladi)</option><option value="1">Foto fonsiz PNG (kesilgan odam)</option></select>
+  <label>Yoki tayyor poster yuklash (ixtiyoriy, bunda avtomatik yasalmaydi)<input type="file" id="mPoster" accept="image/*"></label>
+  <button type="submit" class="submit-btn" id="tBtn">Saqlash va poster yaratish</button>
+  <button type="button" class="submit-btn" id="tCancel" style="background:#25234A" hidden>Bekor qilish</button>
   <div class="msg" id="tMsg"></div>
  </form>
 </div>
@@ -274,8 +280,14 @@ document.querySelectorAll(".tab-btn[data-tab]").forEach(b=>b.onclick=()=>{
  b.classList.add("active");
 });
 
+async function decodeImg(file){
+ try{return await createImageBitmap(file)}catch(e){}
+ const url=URL.createObjectURL(file);
+ const im=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(new Error("Rasmni o‘qib bo‘lmadi"));i.src=url});
+ setTimeout(()=>URL.revokeObjectURL(url),60000);return im;
+}
 async function prep(file,mx){
- const img=await createImageBitmap(file);
+ const img=await decodeImg(file);
  const s=Math.min(1,(mx||1400)/Math.max(img.width,img.height));
  const c=document.createElement("canvas");
  c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);
@@ -580,18 +592,68 @@ $("addEventForm").onsubmit=async e=>{
  if(!r.error){resetEvForm();loadEvents();loadAtt()}
 };
 
+const loadI=u=>new Promise(r=>{if(!u)return r(null);const i=new Image();i.crossOrigin="anonymous";i.onload=()=>r(i);i.onerror=()=>r(null);i.src=u});
+function rrect(x,X,Y,w,h,r){x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath()}
+function wrapT(x,t,maxW,maxL){const w=String(t||"").split(/\s+/).filter(Boolean),L=[];let c="";for(const s of w){const tr=c?c+" "+s:s;if(x.measureText(tr).width>maxW&&c){L.push(c);c=s}else c=tr}if(c)L.push(c);if(L.length>maxL){L.length=maxL;L[maxL-1]=L[maxL-1].replace(/\s*\S*$/,"")+"…"}return L}
+async function makePoster(m,im,cut){
+ await Promise.all([document.fonts.load("800 60px Inter"),document.fonts.load("500 28px Inter")]).catch(()=>{});
+ const W=1080,H=1350,k=document.createElement("canvas");k.width=W;k.height=H;const x=k.getContext("2d"),F="Inter,system-ui,sans-serif",sp=v=>{if("letterSpacing" in x)x.letterSpacing=v};
+ const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,"#0f0e30");g.addColorStop(1,"#08081c");x.fillStyle=g;x.fillRect(0,0,W,H);
+ const rg=x.createRadialGradient(540,620,40,540,620,640);rg.addColorStop(0,"rgba(99,102,241,.38)");rg.addColorStop(1,"rgba(99,102,241,0)");x.fillStyle=rg;x.fillRect(0,0,W,H);
+ x.textAlign="center";x.font=`800 820px ${F}`;x.fillStyle="rgba(99,102,241,.11)";x.fillText("M",540,1010);
+ x.strokeStyle="rgba(255,255,255,.16)";x.lineWidth=2;rrect(x,32,32,W-64,H-64,38);x.stroke();
+ x.lineWidth=5;x.strokeStyle="rgba(129,140,248,.85)";x.beginPath();x.arc(1010,70,250,Math.PI*.5,Math.PI*1.02);x.stroke();
+ x.strokeStyle="rgba(56,189,248,.6)";x.beginPath();x.arc(60,1010,320,-Math.PI*.55,-Math.PI*.06);x.stroke();
+ x.fillStyle="rgba(199,203,245,.75)";x.font=`600 24px ${F}`;sp("8px");x.fillText(m.grp==="mentor"?"MENTORS MINDOVA":"TEAM MINDOVA",540,92);sp("0px");
+ const lg=await loadI("/logo-h.png"),lh=lg?330*lg.height/lg.width:0;
+ if(lg)x.drawImage(lg,375,118,330,lh);
+ x.fillStyle="rgba(255,255,255,.8)";x.font=`500 24px ${F}`;x.fillText("“Ideas. People. Opportunities.”",540,118+lh+44);
+ const cx=540,cy=670,r=280;
+ if(!cut){x.save();x.shadowColor="rgba(99,102,241,.9)";x.shadowBlur=60;x.beginPath();x.arc(cx,cy,r+6,0,Math.PI*2);x.fillStyle="#1a1950";x.fill();x.restore()}
+ if(im){
+  if(cut){const hh=800,ww=im.width*hh/im.height;x.drawImage(im,cx-ww/2,1010-hh,ww,hh);const bf=x.createLinearGradient(0,900,0,1020);bf.addColorStop(0,"rgba(8,8,28,0)");bf.addColorStop(1,"rgba(8,8,28,1)");x.fillStyle=bf;x.fillRect(40,900,W-80,120)}
+  else{x.save();x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.clip();const s=Math.max(2*r/im.width,2*r/im.height);x.drawImage(im,cx-im.width*s/2,cy-im.height*s/2,im.width*s,im.height*s);x.restore()}
+ }else{x.save();x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.clip();x.fillStyle="#2c2d7a";x.fillRect(cx-r,cy-r,2*r,2*r);x.restore();x.fillStyle="#fff";x.font=`800 200px ${F}`;x.fillText((m.name||"?").slice(0,2).toUpperCase(),cx,cy+70)}
+ if(!cut){x.strokeStyle="#6366F1";x.lineWidth=8;x.beginPath();x.arc(cx,cy,r+6,0,Math.PI*2);x.stroke()}
+ const fit=(t,w,s,max)=>{do{x.font=`${w} ${s}px ${F}`;s-=2}while(x.measureText(t).width>max&&s>24)};
+ x.fillStyle="#fff";const nm=(m.name||"").toUpperCase();fit(nm,800,64,940);x.fillText(nm,540,1092);
+ const rgr=x.createLinearGradient(240,0,840,0);rgr.addColorStop(0,"#38bdf8");rgr.addColorStop(1,"#a78bfa");x.fillStyle=rgr;const rl=(m.role||"").toUpperCase();fit(rl,800,40,940);x.fillText(rl,540,1150);
+ x.fillStyle="#c7cbf5";x.font=`500 27px ${F}`;wrapT(x,m.bio,900,3).forEach((t,n)=>x.fillText(t,540,1208+n*38));
+ return new Promise(r=>k.toBlob(r,"image/jpeg",.9));
+}
+async function genPoster(m,im,cut){
+ const b=await makePoster(m,im,cut),p="team/poster-"+Date.now()+"-"+Math.random().toString(36).slice(2,7)+".jpg";
+ const u=await sb.storage.from("images").upload(p,b,{contentType:"image/jpeg"});if(u.error)throw u.error;
+ return sb.storage.from("images").getPublicUrl(p).data.publicUrl;
+}
+async function upRaw(file){
+ const ext=(file.name.split(".").pop()||"png").toLowerCase().replace(/[^a-z0-9]/g,"")||"png",p="team/photo-"+Date.now()+"-"+Math.random().toString(36).slice(2,7)+"."+ext;
+ const u=await sb.storage.from("images").upload(p,file,{contentType:file.type||"image/png"});if(u.error)throw u.error;
+ return sb.storage.from("images").getPublicUrl(p).data.publicUrl;
+}
+let teamEdit=null,TMS=[];
+function resetTeamForm(){teamEdit=null;$("addTeamForm").reset();$("tH").textContent="Yangi a'zo qo'shish";$("tBtn").textContent="Saqlash va poster yaratish";$("tCancel").hidden=true}
+$("tCancel").onclick=()=>{resetTeamForm();$("tMsg").textContent=""};
 $("addTeamForm").onsubmit=async e=>{
- e.preventDefault();
- $("tMsg").textContent="Saqlanmoqda…";
- let photo=$("mPhoto").value.trim()||null;
- let poster_url=null;
- try{const fl=$("mFile").files[0];if(fl)photo=await upImg(fl,"team");const pf=$("mPoster").files[0];if(pf)poster_url=await upImg(pf,"team",1600)}
- catch(err){$("tMsg").textContent="Rasm yuklanmadi: "+err.message;return}
- const row={name:$("mName").value.trim(),role:$("mRole").value.trim(),photo,poster_url,bio:$("mBio").value.trim()};
- const {error}=await sb.from("team").insert([row]);
- $("tMsg").textContent=error?"Xato: "+error.message:"A'zo saqlandi ✓";
- if(!error){e.target.reset();loadTeam()}
+ e.preventDefault();$("tMsg").textContent="Poster yaratilmoqda…";
+ const old=teamEdit?TMS.find(x=>x.id===teamEdit):null;
+ const row={grp:$("mGrp").value,name:$("mName").value.trim(),role:$("mRole").value.trim(),bio:$("mBio").value.trim(),photo_cut:$("mCut").value==="1"};
+ try{
+  const ff=$("mFile").files[0],pf=$("mPoster").files[0];
+  if(pf){row.poster_url=await upImg(pf,"team",1600);row.poster_auto=false}
+  else{
+   let im=null,photoUrl=old?old.photo:null;
+   if(ff){photoUrl=row.photo_cut?await upRaw(ff):await upImg(ff,"team",1400);im=await decodeImg(ff)}
+   else if(photoUrl){im=await loadI(photoUrl)}
+   if(!im){$("tMsg").textContent="Foto yuklang (yoki tayyor poster yuklang).";return}
+   row.photo=photoUrl;row.poster_url=await genPoster(row,im,row.photo_cut);row.poster_auto=true;
+  }
+ }catch(err){$("tMsg").textContent="Xato: "+err.message;return}
+ const r=teamEdit?await sb.from("team").update(row).eq("id",teamEdit):await sb.from("team").insert([row]);
+ $("tMsg").textContent=r.error?"Xato: "+r.error.message:"Saqlandi ✓ Poster yaratildi.";
+ if(!r.error){resetTeamForm();loadTeam()}
 };
+
 
 async function loadJobs(){
  const [{data,error},op]=await Promise.all([sb.from("job_applications").select("*").order("created_at",{ascending:false}),sb.from("opportunities").select("id,title")]);
@@ -671,67 +733,30 @@ async function loadTeam(){
  const {data,error}=await sb.from("team").select("*").order("created_at",{ascending:true});
  const box=$("tList");box.innerHTML="";
  if(error){box.textContent="Yuklab bo'lmadi: "+error.message;return}
- if(!data.length){box.textContent="Hozircha a'zo yo'q.";return}
- data.forEach(m=>{
+ TMS=data||[];
+ if(!TMS.length){box.textContent="Hozircha a'zo yo'q.";return}
+ TMS.forEach(m=>{
   const row=document.createElement("div");
   row.style.cssText="display:flex;gap:10px;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.1);padding:8px 0;flex-wrap:wrap";
   const l=document.createElement("div");l.style.cssText="display:flex;gap:10px;align-items:center;min-width:0";
-  const th=document.createElement("img");th.src=m.poster_url||m.photo||"";th.alt="";th.style.cssText="width:44px;height:56px;object-fit:cover;border-radius:6px;background:#25234A";
-  const t=document.createElement("span");t.textContent=m.name+" — "+m.role+(m.poster_url?" (poster)":"");
+  const th=document.createElement("img");th.src=m.poster_url||m.photo||"";th.alt="";th.style.cssText="width:44px;height:55px;object-fit:cover;border-radius:6px;background:#25234A";
+  const t=document.createElement("span");t.textContent=(m.grp==="mentor"?"[Mentor] ":"")+m.name+" — "+m.role+(m.poster_url?(m.poster_auto?" (avto poster)":" (qo'lda poster)"):"");
   l.append(th,t);
   const acts=document.createElement("div");acts.style.cssText="display:flex;gap:8px;flex-wrap:wrap";
-  const up=document.createElement("button");up.type="button";up.className="tab-btn";up.textContent="Poster almashtirish";
-  const fi=document.createElement("input");fi.type="file";fi.accept="image/*";fi.hidden=true;
-  up.onclick=()=>fi.click();
-  fi.onchange=async()=>{
-   const f=fi.files[0];if(!f)return;up.textContent="Yuklanmoqda…";
-   try{const url=await upImg(f,"team",1600);const {error}=await sb.from("team").update({poster_url:url}).eq("id",m.id);if(error)throw error;loadTeam()}
-   catch(err){alert("Xato: "+err.message);up.textContent="Poster almashtirish"}
-  };
-  acts.append(up,fi);
-  if(m.poster_url){const rm=document.createElement("button");rm.type="button";rm.className="tab-btn";rm.textContent="Posterni olib tashlash";
-   rm.onclick=async()=>{const {error}=await sb.from("team").update({poster_url:null}).eq("id",m.id);if(error){alert(error.message);return}loadTeam()};acts.appendChild(rm)}
-  const del=document.createElement("button");del.type="button";del.className="tab-btn";del.textContent="O'chirish";
-  del.onclick=async()=>{if(!confirm("O'chirilsinmi?"))return;const {error}=await sb.from("team").delete().eq("id",m.id);if(error){alert(error.message);return}loadTeam()};
-  acts.appendChild(del);row.append(l,acts);box.appendChild(row);
+  const mk=(txt,f)=>{const b=document.createElement("button");b.type="button";b.className="tab-btn";b.textContent=txt;b.onclick=f;acts.appendChild(b)};
+  mk("Tahrirlash",()=>{teamEdit=m.id;$("mGrp").value=m.grp==="mentor"?"mentor":"team";$("mName").value=m.name||"";$("mRole").value=m.role||"";$("mBio").value=m.bio||"";$("mCut").value=m.photo_cut?"1":"0";$("tH").textContent="A'zoni tahrirlash";$("tBtn").textContent="O'zgarishlarni saqlash va poster yaratish";$("tCancel").hidden=false;$("tMsg").textContent=m.photo?"Yangi foto tanlamasangiz, eski foto ishlatiladi.":"Bu a'zoda foto saqlanmagan: avtomatik poster uchun foto yuklang.";$("tH").scrollIntoView({behavior:"smooth"})});
+  if(m.photo)mk("Qayta yaratish",async()=>{try{const im=await loadI(m.photo);if(!im)throw new Error("Foto ochilmadi");const url=await genPoster(m,im,m.photo_cut);const {error}=await sb.from("team").update({poster_url:url,poster_auto:true}).eq("id",m.id);if(error)throw error;loadTeam()}catch(err){alert("Xato: "+err.message)}});
+  mk("O'chirish",async()=>{if(!confirm("O'chirilsinmi?"))return;const {error}=await sb.from("team").delete().eq("id",m.id);if(error){alert(error.message);return}loadTeam()});
+  row.append(l,acts);box.appendChild(row);
  });
 }
-
-const ROLEN={volunteer:"Volontyor",manager:"Menejer"};
-const genCode=()=>{const A="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let s="";crypto.getRandomValues(new Uint8Array(8)).forEach(b=>s+=A[b%A.length]);return "MND-"+s.slice(0,4)+"-"+s.slice(4)};
-let SMS=[];
-async function loadStaff(){
- const [m,l]=await Promise.all([sb.from("staff_members").select("*").order("created_at",{ascending:false}),sb.from("staff_lessons").select("*").order("created_at",{ascending:false})]);
- const box=$("sList"),lb=$("lList");box.innerHTML="";lb.innerHTML="";
- if(m.error){box.textContent="Yuklab bo'lmadi: "+m.error.message;return}
- SMS=m.data||[];
- const sel=$("lStaff");sel.innerHTML="";
- const o0=document.createElement("option");o0.value="";o0.textContent="Hammaga (barcha a'zolarga)";sel.appendChild(o0);
- SMS.forEach(x=>{const o=document.createElement("option");o.value=x.id;o.textContent=x.full_name;sel.appendChild(o)});
- if(!SMS.length)box.textContent="Hozircha a'zo yo'q.";
- const row=(txt,btns)=>{const r=document.createElement("div");r.style.cssText="display:flex;gap:10px;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.1);padding:8px 0;flex-wrap:wrap";const t=document.createElement("span");t.textContent=txt;const b=document.createElement("div");b.style.cssText="display:flex;gap:8px;flex-wrap:wrap";btns.forEach(x=>b.appendChild(x));r.append(t,b);return r};
- const btn=(t,f)=>{const b=document.createElement("button");b.type="button";b.className="tab-btn";b.textContent=t;b.onclick=f;return b};
- SMS.forEach(x=>{
-  const bs=[btn("Kodni nusxalash",()=>{navigator.clipboard&&navigator.clipboard.writeText(x.code);alert("Kod: "+x.code)})];
-  if(x.user_id)bs.push(btn("Hisobdan ajratish",async()=>{if(!confirm("Kod hisobdan ajratilsinmi?"))return;const {error}=await sb.from("staff_members").update({user_id:null}).eq("id",x.id);if(error){alert(error.message);return}loadStaff()}));
-  bs.push(btn("O'chirish",async()=>{if(!confirm("A'zo va uning darslari o'chirilsinmi?"))return;const {error}=await sb.from("staff_members").delete().eq("id",x.id);if(error){alert(error.message);return}loadStaff()}));
-  box.appendChild(row(x.full_name+" · "+(x.member_no||"")+" · Kod: "+x.code+" · "+(x.user_id?"Bog'langan":"Kutilmoqda"),bs));
- });
- const nm=Object.fromEntries(SMS.map(x=>[x.id,x.full_name]));
- (l.data||[]).forEach(x=>lb.appendChild(row((x.staff_id?(nm[x.staff_id]||"—"):"Hammaga")+" · "+x.title,[btn("O'chirish",async()=>{if(!confirm("O'chirilsinmi?"))return;const {error}=await sb.from("staff_lessons").delete().eq("id",x.id);if(error){alert(error.message);return}loadStaff()})])));
-}
-$("staffForm").onsubmit=async e=>{
- e.preventDefault();
- const code=genCode(),no=$("sNo").value.trim()||("MND-"+new Date().getFullYear()+"-"+String(SMS.length+1).padStart(3,"0"));
- const {error}=await sb.from("staff_members").insert([{code,full_name:$("sName").value.trim(),member_no:no}]);
- $("sMsg").textContent=error?"Xato: "+error.message:"Saqlandi ✓ Shaxsiy kod: "+code;
- if(!error){e.target.reset();loadStaff()}
-};
-$("lessonForm").onsubmit=async e=>{
- e.preventDefault();
- const {error}=await sb.from("staff_lessons").insert([{staff_id:$("lStaff").value||null,title:$("lTitle").value.trim(),content:$("lContent").value.trim()||null,link:$("lLink").value.trim()||null,lesson_date:$("lDate").value||null}]);
- $("lMsg").textContent=error?"Xato: "+error.message:"Dars joylandi ✓";
- if(!error){$("lTitle").value="";$("lContent").value="";$("lLink").value="";$("lDate").value="";loadStaff()}
+$("tRegen").onclick=async()=>{
+ const L=TMS.filter(m=>m.poster_auto&&m.photo);let ok=0;
+ for(const m of L){
+  $("tRegenMsg").textContent="Yaratilmoqda: "+(ok+1)+"/"+L.length+" ("+m.name+")";
+  try{const im=await loadI(m.photo);if(!im)continue;const url=await genPoster(m,im,m.photo_cut);const {error}=await sb.from("team").update({poster_url:url}).eq("id",m.id);if(!error)ok++}catch(err){console.error(err)}
+ }
+ $("tRegenMsg").textContent="Tayyor: "+ok+" ta poster yangilandi.";loadTeam();
 };
 
 let FQ=[];
