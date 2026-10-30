@@ -42,6 +42,7 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
  <button class="tab-btn" data-tab="pays">To'lovlar</button>
  <button class="tab-btn" data-tab="promo">Promokodlar</button>
  <button class="tab-btn" data-tab="paycfg">Karta</button>
+ <button class="tab-btn" data-tab="cnx">Connect</button>
  <a class="tab-btn" href="/scan" style="text-decoration:none;display:inline-block">Skaner paneli</a>
  <button class="tab-btn" data-tab="faqs">FAQ</button>
 </div>
@@ -208,6 +209,33 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
   <button type="submit" class="submit-btn">Saqlash</button>
   <div class="msg" id="cardMsg"></div>
  </form>
+</div>
+
+<div id="cnx" class="section">
+ <h2>Mindova Connect: moderatsiya</h2>
+ <div class="msg">Administrator shaxsiy yozishmalarni o'qiy olmaydi. Faqat foydalanuvchi shikoyat qilganda yuborilgan qisqa kontekst ko'rinadi. Barcha harakatlar audit jurnaliga yoziladi.</div>
+ <h2 style="font-size:1.1rem;margin-top:20px">Shikoyatlar</h2>
+ <label>Holat<select id="cnF"><option value="new">Yangi</option><option value="reviewing">Ko'rib chiqilmoqda</option><option value="resolved">Hal qilingan</option><option value="dismissed">Rad etilgan</option><option value="all">Hammasi</option></select></label>
+ <div id="cnR"></div>
+ <h2 style="font-size:1.1rem;margin-top:24px">Cheklangan foydalanuvchilar</h2>
+ <div id="cnL"></div>
+ <form id="cnRF">
+  <input type="text" id="cnU" list="cnUl" placeholder="Cheklash uchun foydalanuvchini tanlang (ism yoki email)">
+  <datalist id="cnUl"></datalist>
+  <input type="text" id="cnRs" placeholder="Cheklash sababi">
+  <button type="submit" class="submit-btn">Connect imkoniyatlarini cheklash</button>
+  <div class="msg" id="cnRM"></div>
+ </form>
+ <h2 style="font-size:1.1rem;margin-top:24px">Kategoriyalar (filtrlar)</h2>
+ <div id="cnC"></div>
+ <form id="cnCF">
+  <input type="text" id="cnCN" placeholder="Kategoriya nomi" required>
+  <input type="number" id="cnCP" placeholder="Tartib raqami (10, 20, 30...)">
+  <button type="submit" class="submit-btn">Kategoriya qo'shish</button>
+  <div class="msg" id="cnCM"></div>
+ </form>
+ <h2 style="font-size:1.1rem;margin-top:24px">Audit jurnali (oxirgi 50 ta)</h2>
+ <div id="cnA"></div>
 </div>
 
 <div id="events" class="section">
@@ -448,6 +476,68 @@ $("cardForm").onsubmit=async e=>{
  e.preventDefault();
  const {error}=await sb.from("payment_settings").upsert({id:1,card_number:$("cNum").value.trim(),card_holder:$("cHolder").value.trim(),bank:$("cBank").value.trim(),updated_at:new Date().toISOString()});
  $("cardMsg").textContent=error?"Xato: "+error.message:"Saqlandi ✓ To'lov oynasida ko'rinadi.";
+};
+
+let CNP={},CNLIST=[];
+const CNST={new:"Yangi",reviewing:"Ko'rib chiqilmoqda",resolved:"Hal qilingan",dismissed:"Rad etilgan"};
+function cnRow(box,parts,btns){
+ const r=document.createElement("div");r.style.cssText="border-bottom:1px solid rgba(255,255,255,.1);padding:10px 0";
+ parts.forEach(([t,css])=>{const p=document.createElement("div");p.textContent=t;if(css)p.style.cssText=css;r.appendChild(p)});
+ if(btns&&btns.length){const b=document.createElement("div");b.style.cssText="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px";btns.forEach(x=>b.appendChild(x));r.appendChild(b)}
+ box.appendChild(r);return r;
+}
+function cnBtn(t,f){const b=document.createElement("button");b.type="button";b.className="tab-btn";b.textContent=t;b.onclick=f;return b}
+async function loadCn(){
+ const [r,pr,cat,au,rs]=await Promise.all([
+  sb.from("cn_reports").select("*").order("created_at",{ascending:false}).limit(100),
+  sb.from("profiles").select("id,full_name,email"),
+  sb.from("cn_categories").select("*").order("position",{ascending:true}),
+  sb.from("cn_audit").select("*").order("created_at",{ascending:false}).limit(50),
+  sb.from("cn_profiles").select("user_id,restricted_reason").eq("restricted",true)]);
+ if(r.error){$("cnR").textContent="Yuklab bo'lmadi: "+r.error.message+" (connect.sql bajarilganmi?)";return}
+ CNP=Object.fromEntries((pr.data||[]).map(x=>[x.id,(x.full_name||"—")+(x.email?" ("+x.email+")":"")]));
+ CNLIST=pr.data||[];
+ const dl=$("cnUl");dl.innerHTML="";CNLIST.forEach(x=>{const o=document.createElement("option");o.value=CNP[x.id];dl.appendChild(o)});
+ // shikoyatlar
+ const box=$("cnR");box.innerHTML="";const f=$("cnF").value,L=(r.data||[]).filter(x=>f==="all"||x.status===f);
+ if(!L.length)box.textContent="Bu holatda shikoyat yo'q.";
+ L.forEach(x=>{
+  const sel=document.createElement("select");sel.style.margin="0";Object.entries(CNST).forEach(([k,v])=>{const o=document.createElement("option");o.value=k;o.textContent=v;sel.appendChild(o)});sel.value=x.status;
+  const note=document.createElement("input");note.placeholder="Administrator izohi";note.value=x.admin_note||"";note.style.margin="0";
+  const row=cnRow(box,[[ "["+x.kind+"] "+(CNP[x.reporter]||"—")+"  →  "+(CNP[x.target_user]||"—"),"font-weight:700"],[x.reason||"(izoh yozilmagan)","opacity:.85;margin-top:3px"],[new Date(x.created_at).toLocaleString()+" · "+(CNST[x.status]||x.status),"font-size:.8rem;opacity:.65;margin-top:3px"]],[]);
+  if(x.context&&x.context.length){const d=document.createElement("details");d.style.marginTop="6px";const s=document.createElement("summary");s.textContent="Xabar konteksti ("+x.context.length+" ta)";d.appendChild(s);x.context.forEach(c=>{const p=document.createElement("div");p.style.cssText="font-size:.85rem;opacity:.85;margin-top:3px";p.textContent=(CNP[c.sender]||"—").split(" (")[0]+": "+(c.kind==="text"?(c.body||""):"["+c.kind+"]");d.appendChild(p)});row.appendChild(d)}
+  const ctl=document.createElement("div");ctl.style.cssText="display:grid;gap:8px;margin-top:8px";ctl.append(sel,note);row.appendChild(ctl);
+  const b=document.createElement("div");b.style.cssText="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px";
+  b.appendChild(cnBtn("Saqlash",async()=>{const {error}=await sb.rpc("cn_admin_report_update",{p_id:x.id,p_status:sel.value,p_note:note.value});if(error){alert(error.message);return}loadCn()}));
+  b.appendChild(cnBtn("Foydalanuvchini cheklash",async()=>{const why=prompt("Cheklash sababi:",x.reason||"");if(why===null)return;const {error}=await sb.rpc("cn_admin_restrict",{p_user:x.target_user,p_on:true,p_reason:why});if(error){alert(error.message);return}loadCn()}));
+  row.appendChild(b);
+ });
+ // cheklanganlar
+ const lb=$("cnL");lb.innerHTML="";const RS=rs.data||[];if(!RS.length)lb.textContent="Cheklangan foydalanuvchi yo'q.";
+ RS.forEach(x=>cnRow(lb,[[CNP[x.user_id]||x.user_id,"font-weight:700"],[x.restricted_reason||"","opacity:.8"]],[cnBtn("Cheklovni olib tashlash",async()=>{const {error}=await sb.rpc("cn_admin_restrict",{p_user:x.user_id,p_on:false,p_reason:null});if(error){alert(error.message);return}loadCn()})]));
+ // kategoriyalar
+ const cb=$("cnC");cb.innerHTML="";(cat.data||[]).forEach(x=>cnRow(cb,[[x.name+" · tartib: "+x.position+" · "+(x.active?"Faol":"O'chirilgan")]],[
+  cnBtn(x.active?"O'chirib qo'yish":"Yoqish",async()=>{const {error}=await sb.from("cn_categories").update({active:!x.active}).eq("id",x.id);if(error){alert(error.message);return}loadCn()}),
+  cnBtn("Nomini o'zgartirish",async()=>{const n=prompt("Yangi nom:",x.name);if(!n||!n.trim())return;const {error}=await sb.from("cn_categories").update({name:n.trim()}).eq("id",x.id);if(error){alert(error.message);return}loadCn()}),
+  cnBtn("O'chirish",async()=>{if(!confirm("Kategoriya o'chirilsinmi?"))return;const {error}=await sb.from("cn_categories").delete().eq("id",x.id);if(error){alert(error.message);return}loadCn()})]));
+ // audit
+ const ab=$("cnA");ab.innerHTML="";if(!(au.data||[]).length)ab.textContent="Hozircha yozuv yo'q.";
+ (au.data||[]).forEach(x=>cnRow(ab,[[new Date(x.created_at).toLocaleString()+" · "+(CNP[x.admin_id]||"—").split(" (")[0]+" · "+x.action+(x.target&&CNP[x.target]?" · "+CNP[x.target].split(" (")[0]:""),"font-size:.88rem"],[x.details||"","font-size:.8rem;opacity:.65"]],[]));
+}
+$("cnF").onchange=loadCn;
+$("cnRF").onsubmit=async e=>{
+ e.preventDefault();
+ const u=CNLIST.find(x=>CNP[x.id]===$("cnU").value.trim());
+ if(!u){$("cnRM").textContent="Ro'yxatdan foydalanuvchini tanlang.";return}
+ const {error}=await sb.rpc("cn_admin_restrict",{p_user:u.id,p_on:true,p_reason:$("cnRs").value});
+ $("cnRM").textContent=error?"Xato: "+error.message:"Cheklandi ✓";
+ if(!error){e.target.reset();loadCn()}
+};
+$("cnCF").onsubmit=async e=>{
+ e.preventDefault();
+ const {error}=await sb.from("cn_categories").insert([{name:$("cnCN").value.trim(),position:parseInt($("cnCP").value)||0}]);
+ $("cnCM").textContent=error?(/duplicate|unique/i.test(error.message)?"Bu nom allaqachon bor.":"Xato: "+error.message):"Qo'shildi ✓";
+ if(!error){e.target.reset();loadCn()}
 };
 
 let SOC=[],soEdit=null;
@@ -845,6 +935,7 @@ $("addOppForm").onsubmit=async e=>{
  loadPays();
  loadPromos();
  loadCard();
+ loadCn();
 })();
 </script>
 </body>
