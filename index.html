@@ -177,6 +177,7 @@ textarea{min-height:110px;resize:vertical}
   <a href="#imkoniyatlar">Imkoniyatlar</a>
   <a href="#haqimizda">Biz haqimizda</a>
   <a href="#faq">FAQ</a>
+  <a href="/connect" id="cnLink" hidden>Connect</a>
   <a href="/verify">Sertifikatni tekshirish</a>
   <a id="tg1" target="_blank" rel="noopener">Telegram kanalimiz</a>
  </div>
@@ -323,6 +324,7 @@ textarea{min-height:110px;resize:vertical}
    <a class="l" href="#haqimizda">Biz haqimizda</a>
    <a class="l" href="#famH">MINDOVA oilasi</a>
    <a class="l" href="#mentH">Mentorlarimiz</a>
+   <a class="l" href="/connect">Mindova Connect</a>
   </div>
   <div>
    <h4>Yordam</h4>
@@ -397,7 +399,7 @@ async function enter(user,profile){
  const rg=await sb.from("registrations").select("event_id").eq("user_id",user.id);
  ME.regs=new Set((rg.data||[]).map(x=>x.event_id));
  $("#loginModal").classList.remove("open");document.body.style.overflow="";
- $("#openLogin").textContent="Kabinetim";
+ $("#openLogin").textContent="Kabinetim";$("#cnLink").hidden=false;
  drawEv();
 }
 lf.onsubmit=async ev=>{
