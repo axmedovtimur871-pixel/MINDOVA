@@ -505,7 +505,7 @@ const ACT={
   if(about.length<10){e.textContent="O‘zingiz haqingizda kamida 10 ta belgi yozing";return}
   if(!interests.length){e.textContent="Kamida bitta qiziqishni tanlang";return}
   const row={user_id:U.id,about,region:$("#pr").value.trim()||null,show_region:$("#psr").value==="1",interests,skills:$("#ps").value.split(",").map(s=>s.trim()).filter(Boolean).slice(0,15),goals:g("#pg"),projects:$("#pp").value.trim()||null,is_public:$("#pv").value==="1",updated_at:new Date().toISOString()};
-  const {error}=await sb.from("cn_profiles").upsert(row);if(error){e.textContent="Saqlanmadi: "+error.message;return}
+  const upd={...row};delete upd.user_id;const {error}=MYP?await sb.from("cn_profiles").update(upd).eq("user_id",U.id):await sb.from("cn_profiles").insert(row);if(error){e.textContent="Saqlanmadi: "+error.message;return}
   const first=!MYP;const {data}=await sb.from("cn_profiles").select("*").eq("user_id",U.id).maybeSingle();MYP=data;toast("Profil saqlandi","ok");if(first)go("disc");else V.me();
  },
  block:async id=>{if(!confirm("Bu foydalanuvchini bloklaysizmi? Aloqa va so‘rovlar bekor qilinadi, u sizga yoza olmaydi."))return;const {error}=await sb.rpc("cn_block",{p_user:id});if(error){toast(error.message,"err");return}closeMod();toast("Foydalanuvchi bloklandi","ok");if(CUR&&CUR.other_id===id){CUR=null;document.body.classList.remove("cht")}D.list=D.list.filter(x=>x.user_id!==id);await loadConvs();render()},
