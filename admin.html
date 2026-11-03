@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MINDOVA — Admin Panel</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<<<<<<< HEAD
 <style>
 body{font-family:system-ui,sans-serif;background:#0F0E26;color:#fff;margin:0;padding:20px}
 h1,h2{color:#6366F1}
@@ -24,6 +25,9 @@ button.submit-btn{background:#6366F1;cursor:pointer;font-weight:bold}
 label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
 .msg{min-height:1.2em;font-size:.9rem;color:#9FB0FF}
 </style>
+=======
+<link rel="stylesheet" href="/assets/css/admin.css">
+>>>>>>> f528f57 (Update MINDOVA)
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -41,9 +45,15 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
  <button class="tab-btn" data-tab="social">Ijtimoiy tarmoqlar</button>
  <button class="tab-btn" data-tab="pays">To'lovlar</button>
  <button class="tab-btn" data-tab="promo">Promokodlar</button>
+<<<<<<< HEAD
  <button class="tab-btn" data-tab="paycfg">Karta</button>
  <button class="tab-btn" data-tab="cnx">Connect</button>
  <a class="tab-btn" href="/scan" style="text-decoration:none;display:inline-block">Skaner paneli</a>
+=======
+ <button class="tab-btn" data-tab="paycfg">To'lov usullari</button>
+ <button class="tab-btn" data-tab="cnx">Connect</button>
+ <a class="tab-btn" href="/scan.html" style="text-decoration:none;display:inline-block">Skaner paneli</a>
+>>>>>>> f528f57 (Update MINDOVA)
  <button class="tab-btn" data-tab="faqs">FAQ</button>
 </div>
 
@@ -176,6 +186,10 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
 
 <div id="pays" class="section">
  <h2>To'lovlar</h2>
+<<<<<<< HEAD
+=======
+ <div class="msg">Click/Payme to'lovlarini merchant kabinetda buyurtma IDsi bo'yicha tekshirib, "Tasdiqlash"ni bosing.</div>
+>>>>>>> f528f57 (Update MINDOVA)
  <label>Holat<select id="pF"><option value="pending">Kutilmoqda</option><option value="paid">Tasdiqlangan</option><option value="rejected">Rad etilgan</option><option value="all">Hammasi</option></select></label>
  <div class="msg" id="pSum"></div>
  <div id="pList"></div>
@@ -200,12 +214,36 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
 </div>
 
 <div id="paycfg" class="section">
+<<<<<<< HEAD
  <h2>To'lov kartasi</h2>
  <div class="msg">Bu ma'lumotlar pullik tadbirga yozilayotgan foydalanuvchiga to'lov oynasida ko'rsatiladi.</div>
  <form id="cardForm">
   <input type="text" id="cNum" placeholder="Karta raqami (8600 0000 0000 0000)">
   <input type="text" id="cHolder" placeholder="Karta egasi (ism familiya)">
   <input type="text" id="cBank" placeholder="Bank (masalan: Uzcard, Humo)">
+=======
+ <h2>To'lov usullari</h2>
+ <div class="msg">Bu ma'lumotlar pullik tadbirga yozilayotgan foydalanuvchiga to'lov oynasida ko'rsatiladi. Faqat yoqilgan va to'liq sozlangan usullar chiqadi. Click/Payme uchun payment-providers.sql bir marta ishga tushirilgan bo'lishi kerak.</div>
+ <form id="payForm">
+  <h3>Bank karta</h3>
+  <input type="text" id="cNum" placeholder="Karta raqami (8600 0000 0000 0000)">
+  <input type="text" id="cHolder" placeholder="Karta egasi (ism familiya)">
+  <input type="text" id="cBank" placeholder="Bank (masalan: Uzcard, Humo)">
+  <h3>Click</h3>
+  <label class="chk"><input type="checkbox" id="clOn"> Clickni yoqish</label>
+  <input type="text" id="clService" placeholder="service_id (Click kabinetidan)">
+  <input type="text" id="clMerchant" placeholder="merchant_id (Click kabinetidan)">
+  <div class="msg">Click to'lov havolasi: my.click.uz/services/pay</div>
+  <h3>Payme</h3>
+  <label class="chk"><input type="checkbox" id="pmOn"> Paymeni yoqish</label>
+  <input type="text" id="pmMerchant" placeholder="merchant ID / kassa ID (Payme kabinetidan)">
+  <div class="msg">Payme to'lov sahifasi: checkout.paycom.uz</div>
+  <h3>Boshqa usul</h3>
+  <label class="chk"><input type="checkbox" id="cuOn"> Boshqa usulni yoqish</label>
+  <input type="text" id="cuName" placeholder="Nomi (masalan: Paynet)">
+  <input type="text" id="cuUrl" placeholder="To'lov havolasi: https://... {amount} {order_id} {return_url}">
+  <div class="msg">Havoladagi {amount} — summa (so'm), {order_id} — buyurtma raqami, {return_url} — qaytish manzili bilan almashtiriladi.</div>
+>>>>>>> f528f57 (Update MINDOVA)
   <button type="submit" class="submit-btn">Saqlash</button>
   <div class="msg" id="cardMsg"></div>
  </form>
@@ -248,7 +286,11 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
   <input type="time" id="evTime" required>
   <input type="text" id="evPlace" placeholder="O'tkazilish joyi" required>
   <textarea id="evDesc" placeholder="Tadbir haqida batafsil" rows="3"></textarea>
+<<<<<<< HEAD
   <input type="number" id="evPrice" min="0" step="1000" value="0" placeholder="Narxi (so'm). 0 = bepul">
+=======
+  <input type="number" id="evPrice" min="0" step="1000" value="35000" placeholder="Narxi (so'm), masalan 35000. 0 = bepul">
+>>>>>>> f528f57 (Update MINDOVA)
   <input type="text" id="evFormat" placeholder="Format (masalan: Offline, Online)">
   <select id="evOpen"><option value="1">Ro'yxatdan o'tish ochiq</option><option value="0">Ro'yxatdan o'tish yopiq</option></select>
   <select id="evStatus"><option value="published">Saytda ko'rinadi</option><option value="draft">Qoralama (saytda yashirin)</option></select>
@@ -278,7 +320,11 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
 
 <div id="team" class="section">
  <h2>Jamoa va mentorlar</h2>
+<<<<<<< HEAD
  <div class="msg">Foto va ma'lumotni kiriting, poster hammasi uchun bir xil fonda avtomatik yasaladi.</div>
+=======
+ <div class="msg">Bu yerdagi kartalar saytdagi “MINDOVA OILASI” va “MENTORLARIMIZ” karuselida chiqadi. Qo‘shilgan yoki o‘chirilgan karta sayt yangilanganda darhol ko‘rinadi. Foto va ma'lumotni kiriting, poster hammasi uchun bir xil fonda avtomatik yasaladi.</div>
+>>>>>>> f528f57 (Update MINDOVA)
  <button type="button" class="submit-btn" id="tRegen" style="margin:8px 0">Barcha avtomatik posterlarni qayta yaratish</button>
  <div class="msg" id="tRegenMsg"></div>
  <div id="tList"></div>
@@ -297,6 +343,7 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
  </form>
 </div>
 
+<<<<<<< HEAD
 <script>
 const sb=supabase.createClient("https://zrebikqvjbvuwbzcunkw.supabase.co","sb_publishable_DszdaPjNPM3i0UbGX3lLjQ_DTjdfLcW");
 const $=id=>document.getElementById(id);
@@ -938,5 +985,8 @@ $("addOppForm").onsubmit=async e=>{
  loadCn();
 })();
 </script>
+=======
+<script src="/assets/js/admin.js"></script>
+>>>>>>> f528f57 (Update MINDOVA)
 </body>
 </html>

@@ -1,0 +1,16 @@
+/* MINDOVA — verify sahifasi uslublari */
+*{box-sizing:border-box;margin:0}
+body{font-family:Inter,system-ui,sans-serif;background:#0b0b24;color:#e8eaff;min-height:100vh;display:grid;place-items:center;padding:20px;line-height:1.5}
+.box{width:100%;max-width:600px;background:linear-gradient(160deg,#16163f,#101033);border:1px solid rgba(255,255,255,.09);border-radius:18px;padding:28px;box-shadow:0 10px 40px rgba(0,0,0,.4)}
+.logo img{height:30px;width:auto;display:block}
+.logo{font-weight:800;font-size:1.3rem;margin-bottom:6px}.logo i{color:#6366F1;font-style:normal}
+h1{font-size:1.4rem;margin-bottom:6px}.m{color:#9aa0d0;font-size:.92rem;margin-bottom:18px}
+input{width:100%;padding:13px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0b0b24;color:#fff;font:inherit;text-transform:uppercase;margin-bottom:12px}
+button{width:100%;border:0;border-radius:99px;padding:13px;background:#6366F1;color:#fff;font:inherit;font-weight:700;cursor:pointer}
+button:disabled{opacity:.6}
+.r{margin-top:20px;border-radius:14px;padding:18px}
+.ok{background:#0f3a2a;border:1px solid #1f7a55}.no{background:#4a1822;border:1px solid #8a2c3d}
+.r h2{font-size:1.1rem;margin-bottom:10px}.r p{font-size:.95rem;margin:4px 0}.r span{color:#9aa0d0}
+.pv{width:100%;border-radius:10px;margin-top:16px;display:block;cursor:zoom-in;background:#16163f;aspect-ratio:1.5}
+.md{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;place-items:center;z-index:50;padding:12px}.md.on{display:grid}.md img{max-width:100%;max-height:90vh;border-radius:8px}
+a{color:#a5b4fc;display:block;text-align:center;margin-top:18px;font-size:.9rem;text-decoration:none}

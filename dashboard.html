@@ -5,6 +5,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<<<<<<< HEAD
 <style>
 :root{--bg:#0F0E26;--pn:#151433;--ln:rgba(255,255,255,.08);--a:#6366F1;--m:#8f93b8;--t:#ECECF8}
 *{box-sizing:border-box;margin:0}
@@ -67,12 +68,17 @@ label{font-size:.82rem;color:var(--m);display:block}textarea{min-height:90px}
 }
 </style></head><body>
 <div class="top"><button onclick="menu(true)" aria-label="Menyu"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><div class="logo"><img src="/logo-h.png" alt="MINDOVA"></div><button class="tav" id="tav" onclick="go('prof')" aria-label="Profil"></button></div>
+=======
+<link rel="stylesheet" href="/assets/css/dashboard.css"></head><body>
+<div class="top"><button onclick="menu(true)" aria-label="Menyu"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><div class="logo"><img src="/assets/img/logo-h.png" alt="MINDOVA"></div><button class="tav" id="tav" onclick="go('prof')" aria-label="Profil"></button></div>
+>>>>>>> f528f57 (Update MINDOVA)
 <div class="ov" id="ov" onclick="menu(false)"></div>
 <div class="app">
 <nav class="sb" id="sb"></nav>
 <main class="main"><div id="msg"></div><div id="view" class="view"><p class="m">Yuklanmoqda…</p></div></main></div>
 <nav class="bn" id="bn"></nav>
 <div class="md" id="md" onclick="this.classList.remove('on')"><img id="mi" alt="Sertifikat"></div>
+<<<<<<< HEAD
 <script>
 const REC=/type=recovery/.test(location.hash);
 const sb=supabase.createClient("https://zrebikqvjbvuwbzcunkw.supabase.co","sb_publishable_DszdaPjNPM3i0UbGX3lLjQ_DTjdfLcW");
@@ -312,3 +318,6 @@ async function load(){
  if(matchMedia("(hover:hover)").matches)addEventListener("mousemove",e=>{gx=-(e.clientX/innerWidth-.5)*innerWidth*.05;gy=-(e.clientY/innerHeight-.5)*innerHeight*.04});
 })();
 </script></body></html>
+=======
+<script src="/assets/js/dashboard.js"></script></body></html>
+>>>>>>> f528f57 (Update MINDOVA)

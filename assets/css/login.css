@@ -1,0 +1,11 @@
+/* MINDOVA — kirish sahifasi (hozircha bosh sahifaga yo‘naltiradi) */
+:root{--bg:#0f0e26;--ink:#ececf8;--mut:#9aa0c8;--acc:#6366f1}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;
+ font-family:Inter,system-ui,sans-serif;background:radial-gradient(600px 400px at 80% 0%,rgba(99,102,241,.2),transparent 70%),var(--bg);color:var(--ink)}
+.card{max-width:380px;width:100%;text-align:center;background:rgba(255,255,255,.05);
+ border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:32px 26px}
+.logo{height:62px;width:auto;margin-bottom:16px}
+p{color:var(--mut);font-size:.92rem;line-height:1.6;margin:0 0 18px}
+a.btn{display:inline-block;background:var(--acc);color:#fff;text-decoration:none;font-weight:700;
+ border-radius:99px;padding:12px 24px}
