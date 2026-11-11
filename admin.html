@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MINDOVA — Admin Panel</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<<<<<<< HEAD
 <style>
 body{font-family:system-ui,sans-serif;background:#0F0E26;color:#fff;margin:0;padding:20px}
 h1,h2{color:#6366F1}
@@ -25,9 +24,6 @@ button.submit-btn{background:#6366F1;cursor:pointer;font-weight:bold}
 label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
 .msg{min-height:1.2em;font-size:.9rem;color:#9FB0FF}
 </style>
-=======
-<link rel="stylesheet" href="/assets/css/admin.css">
->>>>>>> f528f57 (Update MINDOVA)
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -45,15 +41,11 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
  <button class="tab-btn" data-tab="social">Ijtimoiy tarmoqlar</button>
  <button class="tab-btn" data-tab="pays">To'lovlar</button>
  <button class="tab-btn" data-tab="promo">Promokodlar</button>
-<<<<<<< HEAD
  <button class="tab-btn" data-tab="paycfg">Karta</button>
  <button class="tab-btn" data-tab="cnx">Connect</button>
+ <button class="tab-btn" data-tab="anx">E’lonlar</button>
+ <button class="tab-btn" data-tab="bdx">Belgilar</button>
  <a class="tab-btn" href="/scan" style="text-decoration:none;display:inline-block">Skaner paneli</a>
-=======
- <button class="tab-btn" data-tab="paycfg">To'lov usullari</button>
- <button class="tab-btn" data-tab="cnx">Connect</button>
- <a class="tab-btn" href="/scan.html" style="text-decoration:none;display:inline-block">Skaner paneli</a>
->>>>>>> f528f57 (Update MINDOVA)
  <button class="tab-btn" data-tab="faqs">FAQ</button>
 </div>
 
@@ -186,10 +178,6 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
 
 <div id="pays" class="section">
  <h2>To'lovlar</h2>
-<<<<<<< HEAD
-=======
- <div class="msg">Click/Payme to'lovlarini merchant kabinetda buyurtma IDsi bo'yicha tekshirib, "Tasdiqlash"ni bosing.</div>
->>>>>>> f528f57 (Update MINDOVA)
  <label>Holat<select id="pF"><option value="pending">Kutilmoqda</option><option value="paid">Tasdiqlangan</option><option value="rejected">Rad etilgan</option><option value="all">Hammasi</option></select></label>
  <div class="msg" id="pSum"></div>
  <div id="pList"></div>
@@ -214,36 +202,12 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
 </div>
 
 <div id="paycfg" class="section">
-<<<<<<< HEAD
  <h2>To'lov kartasi</h2>
  <div class="msg">Bu ma'lumotlar pullik tadbirga yozilayotgan foydalanuvchiga to'lov oynasida ko'rsatiladi.</div>
  <form id="cardForm">
   <input type="text" id="cNum" placeholder="Karta raqami (8600 0000 0000 0000)">
   <input type="text" id="cHolder" placeholder="Karta egasi (ism familiya)">
   <input type="text" id="cBank" placeholder="Bank (masalan: Uzcard, Humo)">
-=======
- <h2>To'lov usullari</h2>
- <div class="msg">Bu ma'lumotlar pullik tadbirga yozilayotgan foydalanuvchiga to'lov oynasida ko'rsatiladi. Faqat yoqilgan va to'liq sozlangan usullar chiqadi. Click/Payme uchun payment-providers.sql bir marta ishga tushirilgan bo'lishi kerak.</div>
- <form id="payForm">
-  <h3>Bank karta</h3>
-  <input type="text" id="cNum" placeholder="Karta raqami (8600 0000 0000 0000)">
-  <input type="text" id="cHolder" placeholder="Karta egasi (ism familiya)">
-  <input type="text" id="cBank" placeholder="Bank (masalan: Uzcard, Humo)">
-  <h3>Click</h3>
-  <label class="chk"><input type="checkbox" id="clOn"> Clickni yoqish</label>
-  <input type="text" id="clService" placeholder="service_id (Click kabinetidan)">
-  <input type="text" id="clMerchant" placeholder="merchant_id (Click kabinetidan)">
-  <div class="msg">Click to'lov havolasi: my.click.uz/services/pay</div>
-  <h3>Payme</h3>
-  <label class="chk"><input type="checkbox" id="pmOn"> Paymeni yoqish</label>
-  <input type="text" id="pmMerchant" placeholder="merchant ID / kassa ID (Payme kabinetidan)">
-  <div class="msg">Payme to'lov sahifasi: checkout.paycom.uz</div>
-  <h3>Boshqa usul</h3>
-  <label class="chk"><input type="checkbox" id="cuOn"> Boshqa usulni yoqish</label>
-  <input type="text" id="cuName" placeholder="Nomi (masalan: Paynet)">
-  <input type="text" id="cuUrl" placeholder="To'lov havolasi: https://... {amount} {order_id} {return_url}">
-  <div class="msg">Havoladagi {amount} — summa (so'm), {order_id} — buyurtma raqami, {return_url} — qaytish manzili bilan almashtiriladi.</div>
->>>>>>> f528f57 (Update MINDOVA)
   <button type="submit" class="submit-btn">Saqlash</button>
   <div class="msg" id="cardMsg"></div>
  </form>
@@ -276,6 +240,34 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
  <div id="cnA"></div>
 </div>
 
+<div id="anx" class="section">
+ <h2>E’lonlar</h2>
+ <div class="msg">E’lonlar foydalanuvchilarning Bosh sahifasi va Community bo‘limida ko‘rinadi.</div>
+ <form id="anF">
+  <input type="text" id="anT" placeholder="Sarlavha" required maxlength="160">
+  <textarea id="anB" placeholder="Matn (ixtiyoriy)" maxlength="2000" rows="4"></textarea>
+  <input type="text" id="anI" placeholder="Rasm havolasi (ixtiyoriy, https://...)">
+  <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="anP" style="width:auto"> Tepada qadab qo‘yish</label>
+  <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="anU" style="width:auto" checked> E’lon qilingan (ko‘rinadi)</label>
+  <button type="submit" class="submit-btn">Saqlash</button>
+  <div class="msg" id="anM"></div>
+ </form>
+ <div id="anL"></div>
+</div>
+<div id="bdx" class="section">
+ <h2>Mentor va Org Team belgilari</h2>
+ <div class="msg">Belgi berilgan a’zolar Community bo‘limida alohida yorliq bilan ko‘rinadi.</div>
+ <form id="bdF">
+  <input type="text" id="bdU" list="bdUl" placeholder="Foydalanuvchini tanlang (ism yoki email)">
+  <datalist id="bdUl"></datalist>
+  <select id="bdT"><option value="mentor">Mentor</option><option value="org">Org Team</option></select>
+  <button type="submit" class="submit-btn">Belgi berish</button>
+  <div class="msg" id="bdM"></div>
+ </form>
+ <h2 style="font-size:1.1rem;margin-top:20px">Belgi berilganlar</h2>
+ <div id="bdL"></div>
+</div>
+
 <div id="events" class="section">
  <h2>Tadbirlar ro'yxati</h2>
  <div id="evList"></div>
@@ -286,11 +278,7 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
   <input type="time" id="evTime" required>
   <input type="text" id="evPlace" placeholder="O'tkazilish joyi" required>
   <textarea id="evDesc" placeholder="Tadbir haqida batafsil" rows="3"></textarea>
-<<<<<<< HEAD
   <input type="number" id="evPrice" min="0" step="1000" value="0" placeholder="Narxi (so'm). 0 = bepul">
-=======
-  <input type="number" id="evPrice" min="0" step="1000" value="35000" placeholder="Narxi (so'm), masalan 35000. 0 = bepul">
->>>>>>> f528f57 (Update MINDOVA)
   <input type="text" id="evFormat" placeholder="Format (masalan: Offline, Online)">
   <select id="evOpen"><option value="1">Ro'yxatdan o'tish ochiq</option><option value="0">Ro'yxatdan o'tish yopiq</option></select>
   <select id="evStatus"><option value="published">Saytda ko'rinadi</option><option value="draft">Qoralama (saytda yashirin)</option></select>
@@ -320,11 +308,7 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
 
 <div id="team" class="section">
  <h2>Jamoa va mentorlar</h2>
-<<<<<<< HEAD
  <div class="msg">Foto va ma'lumotni kiriting, poster hammasi uchun bir xil fonda avtomatik yasaladi.</div>
-=======
- <div class="msg">Bu yerdagi kartalar saytdagi “MINDOVA OILASI” va “MENTORLARIMIZ” karuselida chiqadi. Qo‘shilgan yoki o‘chirilgan karta sayt yangilanganda darhol ko‘rinadi. Foto va ma'lumotni kiriting, poster hammasi uchun bir xil fonda avtomatik yasaladi.</div>
->>>>>>> f528f57 (Update MINDOVA)
  <button type="button" class="submit-btn" id="tRegen" style="margin:8px 0">Barcha avtomatik posterlarni qayta yaratish</button>
  <div class="msg" id="tRegenMsg"></div>
  <div id="tList"></div>
@@ -343,7 +327,6 @@ label{display:block;font-size:.85rem;color:#9FB0FF;margin-top:8px}
  </form>
 </div>
 
-<<<<<<< HEAD
 <script>
 const sb=supabase.createClient("https://zrebikqvjbvuwbzcunkw.supabase.co","sb_publishable_DszdaPjNPM3i0UbGX3lLjQ_DTjdfLcW");
 const $=id=>document.getElementById(id);
@@ -353,6 +336,7 @@ document.querySelectorAll(".tab-btn[data-tab]").forEach(b=>b.onclick=()=>{
  document.querySelectorAll(".tab-btn[data-tab]").forEach(x=>x.classList.remove("active"));
  $(b.dataset.tab).classList.add("active");
  b.classList.add("active");
+ (TABLOAD[b.dataset.tab]||[]).forEach(f=>{try{f()}catch(e){console.error(e)}});
 });
 
 async function decodeImg(file){
@@ -381,6 +365,7 @@ $("out").onclick=async()=>{await sb.auth.signOut();location.href="/"};
 
 async function loadAtt(){
  const ev=await sb.from("events").select("id,title,starts_at").order("starts_at",{ascending:false});
+ if(ev.error){$("aSum").textContent="Tadbirlarni yuklab bo'lmadi: "+ev.error.message;return}
  const se=$("aEv"),keep=se.value;se.innerHTML="";
  (ev.data||[]).forEach(x=>{const o=document.createElement("option");o.value=x.id;o.textContent=x.title;se.appendChild(o)});
  if(keep)se.value=keep;drawAtt();
@@ -401,6 +386,7 @@ async function drawAtt(){
 }
 $("aEv").onchange=drawAtt;
 $("aCert").onclick=async()=>{
+ if(!$("aEv").value){$("aMsg").textContent="Avval tadbirni tanlang.";return}
  const {data,error}=await sb.rpc("issue_event_certificates",{p_event_id:$("aEv").value});
  $("aMsg").textContent=error?"Xato: "+error.message:"Yangi berilgan sertifikatlar: "+data+" ta";
  if(!error)loadCerts();
@@ -585,6 +571,44 @@ $("cnCF").onsubmit=async e=>{
  const {error}=await sb.from("cn_categories").insert([{name:$("cnCN").value.trim(),position:parseInt($("cnCP").value)||0}]);
  $("cnCM").textContent=error?(/duplicate|unique/i.test(error.message)?"Bu nom allaqachon bor.":"Xato: "+error.message):"Qo'shildi ✓";
  if(!error){e.target.reset();loadCn()}
+};
+
+let ANE=null;
+async function loadAnn(){
+ const r=await sb.from("announcements").select("*").order("pinned",{ascending:false}).order("created_at",{ascending:false});
+ const box=$("anL");box.innerHTML="";
+ if(r.error){box.textContent="Yuklab bo'lmadi: "+r.error.message+" (app.sql bajarilganmi?)";return}
+ if(!(r.data||[]).length)box.textContent="Hozircha e'lon yo'q.";
+ (r.data||[]).forEach(x=>cnRow(box,[[(x.pinned?"📌 ":"")+x.title+(x.published?"":"  (yashirin)"),"font-weight:700"],[(x.body||"").slice(0,140),"opacity:.8"],[new Date(x.created_at).toLocaleDateString(),"font-size:.8rem;opacity:.6"]],[
+  cnBtn("Tahrirlash",()=>{ANE=x.id;$("anT").value=x.title;$("anB").value=x.body||"";$("anI").value=x.image_url||"";$("anP").checked=x.pinned;$("anU").checked=x.published;$("anM").textContent="Tahrirlanmoqda. O'zgartirib, Saqlash bosing.";window.scrollTo(0,0)}),
+  cnBtn(x.pinned?"Qadashni olib tashlash":"Qadash",async()=>{await sb.from("announcements").update({pinned:!x.pinned}).eq("id",x.id);loadAnn()}),
+  cnBtn(x.published?"Yashirish":"E'lon qilish",async()=>{await sb.from("announcements").update({published:!x.published}).eq("id",x.id);loadAnn()}),
+  cnBtn("O'chirish",async()=>{if(!confirm("E'lon o'chirilsinmi?"))return;await sb.from("announcements").delete().eq("id",x.id);loadAnn()})]));
+}
+$("anF").onsubmit=async e=>{
+ e.preventDefault();
+ const img=$("anI").value.trim();if(img&&!/^https?:\/\//i.test(img)){$("anM").textContent="Rasm havolasi https:// bilan boshlansin.";return}
+ const row={title:$("anT").value.trim(),body:$("anB").value.trim()||null,image_url:img||null,pinned:$("anP").checked,published:$("anU").checked};
+ const r=ANE?await sb.from("announcements").update(row).eq("id",ANE):await sb.from("announcements").insert([row]);
+ $("anM").textContent=r.error?"Xato: "+r.error.message:"Saqlandi ✓";
+ if(!r.error){ANE=null;e.target.reset();$("anU").checked=true;loadAnn()}
+};
+async function loadBdg(){
+ const [pr,cp]=await Promise.all([sb.from("profiles").select("id,full_name,email"),sb.from("cn_profiles").select("user_id,badge").not("badge","is",null)]);
+ CNLIST=pr.data||[];CNP=Object.fromEntries(CNLIST.map(x=>[x.id,(x.full_name||"—")+(x.email?" ("+x.email+")":"")]));
+ const dl=$("bdUl");dl.innerHTML="";CNLIST.forEach(x=>{const o=document.createElement("option");o.value=CNP[x.id];dl.appendChild(o)});
+ const box=$("bdL");box.innerHTML="";
+ if(cp.error){box.textContent="Yuklab bo'lmadi: "+cp.error.message+" (app.sql bajarilganmi?)";return}
+ const L=cp.data||[];if(!L.length)box.textContent="Hali belgi berilmagan.";
+ L.forEach(x=>cnRow(box,[[CNP[x.user_id]||x.user_id,"font-weight:700"],[x.badge==="mentor"?"Mentor":"Org Team","opacity:.8"]],[cnBtn("Belgini olib tashlash",async()=>{const {error}=await sb.rpc("cn_admin_set_badge",{p_user:x.user_id,p_badge:null});if(error){alert(error.message);return}loadBdg()})]));
+}
+$("bdF").onsubmit=async e=>{
+ e.preventDefault();
+ const u=CNLIST.find(x=>CNP[x.id]===$("bdU").value.trim());
+ if(!u){$("bdM").textContent="Ro'yxatdan foydalanuvchini tanlang.";return}
+ const {error}=await sb.rpc("cn_admin_set_badge",{p_user:u.id,p_badge:$("bdT").value});
+ $("bdM").textContent=error?"Xato: "+error.message:"Belgi berildi ✓";
+ if(!error){e.target.reset();loadBdg()}
 };
 
 let SOC=[],soEdit=null;
@@ -961,6 +985,7 @@ $("addOppForm").onsubmit=async e=>{
  if(!error){e.target.reset();loadOpps()}
 };
 
+const TABLOAD={users:[()=>loadUsers(),()=>loadProfiles()],events:[()=>loadEvents()],team:[()=>loadTeam()],opps:[()=>loadOpps()],jobs:[()=>loadJobs()],certs:[()=>loadCerts()],faqs:[()=>loadFaqs()],staff:[()=>loadStaff()],att:[()=>loadAtt(),()=>loadScan()],about:[()=>loadAbout()],social:[()=>loadSocial()],pays:[()=>loadPays()],promo:[()=>loadPromos()],paycfg:[()=>loadCard()],cnx:[()=>loadCn()],anx:[()=>loadAnn()],bdx:[()=>loadBdg()]};
 (async()=>{
  const {data}=await sb.auth.getSession();
  if(!data.session){location.href="/";return}
@@ -968,25 +993,7 @@ $("addOppForm").onsubmit=async e=>{
  if(!ad.data){location.href="/kabinet";return}
  loadUsers();
  loadProfiles();
- loadEvents();
- loadOpps();
- loadJobs();
- loadCerts();
- loadFaqs();
- loadTeam();
- loadStaff();
- loadAtt();
- loadScan();
- loadAbout();
- loadSocial();
- loadPays();
- loadPromos();
- loadCard();
- loadCn();
 })();
 </script>
-=======
-<script src="/assets/js/admin.js"></script>
->>>>>>> f528f57 (Update MINDOVA)
 </body>
 </html>
