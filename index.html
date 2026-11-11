@@ -160,7 +160,8 @@ nav.open .burger{border-color:#6366F1;background:rgba(99,102,241,.18)}
  .mpanel>a{display:block;padding:17px 30px;font-size:1.1rem;color:#d4d7f3}
  .mpanel>a:active{background:rgba(255,255,255,.05)}
  .mrow{display:flex;gap:14px;align-items:center;padding:18px 28px 26px;border-top:1px solid rgba(255,255,255,.1);margin-top:8px}
- .mrow .btn{flex:1;padding:14px;font-size:1rem}
+ .mrow{padding-bottom:14px;border-bottom:0}.mrow .btn{flex:1;padding:14px;font-size:1rem}
+ .mrow2{padding:0 28px 26px}
 }
 .hero .wrap{text-align:center}.hero{padding:120px 0 90px}.hero p{margin-left:auto;margin-right:auto}.hero .cta-row{justify-content:center}
 .orb{position:relative;width:min(250px,62vw);aspect-ratio:1;margin:0 auto 24px;opacity:0;transform:scale(.9);animation:up .9s ease .05s forwards}
@@ -205,6 +206,7 @@ textarea{min-height:110px;resize:vertical}
  <div class="nr">
   <div class="lang"><button type="button" data-lang="uz" class="on">UZ</button><button type="button" data-lang="en">EN</button></div>
   <button class="btn ghost sm" id="openLogin" type="button">Kirish</button>
+  <button class="btn acc sm" id="openSignup" type="button">Ro‘yxatdan o‘tish</button>
  </div>
 </div>
 <div class="mpanel" id="mpanel">
@@ -216,6 +218,7 @@ textarea{min-height:110px;resize:vertical}
  <a href="/verify">Sertifikatni tekshirish</a>
  <a id="tg3" target="_blank" rel="noopener">Telegram kanalimiz</a>
  <div class="mrow"><div class="lang"><button type="button" data-lang="uz" class="on">UZ</button><button type="button" data-lang="en">EN</button></div><button class="btn ghost" id="openLogin2" type="button">Kirish</button></div>
+ <div class="mrow2"><button class="btn acc" id="openSignup2" type="button" style="width:100%;padding:14px;font-size:1rem">Ro‘yxatdan o‘tish</button></div>
 </div></nav>
 
 <header class="hero" id="top"><div class="hm" aria-hidden="true">M</div><div class="wrap">
@@ -363,7 +366,7 @@ textarea{min-height:110px;resize:vertical}
    <h4>Yordam</h4>
    <a class="l" href="#faq">Ko‘p so‘raladigan savollar</a>
    <a class="l" href="/verify">Sertifikatni tekshirish</a>
-   <a class="l" href="/kabinet">Shaxsiy kabinet</a>
+   <a class="l" href="/app">Shaxsiy kabinet</a>
    <a class="l" id="adm" target="_blank" rel="noopener" hidden>Admin bilan bog‘lanish</a>
   </div>
   <div>
@@ -450,7 +453,8 @@ let signup=true,EVD=null,OPD=[];
 const lf=$("#loginForm");
 function setMode(s){signup=s;$("#authTitle").textContent=s?"Ro‘yxatdan o‘tish":"Kirish";$("#authBtn").textContent=s?"Ro‘yxatdan o‘tish":"Kirish";$("#suFields").hidden=!s;$("#authSwap").textContent=s?"Hisobingiz bormi? Kiring":"Hisobingiz yo‘qmi? Ro‘yxatdan o‘ting";$("#fpWrap").hidden=s;$("#loginErr").style.color="";$("#loginErr").textContent=""}
 function openAuth(gate,s){setMode(s!==false);$("#closeLogin").hidden=!!gate;$("#loginModal").classList.add("open");if(gate)document.body.style.overflow="hidden"}
-["#openLogin","#openLogin2"].forEach(s=>$(s).onclick=()=>{setMenu(false);if(ME.user)location.href="/kabinet";else openAuth(false,false)});
+["#openLogin","#openLogin2"].forEach(s=>$(s).onclick=()=>{setMenu(false);if(ME.user)location.href="/app";else openAuth(false,false)});
+["#openSignup","#openSignup2"].forEach(s=>$(s).onclick=()=>{setMenu(false);openAuth(false,true)});
 $("#authSwap").onclick=ev=>{ev.preventDefault();setMode(!signup)};
 lf.telegram.oninput=()=>{lf.telegram.value=lf.telegram.value.toLowerCase().replace(/[^a-z0-9_@]/g,"")};
 $("#pwEye").onclick=()=>{lf.password.type=lf.password.type==="password"?"text":"password"};
@@ -462,15 +466,17 @@ $("#forgot").onclick=async e=>{
  if(error){out.textContent=error.message;return}
  out.style.color="#0f6b46";out.textContent="Parolni tiklash havolasi emailingizga yuborildi.";
 };
-async function enter(user,profile){
+let GOAPP=true;
+async function enter(user,profile,fresh){
  ME.user=user;
  if(!profile){const r=await sb.from("profiles").select("*").eq("id",user.id).maybeSingle();profile=r.data}
  ME.profile=profile||{};
  const rg=await sb.from("registrations").select("event_id").eq("user_id",user.id);
  ME.regs=new Set((rg.data||[]).map(x=>x.event_id));
  $("#loginModal").classList.remove("open");document.body.style.overflow="";
- $("#openLogin").textContent="Kabinetim";$("#openLogin2").textContent="Kabinetim";$("#cnLink").hidden=false;$("#cnLink2").hidden=false;
+ $("#openLogin").textContent="Kabinetim";$("#openLogin2").textContent="Kabinetim";$("#cnLink").hidden=false;$("#cnLink2").hidden=false;$("#openSignup").hidden=true;$("#openSignup2").parentNode.hidden=true;
  drawEv();
+ if(fresh&&GOAPP)setTimeout(()=>{location.href="/app"},250);
 }
 lf.onsubmit=async ev=>{
  ev.preventDefault();
@@ -494,16 +500,16 @@ lf.onsubmit=async ev=>{
   const prof={id:data.user.id,email,full_name:name,age,phone:"+"+d,telegram_username:tg};
   const up=await sb.from("profiles").upsert(prof);
   if(up.error)console.error(up.error);
-  await enter(data.session.user,prof);
+  await enter(data.session.user,prof,true);
   return;
  }
  btn.disabled=true;
  const {data,error}=await sb.auth.signInWithPassword({email,password:f.password.value});
  btn.disabled=false;
  if(error){out.textContent="Email yoki parol xato!";return}
- await enter(data.user);
+ await enter(data.user,null,true);
 };
-if(sb)ME.ready=sb.auth.getSession().then(async({data})=>{if(data.session)await enter(data.session.user);else if(CFG.GATE)openAuth(true,false)}).catch(e=>console.error(e));
+if(sb)ME.ready=sb.auth.getSession().then(async({data})=>{if(data.session)await enter(data.session.user);else if(CFG.GATE)openAuth(true,false);else if(/[?&]login=1/.test(location.search))openAuth(false,false)}).catch(e=>console.error(e));
 
 /* Kartochkalar */
 function regBtn(e){if(!canReg(e))return "";return ME.regs.has(e.id)?`<a class="btn sm done" href="/kabinet#evs" style="cursor:pointer">Chiptani ko‘rish (QR)</a>`:`<button class="btn acc sm" type="button" data-ev="${esc(e.id)}">Ro‘yxatdan o‘tish</button>`}
@@ -668,7 +674,7 @@ function startReg(id,b){
 async function onEvClick(ev){
  const b=ev.target.closest("[data-ev]");if(!b||b.disabled)return;
  if(!ME.user)await ME.ready;
- if(!ME.user){openAuth(false,false);return}
+ if(!ME.user){GOAPP=false;openAuth(false,false);return}
  const p=ME.profile||{};
  if(!(p.full_name&&p.age&&p.phone&&p.telegram_username)){pendingEv=b.dataset.ev;fillPf();$("#pfModal").classList.add("open");return}
  $("#evModal").classList.remove("open");
