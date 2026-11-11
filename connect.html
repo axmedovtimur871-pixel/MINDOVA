@@ -3,7 +3,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0F0E26">
 <title>Mindova Connect</title>
-<<<<<<< HEAD
 <link rel="icon" href="/logo.png">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
@@ -90,14 +89,6 @@ label{font-size:.82rem;color:var(--m);display:block}.row{display:flex;gap:8px;fl
 </style></head><body>
 <header class="top" id="top"><a href="/"><img src="/logo-h.png" alt="MINDOVA"></a><b>Connect</b><span class="sp"></span>
 <button class="ib" id="bell" aria-label="Bildirishnomalar" data-act="notif"></button><a class="bt o" href="/kabinet">Kabinet</a></header>
-=======
-<link rel="icon" href="/assets/img/logo.png">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<link rel="stylesheet" href="/assets/css/connect.css"></head><body>
-<header class="top" id="top"><a href="/"><img src="/assets/img/logo-h.png" alt="MINDOVA"></a><b>Connect</b><span class="sp"></span>
-<button class="ib" id="bell" aria-label="Bildirishnomalar" data-act="notif"></button><a class="bt o" href="/dashboard.html">Kabinet</a></header>
->>>>>>> f528f57 (Update MINDOVA)
 <div id="net" hidden>Aloqa uzildi. Qayta ulanmoqda…</div>
 <div class="app"><nav class="sn" id="sn"></nav><main class="main" id="view"><p class="m">Yuklanmoqda…</p></main></div>
 <nav class="bn" id="bn"></nav>
@@ -106,7 +97,6 @@ label{font-size:.82rem;color:var(--m);display:block}.row{display:flex;gap:8px;fl
 <div id="toast" role="status"></div>
 <input type="file" id="fimg" accept="image/*" multiple hidden>
 <input type="file" id="ffile" accept="application/pdf" hidden>
-<<<<<<< HEAD
 <script>
 const sb=supabase.createClient("https://zrebikqvjbvuwbzcunkw.supabase.co","sb_publishable_DszdaPjNPM3i0UbGX3lLjQ_DTjdfLcW");
 const $=q=>document.querySelector(q);
@@ -558,8 +548,7 @@ $("#mod").addEventListener("click",e=>{if(e.target.id==="mod")closeMod()});
  sb.auth.onAuthStateChange(ev=>{if(ev==="SIGNED_OUT")location.href="/"});
  subscribe();await refreshBadges();
  const h=location.hash.slice(1);go(V[h]?h:(MYP?"disc":"me"));
+ let want=null;try{want=sessionStorage.getItem("cn_open");sessionStorage.removeItem("cn_open")}catch(e){}
+ if(want&&/^[0-9a-f-]{36}$/i.test(want))await openWith(want);
 })();
 </script></body></html>
-=======
-<script src="/assets/js/connect.js"></script></body></html>
->>>>>>> f528f57 (Update MINDOVA)
