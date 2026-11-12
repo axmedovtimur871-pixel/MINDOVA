@@ -5,7 +5,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
-<<<<<<< HEAD
 <style>
 :root{--bg:#0F0E26;--pn:#151433;--ln:rgba(255,255,255,.08);--a:#6366F1;--m:#8f93b8;--t:#ECECF8}
 *{box-sizing:border-box;margin:0}
@@ -68,17 +67,12 @@ label{font-size:.82rem;color:var(--m);display:block}textarea{min-height:90px}
 }
 </style></head><body>
 <div class="top"><button onclick="menu(true)" aria-label="Menyu"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><div class="logo"><img src="/logo-h.png" alt="MINDOVA"></div><button class="tav" id="tav" onclick="go('prof')" aria-label="Profil"></button></div>
-=======
-<link rel="stylesheet" href="/assets/css/dashboard.css"></head><body>
-<div class="top"><button onclick="menu(true)" aria-label="Menyu"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><div class="logo"><img src="/assets/img/logo-h.png" alt="MINDOVA"></div><button class="tav" id="tav" onclick="go('prof')" aria-label="Profil"></button></div>
->>>>>>> f528f57 (Update MINDOVA)
 <div class="ov" id="ov" onclick="menu(false)"></div>
 <div class="app">
 <nav class="sb" id="sb"></nav>
 <main class="main"><div id="msg"></div><div id="view" class="view"><p class="m">Yuklanmoqda…</p></div></main></div>
 <nav class="bn" id="bn"></nav>
 <div class="md" id="md" onclick="this.classList.remove('on')"><img id="mi" alt="Sertifikat"></div>
-<<<<<<< HEAD
 <script>
 const REC=/type=recovery/.test(location.hash);
 const sb=supabase.createClient("https://zrebikqvjbvuwbzcunkw.supabase.co","sb_publishable_DszdaPjNPM3i0UbGX3lLjQ_DTjdfLcW");
@@ -267,7 +261,10 @@ async function out(){sessionStorage.removeItem("smu");await sb.auth.signOut();lo
 async function saveP(e){e.preventDefault();const f=e.target,v={full_name:f.fn.value.trim(),phone:f.ph.value.trim(),city:f.ct.value.trim(),bio:f.bio.value.trim(),interests:f.it.value.trim(),age:parseInt(f.ag.value)||null,telegram_username:f.tg.value.trim().replace(/^@/,"").toLowerCase()||null,updated_at:new Date().toISOString()};
  if(v.telegram_username&&!/^[a-z][a-z0-9_]{4,31}$/.test(v.telegram_username)){$("#pm").textContent="Telegram username noto‘g‘ri";return}
  const {error}=await sb.from("profiles").update(v).eq("id",U.id);
- if(error){$("#pm").textContent="Xato: "+error.message;return}Object.assign(P,v);go("prof");$("#pm").textContent="Saqlandi "}
+ if(error){$("#pm").textContent="Xato: "+error.message;return}Object.assign(P,v);
+ /* yangi ism QR chipta va admin ro‘yxatlarida ham ko‘rinsin */
+ if(v.full_name&&v.full_name.length>=3)sb.rpc("sync_my_registration_names",{p_full_name:v.full_name,p_telegram:v.telegram_username}).then(r=>{if(r.error)console.warn(r.error.message)});
+ go("prof");$("#pm").textContent="Saqlandi "}
 async function upAv(i){const fl=i.files[0];if(!fl)return;try{const im=await decodeImg(fl),s=Math.min(1,512/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*s;c.height=im.height*s;c.getContext("2d").drawImage(im,0,0,c.width,c.height);
  const b=await new Promise(r=>c.toBlob(r,"image/jpeg",.85)),p=U.id+"/"+Date.now()+".jpg",u=await sb.storage.from("avatars").upload(p,b,{contentType:"image/jpeg"});if(u.error)throw u.error;
  const url=sb.storage.from("avatars").getPublicUrl(p).data.publicUrl,{error}=await sb.from("profiles").update({avatar_url:url}).eq("id",U.id);if(error)throw error;P.avatar_url=url;go("prof")}catch(e){alert("Rasm yuklanmadi: "+e.message)}}
@@ -318,6 +315,3 @@ async function load(){
  if(matchMedia("(hover:hover)").matches)addEventListener("mousemove",e=>{gx=-(e.clientX/innerWidth-.5)*innerWidth*.05;gy=-(e.clientY/innerHeight-.5)*innerHeight*.04});
 })();
 </script></body></html>
-=======
-<script src="/assets/js/dashboard.js"></script></body></html>
->>>>>>> f528f57 (Update MINDOVA)

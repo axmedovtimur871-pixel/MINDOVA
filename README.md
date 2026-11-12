@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-# MINDOVA
-=======
 # MINDOVA
 
 Yoshlar uchun tadbirlar, imkoniyatlar, QR chiptalar, sertifikatlar va
@@ -72,4 +69,3 @@ tushiring (batafsil: `PAYMENTS.md`).
 - Click/Payme to'lovidan keyin admin tasdiqlaydi va QR chipta kabinetda
   ochiladi.
 - Standart tadbir narxi: **35 000 so'm** (admin panelda o'zgartiriladi).
->>>>>>> f528f57 (Update MINDOVA)
