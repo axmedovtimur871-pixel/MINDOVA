@@ -247,7 +247,8 @@ async function saveP(e){
   if(au.error)console.warn("Auth ma’lumotlari yangilanmadi:",au.error.message);
   D.reg.forEach(r=>{r.full_name=v.full_name;r.telegram_username=v.telegram_username});
   /* QR chipta va admin ro‘yxatlarida ham yangi ism ko‘rinishi uchun */
-  const ur=await sb.from("registrations").update({full_name:v.full_name,telegram_username:v.telegram_username}).eq("user_id",U.id);
+  let ur=await sb.rpc("sync_my_registration_names",{p_full_name:v.full_name,p_telegram:v.telegram_username||null});
+  if(ur.error&&/PGRST202|could not find|does not exist/i.test(ur.error.message||""))ur=await sb.from("registrations").update({full_name:v.full_name,telegram_username:v.telegram_username}).eq("user_id",U.id);
   if(ur.error)console.warn("Ro‘yxatdan o‘tish yozuvlari yangilanmadi:",ur.error.message);
   go("prof");
   const m=$("#pm");if(m){m.style.color="#6ee7b7";m.textContent="Saqlandi ✓"}
