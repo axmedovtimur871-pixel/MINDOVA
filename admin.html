@@ -142,6 +142,7 @@ td select{margin:0;padding:6px 8px;width:auto;font-size:.82rem}
 .todo b{display:block;font-size:.92rem}.todo small{color:var(--mut);font-size:.8rem}
 .todo .go{margin-left:auto;color:var(--mut)}
 .dgrid{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-top:16px}
+.dgrid.two{grid-template-columns:1fr 1fr}
 .card{background:var(--sf);border:1px solid var(--line);border-radius:18px;box-shadow:var(--sh);padding:20px;min-width:0}
 .card .ch{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
 .card .ch h3{font-size:1rem}
@@ -186,7 +187,8 @@ td select{margin:0;padding:6px 8px;width:auto;font-size:.82rem}
 .help svg{flex:none;width:18px;height:18px;margin-top:1px}
 /* overlay for mobile drawer */
 .scrim{display:none}
-@media(max-width:1100px){.kpis{grid-template-columns:repeat(2,1fr)}.dgrid{grid-template-columns:1fr}}
+@media(max-width:1100px){.kpis{grid-template-columns:repeat(2,1fr)}.dgrid,.dgrid.two{grid-template-columns:1fr}}
+@media(max-width:520px){.lst .when{display:none}}
 @media(max-width:900px){
  .shell{grid-template-columns:1fr}
  .side{position:fixed;left:0;top:0;bottom:0;width:min(290px,86vw);transform:translateX(-102%);transition:transform .35s var(--ease),box-shadow .35s}
@@ -267,7 +269,7 @@ td select{margin:0;padding:6px 8px;width:auto;font-size:.82rem}
   <div class="card"><div class="ch"><h3>Tadbirga yozilishlar</h3><small>so‘nggi 30 kun</small></div><div class="chart" id="chart"><div class="m-skel" style="height:100%"></div></div></div>
   <div class="card"><div class="ch"><h3>Yaqin tadbirlar</h3><button class="tab-btn" type="button" data-go="events">Hammasi</button></div><div id="dEv"><div class="m-skel skl"></div><div class="m-skel skl"></div><div class="m-skel skl"></div></div></div>
  </div>
- <div class="dgrid" style="grid-template-columns:1fr 1fr">
+ <div class="dgrid two">
   <div class="card"><div class="ch"><h3>So‘nggi yozilishlar</h3><button class="tab-btn" type="button" data-go="users">Hammasi</button></div><div class="lst" id="dReg"><div class="m-skel skl"></div><div class="m-skel skl"></div></div></div>
   <div class="card"><div class="ch"><h3>So‘nggi arizalar</h3><button class="tab-btn" type="button" data-go="jobs">Hammasi</button></div><div class="lst" id="dJob"><div class="m-skel skl"></div><div class="m-skel skl"></div></div></div>
  </div>

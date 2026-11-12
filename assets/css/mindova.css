@@ -44,6 +44,7 @@
 .m-js [data-reveal="right"]{transform:translateX(26px)}
 .m-js [data-reveal="zoom"]{transform:scale(.96)}
 .m-js [data-reveal].is-in{opacity:1;transform:none}
+@media (max-width:760px){.m-js [data-reveal="left"]:not(.is-in),.m-js [data-reveal="right"]:not(.is-in){transform:translateY(22px)}}
 
 /* skeleton */
 .m-skel{position:relative;overflow:hidden;border-radius:var(--r-sm);background:linear-gradient(90deg,rgba(127,127,170,.10) 0%,rgba(127,127,170,.22) 40%,rgba(127,127,170,.10) 80%) 0 0/200% 100%;animation:m-shimmer 1.4s linear infinite}
