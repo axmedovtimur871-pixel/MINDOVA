@@ -13,6 +13,8 @@
 :root{--bg:#F5F3FB;--sf:#fff;--sf2:#FAF9FE;--ink:#1A1640;--mut:#6A6790;--line:#E7E3F4;--brand:#3A1D8F;--vio:#6A45E0;--soft:#ECE7FB;--onb:#fff;--ok:#16A34A;--bad:#DC2626;--sh:0 1px 2px rgba(31,20,90,.05),0 10px 28px rgba(31,20,90,.07);--r:20px;--sk1:#EEEAF8;--sk2:#F8F6FD;--nav:rgba(255,255,255,.9)}
 [data-theme=dark]{--bg:#0E0D24;--sf:#171642;--sf2:#1D1C4C;--ink:#EEEEFA;--mut:#A3A6CF;--line:rgba(255,255,255,.1);--brand:#A99BFF;--vio:#8B7CFF;--soft:rgba(139,124,255,.17);--onb:#14123A;--sh:0 10px 30px rgba(0,0,0,.35);--sk1:#1d1c4c;--sk2:#2a295f;--nav:rgba(23,22,66,.92)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+.logo{display:inline-flex;align-items:center;gap:9px}.logo .lw{font:800 1.06rem/1 Inter,system-ui,sans-serif;letter-spacing:.09em;color:var(--ink)}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font:500 15px/1.5 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 button,input,select,textarea{font-family:inherit;color:inherit}
@@ -102,7 +104,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--vio);box-shadow:0 0 0
  <aside class="side" id="side"></aside>
  <div class="main">
   <header class="top">
-   <a class="logo" href="#home" aria-label="MINDOVA"><img src="/logo-h.png" alt="MINDOVA"></a>
+   <a class="logo" href="#home" aria-label="MINDOVA"><img src="/logo-icon.png" alt=""><span class="lw">MINDOVA</span></a>
    <span class="sp"></span>
    <button class="ib" data-act="theme" aria-label="Mavzu" id="thb"></button>
    <button class="ib" data-act="bell" aria-label="Bildirishnomalar" id="bell"></button>
@@ -210,7 +212,7 @@ function completion(){
 const NAV=[["home","Bosh sahifa"],["discover","Discover"],["events","Tadbirlar"],["community","Community"],["profile","Profil"]];
 function buildNav(){
  $("#bnav").innerHTML=NAV.map(([k,l])=>`<button data-act="go" data-id="${k}" data-nav="${k}" aria-label="${l}"><span class="ic">${ic(k)}</span>${l}</button>`).join("");
- $("#side").innerHTML=`<a class="logo" href="#home"><img src="/logo-h.png" alt="MINDOVA"></a>`+NAV.map(([k,l])=>`<button data-act="go" data-id="${k}" data-nav="${k}">${ic(k)}${l}</button>`).join("")
+ $("#side").innerHTML=`<a class="logo" href="#home"><img src="/logo-icon.png" alt=""><span class="lw">MINDOVA</span></a>`+NAV.map(([k,l])=>`<button data-act="go" data-id="${k}" data-nav="${k}">${ic(k)}${l}</button>`).join("")
   +`<hr><a href="/connect">${ic("chat")}Xabarlar va aloqalar</a><a href="/kabinet#certs">${ic("cert")}Sertifikatlarim</a><a href="/kabinet#apps">${ic("brief")}Arizalarim</a>`+(ISADM?`<a href="/admin">${ic("shield")}Admin panel</a>`:"")+`<hr><button data-act="logout">${ic("logout")}Chiqish</button>`;
 }
 function paintNav(){document.querySelectorAll("[data-nav]").forEach(b=>b.classList.toggle("on",b.dataset.nav===TAB))}
