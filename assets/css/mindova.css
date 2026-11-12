@@ -1,0 +1,94 @@
+/* =====================================================================
+   MINDOVA Design System
+   Brand: blue → indigo gradient (from the logo), deep-night surfaces.
+   Shared by every page. Page files only add layout specifics.
+   ===================================================================== */
+:root{
+  /* brand */
+  --m-blue:#2F7BF6;
+  --m-indigo:#4F46E5;
+  --m-violet:#6D4AE8;
+  --m-grad:linear-gradient(135deg,#2F7BF6 0%,#4F46E5 52%,#6D4AE8 100%);
+  --m-grad-soft:linear-gradient(135deg,rgba(47,123,246,.16),rgba(109,74,232,.16));
+  /* night surfaces (public site, sidebar) */
+  --n-0:#07071A; --n-1:#0C0C24; --n-2:#13132F; --n-3:#1B1B3D;
+  --n-line:rgba(255,255,255,.08); --n-line-2:rgba(255,255,255,.14);
+  --n-ink:#F1F2FB; --n-mut:#A0A4C8; --n-dim:#6E7299;
+  /* semantic */
+  --ok:#16A34A; --ok-bg:rgba(22,163,74,.12);
+  --warn:#D97706; --warn-bg:rgba(217,119,6,.12);
+  --bad:#DC2626; --bad-bg:rgba(220,38,38,.12);
+  --info:#2563EB; --info-bg:rgba(37,99,235,.1);
+  /* geometry */
+  --r-xs:8px; --r-sm:12px; --r:16px; --r-lg:22px; --r-xl:28px;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --spring:cubic-bezier(.34,1.56,.64,1);
+  --font:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --display:"Manrope","Inter",system-ui,sans-serif;
+}
+
+/* ---------- motion primitives ---------- */
+@keyframes m-fade-up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes m-fade{from{opacity:0}to{opacity:1}}
+@keyframes m-pop{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes m-sheet{from{transform:translateY(100%)}to{transform:none}}
+@keyframes m-shimmer{to{background-position:-200% 0}}
+@keyframes m-spin{to{transform:rotate(360deg)}}
+@keyframes m-shake{10%,90%{transform:translateX(-1px)}20%,80%{transform:translateX(2px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
+@keyframes m-ripple{to{transform:scale(4);opacity:0}}
+@keyframes m-toast-in{from{opacity:0;transform:translateY(16px) scale(.96)}to{opacity:1;transform:none}}
+
+/* scroll reveal (activated by ui.js adding .m-js on <html>) */
+.m-js [data-reveal]{opacity:0;transform:translateY(22px);transition:opacity .8s var(--ease),transform .8s var(--ease);transition-delay:var(--rd,0s)}
+.m-js [data-reveal="left"]{transform:translateX(-26px)}
+.m-js [data-reveal="right"]{transform:translateX(26px)}
+.m-js [data-reveal="zoom"]{transform:scale(.96)}
+.m-js [data-reveal].is-in{opacity:1;transform:none}
+
+/* skeleton */
+.m-skel{position:relative;overflow:hidden;border-radius:var(--r-sm);background:linear-gradient(90deg,rgba(127,127,170,.10) 0%,rgba(127,127,170,.22) 40%,rgba(127,127,170,.10) 80%) 0 0/200% 100%;animation:m-shimmer 1.4s linear infinite}
+.m-skel-card{display:flex;flex-direction:column;gap:12px;padding:18px;border-radius:var(--r-lg);border:1px solid var(--n-line)}
+.m-skel-card .a{height:160px}.m-skel-card .b{height:18px;width:70%}.m-skel-card .c{height:12px;width:90%}.m-skel-card .d{height:12px;width:55%}
+
+/* spinner */
+.m-spin{width:18px;height:18px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:m-spin .7s linear infinite;display:inline-block;vertical-align:-3px}
+
+/* press feedback + ripple for anything with .m-press or .btn */
+.m-press,.btn{position:relative;overflow:hidden;-webkit-tap-highlight-color:transparent}
+.m-ripple{position:absolute;border-radius:50%;pointer-events:none;width:40px;height:40px;margin:-20px 0 0 -20px;background:currentColor;opacity:.22;transform:scale(0);animation:m-ripple .6s var(--ease) forwards}
+
+/* field validation shake */
+.m-shake{animation:m-shake .42s ease}
+
+/* ---------- toasts ---------- */
+.m-toasts{position:fixed;z-index:9999;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;flex-direction:column;gap:10px;align-items:center;pointer-events:none;width:min(440px,calc(100% - 32px))}
+.m-toast{pointer-events:auto;display:flex;align-items:flex-start;gap:12px;width:100%;padding:14px 16px;border-radius:16px;background:rgba(19,19,47,.96);color:#fff;border:1px solid rgba(255,255,255,.12);box-shadow:0 20px 50px rgba(0,0,0,.35);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);font:500 .92rem/1.45 var(--font);animation:m-toast-in .45s var(--spring)}
+.m-toast.out{transition:opacity .25s,transform .25s;opacity:0;transform:translateY(10px) scale(.97)}
+.m-toast .ic{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:.8rem;font-weight:800;background:rgba(255,255,255,.12)}
+.m-toast.ok .ic{background:#16A34A}.m-toast.err .ic{background:#DC2626}.m-toast.info .ic{background:#4F46E5}
+.m-toast .x{margin-left:auto;background:none;border:0;color:inherit;opacity:.6;cursor:pointer;font-size:1rem;padding:0 2px}
+
+/* ---------- confirm dialog ---------- */
+.m-dlg-bg{position:fixed;inset:0;z-index:9998;background:rgba(6,6,20,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:grid;place-items:center;padding:16px;animation:m-fade .2s ease}
+.m-dlg{width:min(440px,100%);background:#fff;color:#14142B;border-radius:22px;padding:24px;box-shadow:0 30px 80px rgba(10,10,40,.35);animation:m-pop .35s var(--spring);font-family:var(--font)}
+.m-dlg .ico{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;margin-bottom:14px;background:rgba(79,70,229,.1);color:#4F46E5}
+.m-dlg.danger .ico{background:rgba(220,38,38,.1);color:#DC2626}
+.m-dlg h3{margin:0 0 6px;font-size:1.15rem;letter-spacing:-.01em}
+.m-dlg p{margin:0;color:#5B5F7E;font-size:.93rem;line-height:1.55;white-space:pre-line}
+.m-dlg .typein{margin-top:14px}
+.m-dlg .typein label{display:block;font-size:.82rem;color:#5B5F7E;margin-bottom:6px}
+.m-dlg .typein input{width:100%;padding:11px 13px;border-radius:12px;border:1.5px solid #E2E3EF;font:inherit;color:inherit;background:#fff}
+.m-dlg .typein input:focus{outline:none;border-color:#4F46E5;box-shadow:0 0 0 4px rgba(79,70,229,.12)}
+.m-dlg .acts{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.m-dlg .acts button{border:0;border-radius:12px;padding:11px 18px;font:700 .92rem var(--font);cursor:pointer;transition:transform .15s,filter .2s,opacity .2s}
+.m-dlg .acts button:active{transform:scale(.96)}
+.m-dlg .acts .no{background:#F1F2F8;color:#2A2D4A}
+.m-dlg .acts .yes{background:var(--m-grad);color:#fff}
+.m-dlg.danger .acts .yes{background:#DC2626}
+.m-dlg .acts .yes:disabled{opacity:.4;cursor:not-allowed}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+  .m-js [data-reveal]{opacity:1;transform:none}
+}

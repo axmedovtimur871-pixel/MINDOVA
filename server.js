@@ -6,6 +6,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// /assets ichidagi CSS, JS va rasmlar (dizayn tizimi shu yerda)
+app.use('/assets', express.static(path.join(__dirname, 'assets'), {
+  maxAge: '1h',
+  fallthrough: false,
+}));
+
 const send = (file) => (req, res) =>
   res.sendFile(path.join(__dirname, file));
 
