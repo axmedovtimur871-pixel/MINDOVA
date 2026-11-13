@@ -1,10 +1,11 @@
 import "server-only";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
-import { SUPABASE_ANON_KEY, SUPABASE_URL } from "@/lib/env";
+import { requireSupabaseConfig, SUPABASE_ANON_KEY, SUPABASE_URL } from "@/lib/env";
 
 /** Supabase client acting as the signed-in user (RLS applies). */
 export async function createClient() {
+  requireSupabaseConfig();
   const cookieStore = await cookies();
   return createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     cookies: {
@@ -24,6 +25,7 @@ export async function createClient() {
 
 /** Anonymous client for public pages (no cookies → cacheable, RLS as "anon"). */
 export function createPublicClient() {
+  requireSupabaseConfig();
   return createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     cookies: { getAll: () => [], setAll: () => {} },
   });

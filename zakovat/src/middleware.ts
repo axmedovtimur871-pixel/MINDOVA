@@ -1,12 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/env";
 
 // Refreshes the Supabase session cookie and keeps signed-out visitors out of /admin.
 // Role checks happen again on every admin page and API route (see src/lib/auth.ts).
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const url = SUPABASE_URL;
+  const key = SUPABASE_ANON_KEY;
   if (!url || !key) return response;
 
   const supabase = createServerClient(url, key, {

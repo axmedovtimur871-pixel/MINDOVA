@@ -1,8 +1,8 @@
 import type { NextConfig } from "next";
 import path from "node:path";
+import { parseHttpUrl } from "./src/lib/url";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseHost = supabaseUrl ? new URL(supabaseUrl) : null;
+const supabaseHost = parseHttpUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
 
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
