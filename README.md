@@ -1,9 +1,5 @@
 # MINDOVA
 
-> **ZAKOVAT ANDIJON** sayti va sertifikat tizimi alohida loyiha sifatida
-> [`zakovat/`](zakovat/README.md) papkasida joylashgan (Next.js + Supabase).
-> Quyidagi MINDOVA fayllari oʻzgartirilmagan.
-
 Yoshlar uchun tadbirlar, imkoniyatlar, QR chiptalar, sertifikatlar va
 `Mindova Connect` chatini birlashtirgan platforma.
 
