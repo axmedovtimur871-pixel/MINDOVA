@@ -14,6 +14,7 @@ import { IFile, IPlus, ITrash, IUpload } from "./admin-icons";
 import { applyMapping, guessMapping, parseParticipantsFile, MAX_ROWS, type Mapping, type ParsedSheet } from "@/lib/bulk-parse";
 import { duplicateKey, nameSchema, normalizeName } from "@/lib/validation";
 import { uuid } from "@/lib/uuid";
+import { downloadBatchZip } from "@/lib/zip-client";
 import { cn } from "@/lib/cn";
 import type { EventRow, TemplateRow } from "@/lib/types";
 
@@ -26,7 +27,8 @@ interface Row {
 }
 
 type Phase = "upload" | "review" | "generating" | "done";
-const CHUNK = 5;
+// Small chunks keep each request well inside serverless time limits (e.g. Netlify).
+const CHUNK = 3;
 
 function rowError(r: Row): string | null {
   const f = nameSchema.safeParse(r.first_name);
@@ -51,6 +53,7 @@ export function BulkGenerator({ templates, events }: { templates: TemplateRow[];
   const [progress, setProgress] = useState({ done: 0, total: 0 });
   const [fatal, setFatal] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [zipProgress, setZipProgress] = useState<{ done: number; total: number } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const stopRef = useRef(false);
 
@@ -311,7 +314,22 @@ export function BulkGenerator({ templates, events }: { templates: TemplateRow[];
             ) : (
               <div className="flex flex-wrap gap-2">
                 {batchId && successCount > 0 && (
-                  <a href={`/api/admin/batches/${batchId}/zip`} className={buttonClass("primary")}><IconDownload className="size-5" /> Barchasini ZIP qilib yuklab olish</a>
+                  <Button
+                    loading={!!zipProgress}
+                    onClick={async () => {
+                      setZipProgress({ done: 0, total: 0 });
+                      try {
+                        await downloadBatchZip(batchId, (done, total) => setZipProgress({ done, total }));
+                      } catch (e) {
+                        toast(e instanceof Error ? e.message : "ZIP tayyorlanmadi", "error");
+                      } finally {
+                        setZipProgress(null);
+                      }
+                    }}
+                  >
+                    {!zipProgress && <IconDownload className="size-5" />}
+                    {zipProgress ? `ZIP tayyorlanmoqda… ${zipProgress.done}/${zipProgress.total}` : "Barchasini ZIP qilib yuklab olish"}
+                  </Button>
                 )}
                 {pending.length > 0 && <Button variant="outline" onClick={generate}>Qolganlarini qayta urinish ({pending.length})</Button>}
                 <Link href="/admin/certificates" className={buttonClass("ghost")}>Roʻyxatga oʻtish</Link>

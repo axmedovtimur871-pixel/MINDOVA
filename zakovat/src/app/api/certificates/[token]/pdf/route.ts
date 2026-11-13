@@ -1,5 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/admin";
-import { getCertificatePdf, pdfFileName, pdfResponse } from "@/lib/certificates/pdf-file";
+import { getCertificatePdf, pdfFileName, pdfResponse, signedPdfUrl } from "@/lib/certificates/pdf-file";
 import { clientFingerprint } from "@/lib/verify";
 import { rateLimit } from "@/lib/rate-limit";
 import type { CertificateRow } from "@/lib/types";
@@ -21,6 +21,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ token: 
   if (cert.status !== "active") return new Response("Bu sertifikat bekor qilingan", { status: 410 });
 
   try {
+    const url = await signedPdfUrl(supabase, cert, { expiresIn: 60 });
+    if (url) return Response.redirect(url, 302);
     const bytes = await getCertificatePdf(supabase, cert);
     return pdfResponse(bytes, pdfFileName(cert));
   } catch (e) {

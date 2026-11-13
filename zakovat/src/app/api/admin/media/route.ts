@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { randomUUID } from "node:crypto";
+import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { assertSameOrigin, handle, jsonError } from "@/lib/api";
 import { createClient } from "@/lib/supabase/server";
-import { MIME, detectImageKind, imageDimensions } from "@/lib/image-info";
+import { detectImageKind, imageDimensions } from "@/lib/image-info";
+import { publicMediaUrl } from "@/lib/env";
 
 export const runtime = "nodejs";
 
@@ -16,32 +17,39 @@ const FOLDERS = {
 } as const;
 const MAX_BYTES = 10 * 1024 * 1024;
 
-// Validated image upload into the public "media" bucket.
+const schema = z.object({
+  folder: z.enum(["templates", "signatures", "events", "gallery", "site"]),
+  path: z.string().regex(/^(templates|signatures|events|gallery|site)\/\d{4}-\d{2}\/[0-9a-f-]{36}\.(png|jpg|webp)$/),
+});
+
+// Verifies an image the browser just uploaded to the public "media" bucket:
+// real file type (magic bytes), size and dimensions. Anything invalid is deleted.
 export const POST = handle(async (req: Request) => {
   assertSameOrigin(req);
-  const form = await req.formData();
-  const folder = String(form.get("folder") ?? "") as keyof typeof FOLDERS;
+  const { folder, path } = schema.parse(await req.json());
+  if (!path.startsWith(`${folder}/`)) return jsonError("Notoʻgʻri papka.", 400);
   const cfg = FOLDERS[folder];
-  if (!cfg) return jsonError("Notoʻgʻri papka.", 400);
   await requireAdmin(cfg.perm);
-
-  const file = form.get("file");
-  if (!(file instanceof File)) return jsonError("Fayl tanlanmagan.", 400);
-  if (file.size > MAX_BYTES) return jsonError("Fayl hajmi 10 MB dan oshmasligi kerak.", 413);
-
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  const kind = detectImageKind(bytes);
-  if (!kind) return jsonError("Faqat PNG, JPG yoki WEBP rasm yuklash mumkin.", 415);
-  if (cfg.pdfSafe && kind === "webp") return jsonError("Sertifikat uchun faqat PNG yoki JPG rasm yuklang.", 415);
-  const dims = imageDimensions(bytes);
-  if (!dims || dims.width < 50 || dims.height < 50) return jsonError("Rasm oʻlchamini aniqlab boʻlmadi yoki u juda kichik.", 415);
-  if (folder === "templates" && Math.max(dims.width, dims.height) < 1200) {
-    return jsonError(`Shablon rasmi juda kichik (${dims.width}×${dims.height}). Sifatli chop etish uchun kamida 2000 piksel kenglikdagi rasm yuklang.`, 422);
-  }
-
-  const path = `${folder}/${new Date().toISOString().slice(0, 7)}/${randomUUID()}.${kind === "jpeg" ? "jpg" : kind}`;
   const supabase = await createClient();
-  const { error } = await supabase.storage.from("media").upload(path, bytes, { contentType: MIME[kind], upsert: false, cacheControl: "31536000" });
-  if (error) return jsonError("Rasmni saqlab boʻlmadi: " + error.message, 500);
+  const reject = async (message: string, status = 415) => {
+    await supabase.storage.from("media").remove([path]);
+    return jsonError(message, status);
+  };
+
+  const res = await fetch(publicMediaUrl(path)!, { cache: "no-store" });
+  if (!res.ok) return jsonError("Yuklangan rasm topilmadi.", 404);
+  const bytes = new Uint8Array(await res.arrayBuffer());
+  if (bytes.byteLength > MAX_BYTES) return reject("Fayl hajmi 10 MB dan oshmasligi kerak.", 413);
+
+  const kind = detectImageKind(bytes);
+  if (!kind) return reject("Faqat PNG, JPG yoki WEBP rasm yuklash mumkin.");
+  if (cfg.pdfSafe && kind === "webp") return reject("Sertifikat uchun faqat PNG yoki JPG rasm yuklang.");
+  const ext = path.split(".").pop();
+  if ((kind === "jpeg" ? "jpg" : kind) !== ext) return reject("Fayl turi kengaytmaga mos emas.");
+  const dims = imageDimensions(bytes);
+  if (!dims || dims.width < 50 || dims.height < 50) return reject("Rasm oʻlchamini aniqlab boʻlmadi yoki u juda kichik.");
+  if (folder === "templates" && Math.max(dims.width, dims.height) < 1200) {
+    return reject(`Shablon rasmi juda kichik (${dims.width}×${dims.height}). Sifatli chop etish uchun kamida 2000 piksel kenglikdagi rasm yuklang.`, 422);
+  }
   return NextResponse.json({ path, width: dims.width, height: dims.height }, { status: 201 });
 });

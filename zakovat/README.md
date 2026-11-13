@@ -76,17 +76,27 @@ address (e.g. `http://192.168.1.20:3000`) and run `npm run dev -- -H 0.0.0.0`.
 4. **Authentication → URL configuration:** Site URL = your domain.
 5. Storage buckets `media` (public) and `certificates` (private) are created by the migration — check they exist.
 
-### 4.2 Vercel (or any Node host)
-1. Import the repository, set **Root Directory = `zakovat`**.
-2. Add the environment variables from section 2 (Production + Preview).
-3. Deploy. PDF routes run on the Node.js runtime; fonts and the built-in background are bundled via
-   `outputFileTracingIncludes` in `next.config.ts`.
-4. Bulk ZIP export of very large batches can take a while — on Vercel Hobby the function limit is 60 s;
-   use Pro (300 s, as configured) for batches of several hundred certificates.
+### 4.2 Netlify (recommended host for this project)
+1. app.netlify.com → **Add new site → Import an existing project** → GitHub → this repository.
+2. **Base directory:** `zakovat` · **Build command:** `npm run build` · **Publish directory:** `zakovat/.next`
+   (these also come from `zakovat/netlify.toml`). Netlify installs its Next.js runtime automatically.
+3. **Branch to deploy:** the branch that holds this code (`main` after merging).
+4. **Environment variables** (Site configuration → Environment variables) — all five from section 2.
+5. Deploy, then set `NEXT_PUBLIC_SITE_URL` to the final address (`https://<name>.netlify.app` or your domain) and
+   **Trigger deploy → Clear cache and deploy site** so QR codes use it.
 
-Other hosts: `npm run build && npm start` (port 3000) behind HTTPS.
+The app is built to fit serverless limits (≈6 MB per response, short request time):
+- PDF downloads redirect to short-lived signed Supabase Storage links instead of streaming through a function.
+- The bulk ZIP is assembled in the admin's browser from signed links (no size limit).
+- Bulk generation runs in small chunks (3 certificates per request ≈ 1.5 s).
+- Images upload from the browser straight to Storage; the server then verifies them and deletes invalid files.
+- Fonts and the built-in background are read from disk when available, otherwise from the site's own CDN.
 
-### 4.3 First administrator
+### 4.3 Vercel or any Node host
+Vercel: import the repo, **Root Directory = `zakovat`**, add the same variables, deploy.
+Render / Railway / VPS: base directory `zakovat`, `npm run build`, start with `npm start` (port 3000) behind HTTPS.
+
+### 4.4 First administrator
 ```bash
 node --env-file=.env.production.local scripts/create-admin.mjs you@domain.uz 'Strong-Password-2026' "Ism Familiya" super_admin
 ```
@@ -126,7 +136,7 @@ The same rules are enforced three times: in the UI, in every API route (`require
 - Backgrounds are never stretched: “Toʻliq koʻrsatish” (contain) or “Sahifani toʻldirish” (cover).
 - Text automatically shrinks to fit its max width (long Uzbek names).
 - `o'` / `g'` typed with an ASCII apostrophe are converted to proper **oʻ / gʻ** (U+02BB); other apostrophes to **ʼ**.
-- Fonts (Playfair Display, Noto Serif, Noto Sans — SIL OFL, see `src/assets/fonts/`) are pre-subset to Latin + Latin
+- Fonts (Playfair Display, Noto Serif, Noto Sans — SIL OFL, see `public/fonts/`) are pre-subset to Latin + Latin
   Extended + Cyrillic and embedded in every PDF, so Uzbek (and future Russian) text never loses letters.
 - Output: real vector PDF, A4 landscape by default (portrait available), 300 dpi background, clickable QR link,
   document metadata (title, subject, author).
@@ -145,8 +155,8 @@ admin login (incl. wrong password), single certificate creation, PDF download (`
 extractable), QR decoded from the rendered PDF → correct `/verify/<token>` URL, verification page on an emulated iPhone,
 public PDF download, manual lookup (case-insensitive), NOT FOUND, duplicate warning, bulk upload of `.xlsx`
 (two-column and single “F.I.Sh.” column), validation of empty names, in-file + database duplicate detection,
-bulk generation with progress, ZIP download (individual PDFs + CSV), revoke with mandatory reason, REVOKED status
-publicly + PDF download blocked (HTTP 410), template upload/drag/save, fake image rejected, events, site content,
+bulk generation with progress, browser-built ZIP download (individual PDFs + CSV), revoke with mandatory reason, REVOKED status
+publicly + PDF download blocked (HTTP 410), template upload/drag/save, fake image rejected (also when uploaded straight to Storage), PDF downloads via signed links, PDF rendering without `public/` on disk, events, site content,
 admin creation, role restrictions (API 401/403, UI redirects), cross-origin rejection, 28 RLS checks with anon and
 certificate-manager sessions, no service key in browser bundles, no horizontal scroll on phone width.
 

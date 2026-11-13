@@ -17,7 +17,7 @@ import {
   type PageSize,
   type TextLayer,
 } from "./layout";
-import { SUPABASE_URL } from "@/lib/env";
+import { SITE_URL, SUPABASE_URL } from "@/lib/env";
 
 export interface RenderTemplate {
   background_path: string;
@@ -28,15 +28,31 @@ export interface RenderTemplate {
   layout: unknown;
 }
 
-const FONT_DIR = path.join(process.cwd(), "src", "assets", "fonts");
+const PUBLIC_DIR = path.join(process.cwd(), "public");
 const fontCache = new Map<string, Uint8Array>();
 const imageCache = new Map<string, { bytes: Uint8Array; at: number }>();
 const IMAGE_CACHE_MS = 5 * 60 * 1000;
 
+/**
+ * Reads a file shipped in /public. On a normal Node server it is on disk; on
+ * serverless hosts (Netlify) /public lives on the CDN, so fall back to HTTP.
+ */
+async function readPublicFile(relPath: string): Promise<Uint8Array> {
+  const safe = path.posix.normalize(relPath).replace(/^(\.\.(\/|$))+/, "").replace(/^\/+/, "");
+  try {
+    return new Uint8Array(await readFile(path.join(PUBLIC_DIR, safe)));
+  } catch {
+    const base = (process.env.URL || process.env.DEPLOY_PRIME_URL || SITE_URL).replace(/\/+$/, "");
+    const res = await fetch(`${base}/${safe}`, { cache: "force-cache" });
+    if (!res.ok) throw new Error(`Faylni yuklab boʻlmadi: /${safe} (${res.status})`);
+    return new Uint8Array(await res.arrayBuffer());
+  }
+}
+
 async function fontBytes(file: string): Promise<Uint8Array> {
   let b = fontCache.get(file);
   if (!b) {
-    b = new Uint8Array(await readFile(path.join(FONT_DIR, file)));
+    b = await readPublicFile(`fonts/${file}`);
     fontCache.set(file, b);
   }
   return b;
@@ -48,8 +64,7 @@ export async function loadMediaBytes(storagePath: string): Promise<Uint8Array> {
   if (cached && Date.now() - cached.at < IMAGE_CACHE_MS) return cached.bytes;
   let bytes: Uint8Array;
   if (storagePath.startsWith("builtin/")) {
-    const safe = path.normalize(storagePath).replace(/^(\.\.(\/|\\|$))+/, "");
-    bytes = new Uint8Array(await readFile(path.join(process.cwd(), "public", safe)));
+    bytes = await readPublicFile(storagePath);
   } else {
     const url = `${SUPABASE_URL}/storage/v1/object/public/media/${storagePath.split("/").map(encodeURIComponent).join("/")}`;
     const res = await fetch(url, { cache: "no-store" });

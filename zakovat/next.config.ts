@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
   },
   // Fonts and the built-in template are read from disk when PDFs are generated.
   outputFileTracingIncludes: {
-    "/api/**/*": ["./src/assets/fonts/**/*", "./public/builtin/**/*"],
+    "/api/**/*": ["./public/fonts/**/*", "./public/builtin/**/*"],
   },
   webpack(config, { isServer }) {
     // Next 15.5 drops a client component from the RSC client manifest when webpack

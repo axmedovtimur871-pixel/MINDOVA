@@ -36,3 +36,20 @@ export function pdfResponse(bytes: Uint8Array, filename: string, inline = false)
     },
   });
 }
+
+/**
+ * Short-lived signed link to the stored PDF (served by Supabase Storage, so large
+ * files never pass through a serverless function). Null when no stored file exists.
+ */
+export async function signedPdfUrl(
+  supabase: SupabaseClient,
+  cert: CertificateRow,
+  opts: { download?: boolean; expiresIn?: number } = {},
+): Promise<string | null> {
+  if (!cert.pdf_path) return null;
+  const { data, error } = await supabase.storage
+    .from("certificates")
+    .createSignedUrl(cert.pdf_path, opts.expiresIn ?? 120, opts.download === false ? undefined : { download: pdfFileName(cert) });
+  if (error || !data?.signedUrl) return null;
+  return data.signedUrl;
+}
