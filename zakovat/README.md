@@ -70,7 +70,7 @@ address (e.g. `http://192.168.1.20:3000`) and run `npm run dev -- -H 0.0.0.0`.
    `certificates` tables with a different schema).
 2. Apply the schema — either
    - **CLI:** `npx supabase link --project-ref <ref>` then `npx supabase db push`, or
-   - **Dashboard:** SQL Editor → run `supabase/migrations/20261113000001_initial_schema.sql`, then `…000002_seed_default_template.sql`.
+   - **Dashboard:** SQL Editor → run the files in `supabase/migrations/` in order (`…000001`, `…000002`, `…000003`).
 3. **Authentication → Providers → Email:** keep Email enabled, turn **“Allow new users to sign up” OFF**
    (admins are created only by a super admin or the script).
 4. **Authentication → URL configuration:** Site URL = your domain.
