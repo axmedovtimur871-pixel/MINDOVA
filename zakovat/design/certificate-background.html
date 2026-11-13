@@ -1,0 +1,65 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:PF;src:url(../src/assets/fonts/PlayfairDisplay_600SemiBold.ttf);font-weight:600}
+@font-face{font-family:PF;src:url(../src/assets/fonts/PlayfairDisplay_400Regular_Italic.ttf);font-style:italic;font-weight:400}
+@font-face{font-family:NS;src:url(../src/assets/fonts/NotoSans_600SemiBold.ttf);font-weight:600}
+@font-face{font-family:NS;src:url(../src/assets/fonts/NotoSans_500Medium.ttf);font-weight:500}
+html,body{margin:0;padding:0}
+.page{position:relative;width:3508px;height:2480px;overflow:hidden;
+ background: radial-gradient(ellipse at 50% 45%, #fffdf7 0%, #fbf6ea 55%, #f3ead3 100%);}
+.abs{position:absolute}
+.c{left:0;right:0;text-align:center}
+svg{position:absolute;inset:0}
+.brand{top:13.2%;font-family:NS;font-weight:600;font-size:64px;letter-spacing:22px;color:#0f2044}
+.title{top:18.6%;font-family:PF;font-weight:600;font-size:250px;letter-spacing:40px;color:#0f2044;line-height:1;padding-left:40px}
+.lead{top:38.6%;font-family:PF;font-style:italic;font-size:62px;color:#3d4a66}
+.lbl{font-family:NS;font-weight:500;font-size:44px;letter-spacing:9px;color:#8a6d22;text-transform:uppercase;width:24%;text-align:center}
+.verify{font-family:NS;font-weight:500;font-size:30px;letter-spacing:6px;color:#8a6d22;width:30%;text-align:center;white-space:nowrap}
+</style></head><body><div class="page">
+<svg viewBox="0 0 3508 2480" xmlns="http://www.w3.org/2000/svg">
+ <defs>
+  <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+   <stop offset="0" stop-color="#c9a24a"/><stop offset=".5" stop-color="#e3c579"/><stop offset="1" stop-color="#a8842c"/>
+  </linearGradient>
+  <pattern id="dots" width="36" height="36" patternUnits="userSpaceOnUse"><circle cx="18" cy="18" r="2.2" fill="#c9a24a" opacity=".35"/></pattern>
+  <g id="star"><rect x="-60" y="-60" width="120" height="120" fill="none" stroke="url(#gold)" stroke-width="7"/><rect x="-60" y="-60" width="120" height="120" transform="rotate(45)" fill="none" stroke="url(#gold)" stroke-width="7"/><circle r="22" fill="none" stroke="url(#gold)" stroke-width="6"/><circle r="7" fill="#c9a24a"/></g>
+  <g id="corner">
+   <path d="M0 330 V0 H330" fill="none" stroke="url(#gold)" stroke-width="10"/>
+   <path d="M48 270 V48 H270" fill="none" stroke="url(#gold)" stroke-width="4"/>
+   <use href="#star" transform="translate(150 150) scale(.9)"/>
+   <path d="M0 420 L0 520" stroke="#c9a24a" stroke-width="10"/><path d="M420 0 L520 0" stroke="#c9a24a" stroke-width="10"/>
+  </g>
+ </defs>
+ <!-- navy frame -->
+ <rect x="0" y="0" width="3508" height="2480" fill="#0f2044"/>
+ <rect x="86" y="86" width="3336" height="2308" fill="#fbf6ea"/>
+ <rect x="86" y="86" width="3336" height="2308" fill="url(#dots)" opacity=".0"/>
+ <rect x="104" y="104" width="3300" height="2272" fill="none" stroke="url(#gold)" stroke-width="10"/>
+ <rect x="150" y="150" width="3208" height="2180" fill="none" stroke="#c9a24a" stroke-width="3"/>
+ <!-- subtle watermark star -->
+ <g transform="translate(1754 1240) scale(7.2)" opacity=".016"><g fill="none" stroke="#0f2044" stroke-width="5"><rect x="-60" y="-60" width="120" height="120"/><rect x="-60" y="-60" width="120" height="120" transform="rotate(45)"/><circle r="40"/></g></g>
+ <!-- corners -->
+ <use href="#corner" transform="translate(200 200)"/>
+ <use href="#corner" transform="translate(3308 200) scale(-1 1)"/>
+ <use href="#corner" transform="translate(200 2280) scale(1 -1)"/>
+ <use href="#corner" transform="translate(3308 2280) scale(-1 -1)"/>
+ <!-- top emblem -->
+ <use href="#star" transform="translate(1754 250) scale(.62)"/>
+ <path d="M1380 250 H1640 M1868 250 H2128" stroke="#c9a24a" stroke-width="4"/>
+ <circle cx="1370" cy="250" r="8" fill="#c9a24a"/><circle cx="2138" cy="250" r="8" fill="#c9a24a"/>
+ <!-- divider under title -->
+ <path d="M1300 790 H1700 M1808 790 H2208" stroke="#c9a24a" stroke-width="5"/>
+ <rect x="1736" y="772" width="36" height="36" transform="rotate(45 1754 790)" fill="#c9a24a"/>
+ <!-- rule under name -->
+ <path d="M934 1375 H2574" stroke="#c9a24a" stroke-width="4"/>
+ <circle cx="934" cy="1375" r="9" fill="#c9a24a"/><circle cx="2574" cy="1375" r="9" fill="#c9a24a"/>
+ <!-- signature lines -->
+ <path d="M440 2050 H1280" stroke="#0f2044" stroke-width="4"/>
+ <path d="M2228 2050 H3068" stroke="#0f2044" stroke-width="4"/>
+</svg>
+<div class="abs c brand">ZAKOVAT ANDIJON</div>
+<div class="abs c title">SERTIFIKAT</div>
+<div class="abs c lead">Ushbu sertifikat bilan</div>
+<div class="abs lbl" style="left:12.5%;top:83.6%">Berilgan sana</div>
+<div class="abs lbl" style="left:63.5%;top:83.6%">Tashkilotchi</div>
+<div class="abs verify" style="left:35%;top:87.4%">SKANERLANG VA TEKSHIRING</div>
+</div></body></html>
