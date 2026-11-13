@@ -10,7 +10,10 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/mindova.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="/assets/js/cert-render.js"></script>
 <style>
 :root{--bg:#F5F6FB;--sf:#fff;--sf2:#F9FAFD;--ink:#14152B;--ink2:#3B3E5C;--mut:#6B6F8F;--line:#E6E8F2;--line2:#D9DCEA;--brand:#4F46E5;--brand-2:#2F7BF6;--soft:#EEF0FF;--sh:0 1px 2px rgba(20,21,43,.04),0 4px 16px rgba(20,21,43,.05);--sh2:0 12px 40px -12px rgba(20,21,43,.18);--side:264px}
 *{box-sizing:border-box}
@@ -185,6 +188,31 @@ td select{margin:0;padding:6px 8px;width:auto;font-size:.82rem}
 .logrow b{font-size:.88rem;font-weight:600}.logrow small{display:block;color:var(--mut);font-size:.78rem}
 .help{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:14px;background:#F5F7FF;border:1px solid #DDE3FF;color:#3538A8;font-size:.86rem;margin-bottom:16px;max-width:920px}
 .help svg{flex:none;width:18px;height:18px;margin-top:1px}
+/* certificate templates */
+.tpl{display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:16px;align-items:start;margin-bottom:8px}
+.tpl .box{padding:18px}
+.tpl-p{position:sticky;top:90px}
+.tpl-p canvas{width:100%;height:auto;display:block;border-radius:12px;background:var(--sf2);box-shadow:0 10px 30px -12px rgba(20,21,43,.35)}
+.tpl-p .cap{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;color:var(--mut);font-size:.8rem}
+.tpl-c label{margin-bottom:12px}
+.tpl-c fieldset{border:1px solid var(--line);border-radius:14px;padding:12px 14px 4px;margin:0 0 12px}
+.tpl-c legend{font:700 .78rem var(--font);color:var(--ink);padding:0 6px}
+.tpl-c .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tpl-c input[type=range]{padding:0;border:0;margin-top:8px;accent-color:var(--brand);box-shadow:none}
+.tpl-c input[type=color]{padding:3px;height:40px;cursor:pointer}
+.tpl-c .chk{display:flex;align-items:center;gap:8px;font-weight:600;margin-bottom:8px}
+.tpl-c .val{float:right;color:var(--brand);font-weight:700}
+.tpl-c .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.tpl-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.tpl-item{display:flex;align-items:center;gap:10px;padding:8px;border:1px solid var(--line);border-radius:12px;background:var(--sf2)}
+.tpl-item.on{border-color:#C9CCF5;background:var(--soft)}
+.tpl-item img,.tpl-item .ph{width:64px;height:44px;object-fit:cover;border-radius:7px;flex:none;background:#E9EBF5;display:grid;place-items:center;font-size:.6rem;color:var(--mut)}
+.tpl-item b{font-size:.86rem;display:block;line-height:1.2}
+.tpl-item small{color:var(--mut);font-size:.74rem}
+.tpl-item .sp{flex:1;min-width:0}
+.selbar{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:-4px}
+.selbar .cnt{margin-left:auto;font-size:.82rem;font-weight:600;color:var(--brand)}
+@media(max-width:1000px){.tpl{grid-template-columns:1fr}.tpl-p{position:static;order:-1}}
 /* overlay for mobile drawer */
 .scrim{display:none}
 @media(max-width:1100px){.kpis{grid-template-columns:repeat(2,1fr)}.dgrid,.dgrid.two{grid-template-columns:1fr}}
@@ -306,10 +334,43 @@ td select{margin:0;padding:6px 8px;width:auto;font-size:.82rem}
 </div>
 
 <div id="certs" class="section">
+ <h2>Sertifikat shabloni</h2>
+ <div class="help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>Tayyor sertifikat dizaynini rasm sifatida yuklang (gorizontal PNG yoki JPG, kengligi kamida 1600 px). Ism, matn va QR joyini sozlang — o‘ngda natija darhol ko‘rinadi. <b>«Saqlash va faol qilish»</b> bosilgach, barcha ishtirokchilarning sertifikatlari (eskilari ham) shu shablonda ko‘rinadi. Sertifikat ma’lumotlari o‘zgarmaydi.</span></div>
+ <div class="tpl">
+  <div class="box tpl-c">
+   <div class="tpl-list" id="tpList"></div>
+   <label>Shablon nomi<input id="tpName" maxlength="80" placeholder="Masalan: Debate Cup 2026"></label>
+   <label>Dizayn rasmi<input type="file" id="tpImg" accept="image/png,image/jpeg,image/webp"></label>
+   <fieldset><legend>Ishtirokchi ismi</legend>
+    <label>Balandligi <span class="val" id="tpNameYv"></span><input type="range" id="tpNameY" min="15" max="85" step="0.5"></label>
+    <label>O‘lchami <span class="val" id="tpNameSv"></span><input type="range" id="tpNameS" min="5" max="18" step="0.5"></label>
+    <div class="row2"><label>Rangi<input type="color" id="tpNameC"></label><label>Shrift<select id="tpNameF"><option value="script">Yozma (chiroyli)</option><option value="sans">Oddiy (qalin)</option></select></label></div>
+   </fieldset>
+   <fieldset><legend>Asosiy matn</legend>
+    <label class="chk"><input type="checkbox" id="tpBodyOn"> «… tadbirida faol ishtirok etgani uchun» matnini yozish</label>
+    <label>Balandligi <span class="val" id="tpBodyYv"></span><input type="range" id="tpBodyY" min="15" max="90" step="0.5"></label>
+    <div class="row2"><label>Matn rangi<input type="color" id="tpBodyC"></label><label>Tadbir nomi rangi<input type="color" id="tpBodyA"></label></div>
+   </fieldset>
+   <fieldset><legend>Sana · joy · tashkilot</legend>
+    <label class="chk"><input type="checkbox" id="tpFootOn"> Pastki qatorni yozish</label>
+    <div class="row2"><label>Balandligi <span class="val" id="tpFootYv"></span><input type="range" id="tpFootY" min="20" max="95" step="0.5"></label><label>Rangi<input type="color" id="tpFootC"></label></div>
+   </fieldset>
+   <fieldset><legend>QR kod va sertifikat raqami</legend>
+    <label class="chk"><input type="checkbox" id="tpQrOn"> QR kodni qo‘yish (tekshirish uchun)</label>
+    <div class="row2"><label>Joyi<select id="tpQrP"><option value="bl">Pastki chap burchak</option><option value="br">Pastki o‘ng burchak</option></select></label><label>Rangi<input type="color" id="tpQrC"></label></div>
+   </fieldset>
+   <div class="btns"><button type="button" class="submit-btn" id="tpSaveAct">Saqlash va faol qilish</button><button type="button" class="submit-btn" data-variant="ghost" id="tpSave">Faqat saqlash</button><button type="button" class="submit-btn" data-variant="ghost" id="tpNew">Yangi shablon</button></div>
+   <div class="msg" id="tpMsg" style="margin-top:8px"></div>
+  </div>
+  <div class="box tpl-p"><canvas id="tpPrev" width="1536" height="1024"></canvas><div class="cap"><span>Jonli ko‘rinish · namuna ism bilan</span><span id="tpState"></span></div></div>
+ </div>
+
  <h2>Sertifikat berish</h2>
  <form id="certForm">
   <label>Tadbirdan to'ldirish (ixtiyoriy)<select id="cEv"></select></label>
-  <label>Foydalanuvchilar (bir nechtasini tanlash mumkin)<select id="cUser" multiple size="6" required></select></label>
+  <label>Shablon<select id="cTpl"></select></label>
+  <label>Foydalanuvchilar (bir nechtasini tanlash mumkin)<select id="cUser" multiple size="8" required></select></label>
+  <div class="selbar"><button type="button" class="tab-btn" id="cAll">Hammasini tanlash</button><button type="button" class="tab-btn" id="cEvReg" disabled>Tadbirga yozilganlar</button><button type="button" class="tab-btn" id="cEvIn" disabled>Tadbirga kelganlar (QR)</button><button type="button" class="tab-btn" id="cNone">Tozalash</button><span class="cnt" id="cCnt">0 ta tanlandi</span></div>
   <input type="text" id="cTitle" placeholder="Sertifikat nomi (masalan: Ishtirok sertifikati)" required>
   <input type="text" id="cEvent" placeholder="Tadbir nomi (masalan: Cohort III)">
   <label>Tadbir sanasi<input type="date" id="cEDate"></label>
@@ -1099,11 +1160,11 @@ async function loadCerts(){
  const [p,c]=await Promise.all([sb.from("profiles").select("id,full_name,email").order("created_at",{ascending:false}),sb.from("certificates").select("*").order("created_at",{ascending:false})]);
  PR=p.data||[];
  $("cUser").innerHTML="";
- const ev=await sb.from("events").select("title,starts_at,location").order("starts_at",{ascending:false});
+ const ev=await sb.from("events").select("id,title,starts_at,location").order("starts_at",{ascending:false});
  const E=ev.data||[],se=$("cEv");se.innerHTML="";
  const o0=document.createElement("option");o0.value="";o0.textContent="—";se.appendChild(o0);
  E.forEach((x,n)=>{const o=document.createElement("option");o.value=n;o.textContent=x.title;se.appendChild(o)});
- se.onchange=()=>{const x=E[se.value];if(!x)return;$("cEvent").value=x.title;$("cPlace").value=x.location||"";if(x.starts_at)$("cEDate").value=x.starts_at.slice(0,10)};
+ se.onchange=()=>{const x=E[se.value];CEV=x||null;$("cEvReg").disabled=$("cEvIn").disabled=!x;if(!x)return;$("cEvent").value=x.title;$("cPlace").value=x.location||"";if(x.starts_at)$("cEDate").value=x.starts_at.slice(0,10)};
  PR.forEach(x=>{const o=document.createElement("option");o.value=x.id;o.textContent=(x.full_name||"—")+" ("+(x.email||"")+")";$("cUser").appendChild(o)});
  const box=$("cList");box.innerHTML="";
  if(c.error){box.textContent="Yuklab bo'lmadi: "+c.error.message;return}
@@ -1122,10 +1183,116 @@ async function loadCerts(){
 }
 $("certForm").onsubmit=async e=>{
  e.preventDefault();
- const {error}=await sb.from("certificates").insert(Array.from($("cUser").selectedOptions).map(o=>({user_id:o.value,title:$("cTitle").value.trim(),event_title:$("cEvent").value.trim()||null,event_date:$("cEDate").value||null,event_place:$("cPlace").value.trim()||null,organization:$("cOrg").value.trim()||"Mindova",issued_at:$("cDate").value})));
- $("cMsg").textContent=error?"Xato: "+error.message:"Sertifikat berildi ✓";
- if(!error){e.target.reset();loadCerts()}
+ const ids=Array.from($("cUser").selectedOptions).map(o=>o.value),ev=$("cEvent").value.trim()||null,title=$("cTitle").value.trim();
+ if(!ids.length){$("cMsg").textContent="Kamida bitta foydalanuvchini tanlang.";return}
+ /* takrorlanmasin: shu tadbir bo‘yicha sertifikati bor odamlar o‘tkazib yuboriladi */
+ let have=new Set();
+ if(ev){const r=await sb.from("certificates").select("user_id").eq("event_title",ev).in("user_id",ids);have=new Set((r.data||[]).map(x=>x.user_id))}
+ const todo=ids.filter(id=>!have.has(id));
+ if(!todo.length){MUI.toast("Tanlanganlarning barchasida bu tadbir sertifikati allaqachon bor","info");return}
+ const tn=$("cTpl").selectedOptions[0]?$("cTpl").selectedOptions[0].textContent:"";
+ if(!(await MUI.confirm({title:"Sertifikat berish",text:todo.length+" ta foydalanuvchiga «"+title+"» sertifikati beriladi."+(have.size?"\n"+have.size+" tasida bu tadbir sertifikati allaqachon bor — ular o‘tkazib yuboriladi.":"")+"\nShablon: "+tn,ok:"Ha, berish"})))return;
+ const btn=e.target.querySelector("button[type=submit]");btn.disabled=true;
+ const tpl=$("cTpl").value||null;
+ const rows=todo.map(id=>({user_id:id,title,event_title:ev,event_date:$("cEDate").value||null,event_place:$("cPlace").value.trim()||null,organization:$("cOrg").value.trim()||"Mindova",issued_at:$("cDate").value,template_id:tpl}));
+ let err=null;for(let i=0;i<rows.length;i+=200){const {error}=await sb.from("certificates").insert(rows.slice(i,i+200));if(error){err=error;break}}
+ btn.disabled=false;
+ $("cMsg").textContent=err?"Xato: "+err.message:todo.length+" ta sertifikat berildi ✓";
+ if(!err){e.target.reset();updCnt();loadCerts()}
 };
+
+/* ===== Foydalanuvchilarni tez tanlash ===== */
+let CEV=null;
+function updCnt(){$("cCnt").textContent=$("cUser").selectedOptions.length+" ta tanlandi"}
+$("cUser").addEventListener("change",updCnt);
+function selIds(ids){const S=new Set(ids);let n=0;[...$("cUser").options].forEach(o=>{o.selected=S.has(o.value);if(o.selected)n++});updCnt();return n}
+$("cAll").onclick=()=>{[...$("cUser").options].forEach(o=>o.selected=true);updCnt()};
+$("cNone").onclick=()=>selIds([]);
+async function selEvent(onlyIn){
+ if(!CEV)return;let q=sb.from("registrations").select("user_id").eq("event_id",CEV.id).not("user_id","is",null);if(onlyIn)q=q.eq("checked_in",true);
+ const {data,error}=await q;if(error){mAlert(error.message);return}
+ const n=selIds((data||[]).map(x=>x.user_id));
+ MUI.toast(n?n+" ta ishtirokchi tanlandi":"Bu tadbirda mos ishtirokchi topilmadi",n?"ok":"info");
+}
+$("cEvReg").onclick=()=>selEvent(false);$("cEvIn").onclick=()=>selEvent(true);
+
+/* ===== Sertifikat shablonlari ===== */
+let TPLS=[],TP={id:null,bg:null,file:null};
+const TPS={name:"Aziza Rahimova",cert:{title:"Ishtirok sertifikati",event_title:"Mindova Debate Cup 2026",event_date:new Date().toISOString().slice(0,10),event_place:"Toshkent, IT Park",organization:"Mindova",code:"MND-NAMUNA1"}};
+const tpF={nameY:"tpNameY",nameS:"tpNameS",nameC:"tpNameC",nameF:"tpNameF",bodyOn:"tpBodyOn",bodyY:"tpBodyY",bodyC:"tpBodyC",bodyA:"tpBodyA",footOn:"tpFootOn",footY:"tpFootY",footC:"tpFootC",qrOn:"tpQrOn",qrP:"tpQrP",qrC:"tpQrC"};
+function tpRead(){const v=k=>$(tpF[k]),n=k=>parseFloat(v(k).value);
+ return {bg_url:TP.bg,name:{y:n("nameY"),size:n("nameS"),color:v("nameC").value,font:v("nameF").value},body:{show:v("bodyOn").checked,y:n("bodyY"),color:v("bodyC").value,accent:v("bodyA").value},foot:{show:v("footOn").checked,y:n("footY"),color:v("footC").value},qr:{show:v("qrOn").checked,pos:v("qrP").value,color:v("qrC").value}}}
+function tpFill(cfg){const c=MCert.merge(cfg),v=k=>$(tpF[k]);
+ v("nameY").value=c.name.y;v("nameS").value=c.name.size;v("nameC").value=c.name.color;v("nameF").value=c.name.font;
+ v("bodyOn").checked=c.body.show;v("bodyY").value=c.body.y;v("bodyC").value=c.body.color;v("bodyA").value=c.body.accent;
+ v("footOn").checked=c.foot.show;v("footY").value=c.foot.y;v("footC").value=c.foot.color;
+ v("qrOn").checked=c.qr.show;v("qrP").value=c.qr.pos;v("qrC").value=c.qr.color;tpVals()}
+function tpVals(){[["tpNameY","%"],["tpNameS","%"],["tpBodyY","%"],["tpFootY","%"]].forEach(([i,u])=>$(i+"v").textContent=$(i).value+u)}
+let tpT=null;
+function tpDraw(){clearTimeout(tpT);tpT=setTimeout(async()=>{tpVals();const cfg=tpRead();
+ if(!cfg.bg_url){const k=$("tpPrev"),x=k.getContext("2d");k.width=1536;k.height=1024;x.fillStyle="#F1F2F8";x.fillRect(0,0,1536,1024);x.fillStyle="#6B6F8F";x.textAlign="center";x.font="600 42px Inter,sans-serif";x.fillText("Dizayn rasmini yuklang",768,500);x.font="400 28px Inter,sans-serif";x.fillText("Ism, matn va QR shu yerda jonli ko‘rinadi",768,556);return}
+ try{const u=await MCert.render(TPS.cert,TPS.name,cfg),im=new Image();im.onload=()=>{const k=$("tpPrev");k.width=im.width;k.height=im.height;k.getContext("2d").drawImage(im,0,0)};im.src=u}catch(e){console.error(e)}},120)}
+Object.values(tpF).forEach(id=>{$(id).addEventListener("input",tpDraw);$(id).addEventListener("change",tpDraw)});
+$("tpImg").onchange=()=>{const f=$("tpImg").files[0];if(!f)return;if(!/^image\//.test(f.type)){mAlert("Faqat rasm (PNG, JPG) yuklang");return}TP.file=f;TP.bg=URL.createObjectURL(f);
+ const im=new Image();im.onload=()=>{if(im.width<im.height)MUI.toast("Rasm vertikal. Sertifikat uchun gorizontal rasm tavsiya etiladi.","info");if(im.width<1200)MUI.toast("Rasm o‘lchami kichik ("+im.width+"px). Sifatli chiqishi uchun kamida 1600px tavsiya etiladi.","info")};im.src=TP.bg;
+ if(!$("tpName").value)$("tpName").value=f.name.replace(/\.[^.]+$/,"").slice(0,80);tpDraw()};
+function tpReset(){TP={id:null,bg:null,file:null};$("tpName").value="";$("tpImg").value="";tpFill(null);$("tpState").textContent="Yangi shablon";tpList();tpDraw()}
+$("tpNew").onclick=tpReset;
+function tpEdit(t){TP={id:t.id,bg:t.config&&t.config.bg_url||null,file:null};$("tpName").value=t.name||"";$("tpImg").value="";tpFill(t.config);$("tpState").textContent="Tahrirlanmoqda: "+(t.name||"");tpList();tpDraw();$("tpName").scrollIntoView({behavior:"smooth",block:"center"})}
+async function tpUpload(f){
+ const im=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(new Error("Rasmni o‘qib bo‘lmadi"));i.src=URL.createObjectURL(f)});
+ const s=Math.min(1,2400/im.naturalWidth),c=document.createElement("canvas");c.width=Math.round(im.naturalWidth*s);c.height=Math.round(im.naturalHeight*s);
+ const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);
+ const b=await new Promise(r=>c.toBlob(r,"image/jpeg",.92)),p="cert-templates/"+Date.now()+"-"+Math.random().toString(36).slice(2,8)+".jpg";
+ const u=await sb.storage.from("images").upload(p,b,{contentType:"image/jpeg"});if(u.error)throw u.error;
+ return sb.storage.from("images").getPublicUrl(p).data.publicUrl;
+}
+async function tpActivate(id){
+ const a=await sb.from("certificate_templates").update({is_active:false}).neq("id",id);if(a.error)throw a.error;
+ const b=await sb.from("certificate_templates").update({is_active:true}).eq("id",id);if(b.error)throw b.error;
+}
+async function tpSave(activate){
+ const name=$("tpName").value.trim();
+ if(!name){$("tpMsg").textContent="Shablon nomini kiriting.";$("tpName").focus();return}
+ if(!TP.bg){$("tpMsg").textContent="Dizayn rasmini yuklang.";return}
+ if(activate&&!(await MUI.confirm({title:"Shablonni faol qilish",text:"Shu shablon faol bo‘ladi va barcha ishtirokchilarning sertifikatlari (avval berilganlari ham) shu dizaynda ko‘rinadi. Sertifikat yozuvlari o‘zgarmaydi.",ok:"Ha, faol qilish"})))return;
+ const bs=[$("tpSaveAct"),$("tpSave")];bs.forEach(b=>b.disabled=true);$("tpMsg").textContent="Saqlanmoqda…";
+ try{
+  if(TP.file){TP.bg=await tpUpload(TP.file);TP.file=null}
+  const row={name,config:tpRead()};let id=TP.id;
+  if(id){const {error}=await sb.from("certificate_templates").update(row).eq("id",id);if(error)throw error}
+  else{const {data,error}=await sb.from("certificate_templates").insert([{...row,is_active:false}]).select("id").single();if(error)throw error;id=data.id}
+  TP.id=id;if(activate)await tpActivate(id);
+  $("tpMsg").textContent=activate?"Shablon saqlandi va faol qilindi ✓":"Shablon saqlandi ✓";$("tpState").textContent="Tahrirlanmoqda: "+name;
+  await loadTpls();
+ }catch(e){$("tpMsg").textContent="Xato: "+(e.message||e)}
+ bs.forEach(b=>b.disabled=false);
+}
+$("tpSaveAct").onclick=()=>tpSave(true);$("tpSave").onclick=()=>tpSave(false);
+function tpList(){
+ const box=$("tpList");
+ box.innerHTML=TPLS.length?"":'<small style="color:var(--mut)">Hali shablon yo‘q.</small>';
+ TPLS.forEach(t=>{const has=t.config&&t.config.bg_url,d=document.createElement("div");d.className="tpl-item"+(t.is_active?" on":"");
+  d.innerHTML=(has?'<img alt="">':'<span class="ph">standart</span>')+'<div class="sp"><b></b><small></small></div>';
+  if(has)d.querySelector("img").src=t.config.bg_url;
+  d.querySelector("b").textContent=t.name||"Nomsiz";d.querySelector("small").textContent=t.is_active?"● Faol — hamma sertifikatlar shu dizaynda":(has?"Saqlangan":"Eski standart dizayn");
+  const mk=(txt,f)=>{const b=document.createElement("button");b.type="button";b.className="tab-btn";b.textContent=txt;b.onclick=f;d.appendChild(b)};
+  if(has)mk("Tahrirlash",()=>tpEdit(t));
+  if(!t.is_active)mk("Faol qilish",async()=>{if(!(await MUI.confirm({title:"Faol qilish",text:"«"+(t.name||"")+"» faol bo‘ladi va barcha sertifikatlar shu dizaynda ko‘rinadi.",ok:"Ha, faol qilish"})))return;try{await tpActivate(t.id);MUI.toast("Faol shablon o‘zgardi","ok");loadTpls()}catch(e){mAlert(e.message)}});
+  if(TP.id===t.id)d.style.outline="2px solid var(--brand)";
+  box.appendChild(d)});
+}
+async function loadTpls(){
+ const {data,error}=await sb.from("certificate_templates").select("id,name,is_active,config,created_at").order("created_at",{ascending:false});
+ if(error){$("tpMsg").textContent="Shablonlarni yuklab bo‘lmadi: "+error.message;return}
+ TPLS=data||[];tpList();
+ const sel=$("cTpl"),cur=sel.value;sel.innerHTML="";
+ const act=TPLS.find(t=>t.is_active);
+ const o0=document.createElement("option");o0.value="";o0.textContent="Faol shablon"+(act?" — "+act.name:"")+" (tavsiya)";sel.appendChild(o0);
+ TPLS.filter(t=>t.config&&t.config.bg_url).forEach(t=>{const o=document.createElement("option");o.value=t.id;o.textContent="Doim shu: "+t.name;sel.appendChild(o)});
+ sel.value=cur&&[...sel.options].some(o=>o.value===cur)?cur:"";
+}
+window.__TPL_LOAD=[()=>loadCerts(),()=>{loadTpls();if(!TP.id&&!TP.bg){tpFill(null);$("tpState").textContent="Yangi shablon"}tpDraw()}];
 
 async function loadTeam(){
  const {data,error}=await sb.from("team").select("*").order("created_at",{ascending:true});
@@ -1361,6 +1528,7 @@ function labelize(){
 }
 function adminReady(user){
  labelize();
+ if(window.__TPL_LOAD)TABLOAD.certs=window.__TPL_LOAD;
  const nm=(user.user_metadata&&user.user_metadata.full_name)||user.email||"Administrator";
  $("meName").textContent=nm;$("meAv").textContent=ini(nm);
  const h=new Date().getHours();$("hiT").textContent=(h<12?"Xayrli tong":h<18?"Xayrli kun":"Xayrli kech")+", "+String(nm).split(/[\s@]/)[0]+" 👋";
